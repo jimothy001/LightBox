@@ -5,11 +5,11 @@
 		<title>SANDBOX</title>
 			
 		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
-
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 	<style>
 	
 		body {
-			background-color: #333;
+			background-color: #222;
 		}
 		
 		
@@ -22,8 +22,8 @@
 		}
 		
 		.image {
-			width: 100px;
-			height: 100px;
+			width: 50px;
+			height: 50px;
 			position: relative;
 			float: left;
 			background-size: 100px;
@@ -41,9 +41,40 @@
 			margin-top: 2%;
 			width: 60%;
 			height: 90%;
-			background-repeat: no-repeat;
-			background-size: auto;
-			background-position: center;
+		}
+		
+		#preview img {
+			max-width: 100%;
+			max-height: 100%;
+			display: block;
+			margin: auto;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			webkit-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			-moz-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5)
+		}
+		
+		.button {
+			color: white;
+			font-family: sans-serif;
+			margin: auto;
+			position: absolute;
+			background-color: #222;
+			display: block;
+			padding: 5px;		
+			position: absolute;
+			left: 0px;
+		}
+		
+		.button:hover {
+			text-decoration: underline;
+			cursor: pointer;
+
+			
 		}
 	
 	</style>
@@ -56,17 +87,29 @@
 	<script>
 		var i = 0;
 		var images = [];
+		var curr = false;
+		var socket = io("http://localhost");
 		getMoreArt();
 		$("#preview").css("opacity", 0);
-		$("#preview").on("click", function() {
-			$(this).animate({opacity: 0}, 500, function() {
-				$(this).removeClass("active");
-				$("#map").css("opacity", 1);
-			});
-			
 		
-
+		$("#preview").on("click", function(e) {
+			if($(e.target).hasClass("img-preview")) {
+				$(this).animate({opacity: 0}, 500, function() {
+					$(this).removeClass("active");
+					$(this).empty();
+					$("#map").css("opacity", 1);
+					curr = false;
+				});
+			} else if($(e.target).hasClass("button")) {
+				console.log(curr);
+				socket.emit('add-item', {
+					url: curr
+				});
+			}
 		});
+		
+	
+		
 	
 		function getMoreArt() {
 			$.get("http://api.harvardartmuseums.org/object?hasImage=1&sort=random&fields=primaryimageurl&apikey=83cb5d60-e29e-11e3-8aa2-6f2d47dd4045&size=100", function(data) {
@@ -74,7 +117,7 @@
 					if(art.primaryimageurl) images.push(art.primaryimageurl);
 				});
 				i++;
-				if(i < 1) getMoreArt();
+				if(i < 2) getMoreArt();
 				else populateMap();
 			});	
 		}
@@ -83,12 +126,17 @@
 			$.each(images, function(j, val) {
 				var $div = $("<div class='image'></div>");
 				$div.css("background-image", "url('"+val+"')");
+				$div.attr("data-src", val);
+				$div.attr("data-index", j);
+				
 				$("#map").append($div);
 			});
 			
 			$(".image").on("click", function(e) {
-				console.log(this);
-				$("#preview").css("background-image", "url('"+images[$(e.target).index()]+"')");
+				var $img = $("<img class = 'img-preview' src='"+$(this).attr("data-src")+"'><div class='button'>Add to tray</div>");
+				curr = images[$(this).attr("data-index")];
+				$("#preview").append($img);
+				console.log($img);
 				$("#map").css("opacity", .1);
 				$("#preview").addClass("active");
 				$("#preview").animate({opacity: 1}, 500, function() {

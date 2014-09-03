@@ -77,7 +77,7 @@ var count=1;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
+
 //.....................................................MongoDB
 var mongo = require('mongodb'),
 	  MongoServer = mongo.Server,
@@ -90,7 +90,7 @@ var mdbserver = new MongoServer('localhost', 27017, {auto_reconnect: true});//27
 
 
 //var now = //_now.getFullYear()+"_"+(_now.getMonth()+1)+"_"+_now.getDate()+"_"+_now.getHours()+"_"+_now.getMinutes();
-var n = "bookDB"
+var n = "artDB"
 var db = new Db(n, mdbserver,{safe:true});
 console.log("using db "+n);
 
@@ -122,7 +122,7 @@ function OpenCollections()
     		HAM=collection;	//set the global variable bookcollection to the newly found collection
     		//mongoDBTest();			//run the mongoDB function defined below [this is where we do all our testing]
     		
-    		PopulateHAM();
+    		//PopulateHAM();
     		//DB_REFERERNCE();		
     	});
 }
@@ -140,7 +140,7 @@ function PopulateHAM()
 			if(!err) console.log("populated HAM");
 		});
 }
-*/
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -186,6 +186,11 @@ io.sockets.on('connection', function (socket) {
 		socket.emit('_test', data);
 	});
 
+	socket.on('add-item', function(data) {
+		console.dir(data);
+		HAM.insert(data);
+		socket.emit('updated-db', data);
+	});
 
 
 });
