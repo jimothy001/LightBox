@@ -109,7 +109,9 @@
 		});
 		
 	
-		
+		socket.on('send-items', function(data) {
+			console.log(data);
+		});
 	
 		function getMoreArt() {
 			$.get("http://api.harvardartmuseums.org/object?hasImage=1&sort=random&fields=primaryimageurl&apikey=83cb5d60-e29e-11e3-8aa2-6f2d47dd4045&size=100", function(data) {
