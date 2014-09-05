@@ -2,9 +2,9 @@ var centraldiv = null;
 var canvas = new fabric.Canvas("sandbox");
 var center = {'x': canvas.width/2, 'y': canvas.height/2};
 
-var qm = 15;
+var qm = 30;
 var qw = canvas.width/4;
-var qh = (canvas.height-(canvas.height/10))/4;
+var qh = (canvas.height-(canvas.height/10))/6;
 var q1 = {'x':qm, 'y':qh};//{'x':qw - (qw*0.5), 'y':qh};
 var q2 = {'x':qw+qm, 'y':qh};
 var q3 = {'x':(qw*2)+qm, 'y':qh};
@@ -15,6 +15,10 @@ var simgs = [];
 var timgs = [];
 var get = true;
 var right = false;
+var tgrab = false;
+var pullcheck = true;
+var mdown = {'x': 0, 'y': 0};
+var adding = true;
 
 var mc = {'x': 0, 'y': 0}; //mouse current
 var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse history
@@ -22,11 +26,6 @@ var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse histo
 var ma = {'x': 0, 'y': 0}; //mouse averaged history
 var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
-
-var tgrab = false;
-var pullcheck = true;
-var mdown = {'x': 0, 'y': 0};
-var adding = false;
 
 //CANVAS EVENTS/////////////////////////////////////////////////////////////////////////////
 
@@ -37,16 +36,16 @@ canvas.on('mouse:move', function(options){
 
 	trackMouse();
 
-	if(tgrab == true && mc.y > (canvas.height/10)*9)
+	if(adding == false && tgrab == true) //
 	{
-			if(md.x > md.y*0.5)
-			{
-				if(!adding) ShiftAll();
-			}
-			else
-			{
-				Pull();
-			}
+		if(md.x > md.y*0.3)
+		{
+			ShiftAll();
+		}
+		else //if(md.y * 0.3 > md.x)
+		{
+			Pull();
+		}
 	} 
 
 });
@@ -54,27 +53,29 @@ canvas.on('mouse:move', function(options){
 
 canvas.on('mouse:down', function(options)
 {
-	tgrab = true;
 	mdown.x = mc.x;
 	mdown.y = mc.y;
 
-	/*if(options.target)
+	for(var i in timgs)
 	{
-		options.target.selected = true;
-		//console.log("target = " + options.target.type);
-	}*/
+		if(mdown.x > timgs[i].tx && mdown.x < timgs[i].tx + timgs[i].tw && mdown.y > (canvas.height/10)*9)
+		{
+			tgrab = true;
+		}
+	}
+
 });
 
 canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
-	mdown.x = 0;
+	//mdown.x = 0;
 
-	if(options.target)
+	/*if(options.target)
 	{
 		options.target.selected = false;
 		//console.log("target != " + options.target.type);
-	}
+	}*/
 });
 
 //GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
@@ -93,7 +94,7 @@ function trackMouse()
 	ma.x /= 10;
 	ma.y /= 10;
 
-	md.x = Math.abs(mc.x - ma.x); 
+	md.x = Math.abs(mc.x - ma.x); //***NOT TO BE USED TO DETERMINE SHIFT MAGNITUDE
 	md.y = Math.abs(mc.y - ma.y); 
 
 	mh.x.splice(0,1); //Update mouse history with current
@@ -119,12 +120,14 @@ function getImage()
 			AddToTray(oImg);
 		});
 
-		if(works.length >= 5)
+		//get = false;
+
+		if(works.length >= 10)
 		{
 			get = false;
 
 			works[0].tl = true; //these are the initial bookends
-			works[1].tr = true;
+			//works[1].tr = true;
 
 			//ImageDisplay();
 		}
@@ -141,25 +144,42 @@ function AddToTray(img)
 
 function ShiftAll()
 {
-	if(mc.x < ma.x)
+	var i = mh.x.length-1;
+
+	var dx = Math.round(Math.abs(mh.x[i] - mh.x[i-2])*0.5);
+
+	if(mh.x[i] < mh.x[i-2])
 	{
-		//console.log('left');
+		/*
+		canvas.forEachObject(function(o){
+			o.left -=dx;
+			o.setCoords();
+		});
+		*/
+		
 		for(var i in timgs)
 		{
-			//timgs[i].ShiftLeft(md.x);
-			timgs[i].f.left -= md.x;
+			//console.log('left~'+dx);
+			timgs[i].f.left -= dx;
 			timgs[i].parent.Update();
+			timgs[i].f.setCoords();
 			timgs[i].parent.JumpCheck();
+			//works[i].ShiftLeft(dx);
+			//var l = timgs[i].f.left;
+			//timgs[i].f.set('left', l-dx);
+			//timgs[i].tx -= dx;
+			//timgs[i].parent.U();
+			//timgs[i].f.setLeft(l-dx);
 		}
 	}
 	else
 	{
-		//console.log('right');
 		for(var i in timgs)
 		{
-			//timgs[i].ShiftRight(md.x);
-			timgs[i].f.left += md.x;
+			//console.log('right~'+dx);
+			timgs[i].f.left += dx;//md.x;
 			timgs[i].parent.Update();
+			timgs[i].f.setCoords();
 			timgs[i].parent.JumpCheck();
 		}
 	}
@@ -181,15 +201,6 @@ function Pull()
 			timgs[i].parent.PullCheck();
 			break;
 		}
-
-		/*
-		if(timgs[i].img.selected == true)
-		{
-			timgs[i].PullCheck();
-			console.log('pull');
-			break;
-		}
-		*///
 	}
 }
 
@@ -200,6 +211,7 @@ function Work(_index, _img)
 	this.ix = _index;
 	this.dur = 200;//animation duration
 	this.f = _img;
+	this.f.set('hasControls',false);
 
 	this.img = new Img(this, this.f); 
 	this.img.ix = null; //index is assigned only after this.img is pushed to timgs array
@@ -212,7 +224,7 @@ function Work(_index, _img)
 
 function Img(_parent, _img)
 {
-	//this.parent = _parent;
+	this.parent = _parent;
 	this.f = _img;
 }
 
@@ -235,12 +247,16 @@ Work.prototype.iInit = function()
 	
 	this.img.f.left = this.img.tx;
 	this.img.f.top = this.img.ty;
-
-	this.img.f.hasBorders = false;
-	this.img.f.hasControls = false;
-	this.img.f.lockMovementX = true;
-	this.img.f.lockMovementY = true;
-	this.img.f.isSelectable = false;
+	
+	this.img.f.set('hasBorders',false);//hasBorders = false;
+	this.img.f.set('hasControls',false);//hasControls = false;
+	this.img.f.set('lockMovementX',true);//lockMovementX = true;
+	this.img.f.set('lockMovementY',true);//lockMovementY = true;
+	this.img.f.set('lockRotation',true);//lockRotation = true;
+	this.img.f.set('lockScalingX',true);//lockScalingX = true;
+	this.img.f.set('lockScalingY',true);//lockScalingY = true;
+	this.img.f.set('selectable',true);//selectable = false;
+	this.img.f.set('evented',true);//evented = false;
 
 	this.Tada();
 	this.Update();
@@ -248,6 +264,8 @@ Work.prototype.iInit = function()
 
 Work.prototype.Tada = function()
 {
+	adding = true;
+
 	for(var i in timgs)
 	{
 		timgs[i].parent.MakeWay();
@@ -255,12 +273,13 @@ Work.prototype.Tada = function()
 
 	canvas.add(this.img.f); //add little image to canvas immediately
 
-	adding = true;
 	this.img.f.animate('top', '-='+this.img.th, {
 		onChange: canvas.renderAll.bind(canvas),
 		duration: this.dur,
 		//easing: fabric.util.ease.easeOutBounce,
-		onComplete: function() {adding = false;}
+		onComplete: function() {
+			if(!get) adding = false;
+		}
 	});
 	
 	this.Update();
@@ -272,6 +291,7 @@ Work.prototype.Update = function()
 	this.img.ty = this.img.f.top;
 	this.img.tcx = Math.round(this.img.tx+(this.img.tw*0.5));
 	this.img.tcy = Math.round(this.img.ty+(this.img.th*0.5));
+
 }
 
 Work.prototype.MakeWay = function()
@@ -308,7 +328,6 @@ Work.prototype.MakeWay = function()
 }
 
 
-
 Work.prototype.JumpCheck = function()
 {
 	var jc = mc.x - mdown.x;
@@ -322,26 +341,40 @@ Work.prototype.JumpCheck = function()
 
 Work.prototype.ShiftLeft = function(d) //input will vary depending on if instantiation or mousemove
 {
+	console.log('ShiftLeft');
+	var w = this;
+
 	this.img.f.animate('left', '-='+d, 
 		{
 			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
+			duration: 0,//this.dur,
 			//easing: fabric.util.ease.easeOutBounce
+			onComplete:function(){
+				w.Update();
+				w.JumpCheck();
+			}
 		});
 
-	this.Update();
+	//this.Update();
 }
 
 Work.prototype.ShiftRight = function(d)
 {
+	console.log('ShiftRight');
+	var w = this;
+
 	this.img.f.animate('left', '+='+d, 
 		{
 			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
+			duration: 0,//this.dur,
 			//easing: fabric.util.ease.easeOutBounce
+			onComplete:function(){
+				w.Update();
+				w.JumpCheck();
+			}
 		});
 
-	this.Update();
+	//this.Update();
 }
 
 Work.prototype.TrayJump = function(d)
