@@ -88,7 +88,8 @@
 		var i = 0;
 		var images = [];
 		var curr = false;
-		var socket = io("http://localhost");
+		var host = window.location.host;
+		var socket = io(host);
 		getMoreArt();
 		$("#preview").css("opacity", 0);
 		
