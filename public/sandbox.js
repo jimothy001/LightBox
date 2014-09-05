@@ -47,7 +47,6 @@ canvas.on('mouse:move', function(options){
 			Pull();
 		}
 	} 
-
 });
 
 
