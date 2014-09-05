@@ -108,7 +108,7 @@ db.open(function(err, db) {
 
     OpenCollections();
     
-  }
+  } else console.dir(err);
 });
 
 
