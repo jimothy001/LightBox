@@ -43,7 +43,6 @@ canvas.on('mouse:move', function(options){
 		if(md.x > md.y*0.3) ShiftAll();
 		else Pull();
 	} 
-
 });
 
 
