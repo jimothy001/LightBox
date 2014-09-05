@@ -1,3 +1,5 @@
+var socket = io.connect();
+
 var centraldiv = null;
 var canvas = new fabric.Canvas("sandbox");
 var center = {'x': canvas.width/2, 'y': canvas.height/2};
@@ -36,16 +38,10 @@ canvas.on('mouse:move', function(options){
 
 	trackMouse();
 
-	if(adding == false && tgrab == true) //
+	if(adding == false && tgrab == true)
 	{
-		if(md.x > md.y*0.3)
-		{
-			ShiftAll();
-		}
-		else //if(md.y * 0.3 > md.x)
-		{
-			Pull();
-		}
+		if(md.x > md.y*0.3) ShiftAll();
+		else Pull();
 	} 
 });
 
@@ -68,13 +64,6 @@ canvas.on('mouse:down', function(options)
 canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
-	//mdown.x = 0;
-
-	/*if(options.target)
-	{
-		options.target.selected = false;
-		//console.log("target != " + options.target.type);
-	}*/
 });
 
 //GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
@@ -104,33 +93,42 @@ function trackMouse()
 	//console.log(mc.x + " a:" + ma.x + "   " + mc.y + " a:" + ma.y);
 }
 
-
 setInterval(getImage,1000);
 
 function getImage()
 {
 	if(get)
 	{
-		fabric.Image.fromURL('http://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/1024px-Crab_Nebula.jpg', function(oImg)
-		{
-			//oImg.scale(0.05);
-			//imgs.push(oImg);
-
-			AddToTray(oImg);
-		});
-
-		//get = false;
-
-		if(works.length >= 10)
-		{
-			get = false;
-
-			works[0].tl = true; //these are the initial bookends
-			//works[1].tr = true;
-
-			//ImageDisplay();
-		}
+		var data = {};
+		socket.emit('get-items', data);
 	}
+}
+
+socket.on('send-items', function(data)
+{
+	console.log(data);
+	receiveImage(data.url);
+	if(works.length >= 10) get = false;
+});
+
+function receiveImage(url)
+{
+	//console.log(url);
+
+	fabric.Image.fromURL(url, function(oImg)
+	{
+		AddToTray(oImg);
+	});
+	
+	if(works.length == 1) works[0].tl = true; //these are the initial bookends
+	if(works.length == 2) works[1].tr = true;
+
+	/*
+	fabric.Image.fromURL('http://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/1024px-Crab_Nebula.jpg', function(oImg)
+	{
+		AddToTray(oImg);
+	});
+	*/
 }
 
 function AddToTray(img)
@@ -247,15 +245,15 @@ Work.prototype.iInit = function()
 	this.img.f.left = this.img.tx;
 	this.img.f.top = this.img.ty;
 	
-	this.img.f.set('hasBorders',false);//hasBorders = false;
-	this.img.f.set('hasControls',false);//hasControls = false;
-	this.img.f.set('lockMovementX',true);//lockMovementX = true;
-	this.img.f.set('lockMovementY',true);//lockMovementY = true;
-	this.img.f.set('lockRotation',true);//lockRotation = true;
-	this.img.f.set('lockScalingX',true);//lockScalingX = true;
-	this.img.f.set('lockScalingY',true);//lockScalingY = true;
-	this.img.f.set('selectable',true);//selectable = false;
-	this.img.f.set('evented',true);//evented = false;
+	this.img.f.set('hasBorders',false);
+	this.img.f.set('hasControls',false);
+	this.img.f.set('lockMovementX',true);
+	this.img.f.set('lockMovementY',true);
+	this.img.f.set('lockRotation',true);
+	this.img.f.set('lockScalingX',true);
+	this.img.f.set('lockScalingY',true);
+	this.img.f.set('selectable',true);
+	this.img.f.set('evented',true);
 
 	this.Tada();
 	this.Update();
@@ -290,7 +288,6 @@ Work.prototype.Update = function()
 	this.img.ty = this.img.f.top;
 	this.img.tcx = Math.round(this.img.tx+(this.img.tw*0.5));
 	this.img.tcy = Math.round(this.img.ty+(this.img.th*0.5));
-
 }
 
 Work.prototype.MakeWay = function()
@@ -318,10 +315,6 @@ Work.prototype.MakeWay = function()
 	{
 		this.ShiftLeft(this.img.tw);
 	}
-	else
-	{
-		//console.log("no need to move...");
-	}
 
 	this.Update();
 }
@@ -340,7 +333,7 @@ Work.prototype.JumpCheck = function()
 
 Work.prototype.ShiftLeft = function(d) //input will vary depending on if instantiation or mousemove
 {
-	console.log('ShiftLeft');
+	//console.log('ShiftLeft');
 	var w = this;
 
 	this.img.f.animate('left', '-='+d, 
@@ -353,13 +346,11 @@ Work.prototype.ShiftLeft = function(d) //input will vary depending on if instant
 				w.JumpCheck();
 			}
 		});
-
-	//this.Update();
 }
 
 Work.prototype.ShiftRight = function(d)
 {
-	console.log('ShiftRight');
+	//console.log('ShiftRight');
 	var w = this;
 
 	this.img.f.animate('left', '+='+d, 
@@ -372,8 +363,6 @@ Work.prototype.ShiftRight = function(d)
 				w.JumpCheck();
 			}
 		});
-
-	//this.Update();
 }
 
 Work.prototype.TrayJump = function(d)
@@ -422,38 +411,30 @@ Work.prototype.TrayJump = function(d)
 			onComplete: function(){w.Update();}
 		});
 	}
-
-	this.Update();
 }
 
 Work.prototype.PullCheck = function()
 {	
-	
-
 	if(pullcheck == true)
 	{
 		//console.log('qw:'+qw+' tcx:'+this.img.tcx);
 
 		pullcheck = false;
 
-		if(this.img.f.left <= qw)//(this.img.tcx <= qw)
+		if(this.img.f.left <= qw)
 		{
-			console.log('q1');
 			this.Pull(q1);
 		}
-		else if(this.img.f.left > qw && this.img.f.left <= qw*2)//(this.img.tcx > qw && this.img.tcx <= qw*2)
+		else if(this.img.f.left > qw && this.img.f.left <= qw*2)
 		{
-			console.log('q2');
 			this.Pull(q2);
 		}
-		else if(this.img.f.left > qw*2 && this.img.f.left <= qw*3)//(this.img.tcx > qw*2 && this.img.tcx <= qw*3)
+		else if(this.img.f.left > qw*2 && this.img.f.left <= qw*3)
 		{
-			console.log('q3');
 			this.Pull(q3);
 		}
-		else if(this.img.f.left > qw*3)//(this.img.tcx > qw*3)
+		else if(this.img.f.left > qw*3)
 		{
-			console.log('q4');
 			this.Pull(q4);
 		}
 	}
@@ -462,8 +443,6 @@ Work.prototype.PullCheck = function()
 Work.prototype.Pull = function(q)
 {
 	this.Copy(q);
-
-
 }
 
 Work.prototype.Copy = function(q)
@@ -474,13 +453,6 @@ Work.prototype.Copy = function(q)
 	{
 		return function(clone)
 		{
-			/*clone.set({
-				left:100,
-				top:100
-			});*/
-			//canvas.add(clone);
-			//console.log(clone.left);
-
 			var i = new Img(w, clone);
 			w.simgs.push(i);
 			canvas.add(w.simgs[w.simgs.length-1].f);
@@ -500,25 +472,25 @@ Work.prototype.Up = function(q)
 
 	console.log(this.img.f.left + " " + q.x);
 	
-	this.simgs[i].f.animate('left', q.x, //dx //HERE****this.simgs[this.sl-1] is undefined 
+	this.simgs[i].f.animate('left', q.x, 
 	{
 		onChange: canvas.renderAll.bind(canvas),
 		duration: w.dur
 	});
 
-	this.simgs[i].f.animate('top', q.y, //dy
+	this.simgs[i].f.animate('top', q.y,
 	{
 		onChange: canvas.renderAll.bind(canvas),
 		duration: w.dur
 	});
 
-	this.simgs[i].f.animate('scaleX', s, //dy
+	this.simgs[i].f.animate('scaleX', s, 
 	{
 		onChange: canvas.renderAll.bind(canvas),
 		duration: w.dur
 	});
 
-	this.simgs[i].f.animate('scaleY', s, //dy
+	this.simgs[i].f.animate('scaleY', s, 
 	{
 		onChange: canvas.renderAll.bind(canvas),
 		duration: w.dur,
@@ -535,11 +507,3 @@ Work.prototype.PullComplete = function()
 	pullcheck = true;
 } 
 
-//Work.prototype.Pull = function()
-
-
-//approach w/ div
-
-//canvas.on('mouse:down',...)
-
-//canvas.add(Img);
