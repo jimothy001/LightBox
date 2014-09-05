@@ -85,7 +85,7 @@ var mongo = require('mongodb'),
 	  ObjectID = mongo.ObjectID;
 
 //.................open a connection to the mongodb server
-var server = process.env.MONGOHQ_URL || 'localhost';
+var server = process.env.MONGOLAB.URI || 'localhost';
 var port = process.env.PORT || 27017;
 var mdbserver = new MongoServer(server, port, {auto_reconnect: true});//27017
 //.................ask the server for the database named "DBASE" this databse will be created if it doesn't exist already
