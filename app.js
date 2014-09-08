@@ -213,7 +213,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('get-items', function(data) {
-		items = HAM.find().sort({created: -1}).limit(10).toArray(function(err, results) {
+		items = Art.find().sort({created: -1}).limit(10).toArray(function(err, results) {
 			socket.emit('send-items', results);
 		});
 		
