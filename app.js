@@ -6,6 +6,8 @@ var bodyParser = require('body-parser');
 var serveStatic = require('serve-static');
 var finalhandler = require('finalhandler');
 var errorhandler = require('errorhandler');
+var mongoose = require('mongoose');
+
 //var Router = require('routes'); //MAY NOT NEED THIS? documentation: https://github.com/aaronblohowiak/routes.js
 
 
@@ -79,20 +81,27 @@ var count=1;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //.....................................................MongoDB
-var mongo = require('mongodb'),
+/*var mongo = require('mongodb'),
 	  MongoServer = mongo.Server,
 	  Db = mongo.Db,
-	  ObjectID = mongo.ObjectID;
+	  ObjectID = mongo.ObjectID;*/
 
 //.................open a connection to the mongodb server
-var server = process.env.MONGOHQ_URL || 'localhost';
+var server = process.env.MONGOLAB_URI || 'mongodb://localhost/my_database';
 var port = process.env.PORT || 27017;
-var mdbserver = new MongoServer(server, port, {auto_reconnect: true});//27017
+//var mdbserver = new MongoServer(server, port, {auto_reconnect: true});//27017
 //.................ask the server for the database named "DBASE" this databse will be created if it doesn't exist already
+mongoose.connect(server, function (err, res) {
+  if (err) { 
+    console.log ('ERROR connecting to: ' + server + '. ' + err);
+  } else {
+    console.log ('Succeeded connected to: ' + server);
+  }
+});
 
-
+var Art = mongoose.model('Art', {created: Date, url: String});
 //var now = //_now.getFullYear()+"_"+(_now.getMonth()+1)+"_"+_now.getDate()+"_"+_now.getHours()+"_"+_now.getMinutes();
-var n = "artDB"
+/*var n = "artDB"
 var db = new Db(n, mdbserver,{safe:true});
 console.log("using db "+n);
 
@@ -109,7 +118,9 @@ db.open(function(err, db) {
     OpenCollections();
     
   }
-});
+});*/
+
+
 
 
 function OpenCollections()
@@ -194,13 +205,17 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('add-item', function(data) {
 		console.dir(data);
-		data.created = new Date();
-		HAM.insert(data);
+		var art = new Art({url: data.url, created: new Date()});
+		art.save();
+		//data.created = new Date();
+		//HAM.insert(data);
 		socket.emit('updated-db', data);
 	});
 	
 	socket.on('get-items', function(data) {
-		items = HAM.find().sort({created: -1}).limit(10).toArray(function(err, results) {
+		console.log("GET ITEMS");
+		Art.find(function(err, results) {
+			console.log("results");
 			socket.emit('send-items', results);
 		});
 		
