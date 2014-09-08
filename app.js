@@ -214,7 +214,7 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('get-items', function(data) {
 		console.log("GET ITEMS");
-		items = Art.find().sort({created: -1}).limit(10).toArray(function(err, results) {
+		Art.find().sort({created: -1}).limit(10).toArray(function(err, results) {
 			console.log("results");
 			socket.emit('send-items', results);
 		});
