@@ -12,6 +12,7 @@
     "errorhandler":"*",
     "routes":"*",
     "socket.io" :"*",
-    "mongodb": "*"
+    "mongodb": "*",
+    "mongoose": "*"
   }
 }
