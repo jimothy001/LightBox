@@ -88,6 +88,7 @@ mongoose.connect(server, function (err, res) {
   }
 });
 
+
 var Art = mongoose.model('Art', {created: Date, url: String});
 
 
@@ -125,6 +126,7 @@ io.sockets.on('connection', function (socket) {
 		delete users[socket.user.id];    //delete the user from the list
 	});
 
+
 	socket.on('add-item', function(data) {
 		console.dir(data);
 		var art = new Art({url: data.url, created: new Date()});
@@ -133,6 +135,7 @@ io.sockets.on('connection', function (socket) {
 	});
 	
 	socket.on('get-items', function(data) {
+
 		console.log("GET ITEMS");
 		Art.find().sort('-created').limit(10).exec(function(err, results) {
 			if(err) return res.send(err);
