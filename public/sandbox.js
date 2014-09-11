@@ -27,7 +27,6 @@ var crop = [];
 
 var mc = {'x': 0, 'y': 0}; //mouse current
 var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse history
-//var mh = {'x': [0,0,0], 'y': [0,0,0]}; //mouse history
 var ma = {'x': 0, 'y': 0}; //mouse averaged history
 var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
@@ -51,8 +50,8 @@ canvas.on('mouse:move', function(options){
 
 	if(adding == false && tgrab == true)
 	{
-		if(md.x > md.y*0.1) ShiftAll();
-		else Pull();
+		if(md.x > Math.abs(md.y*0.1)) ShiftAll();
+		else if(md.y < 0) Pull();
 	} 
 });
 
@@ -74,6 +73,7 @@ canvas.on('mouse:down', function(options)
 canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
+	pullcheck = true;
 });
 
 canvas.on('mouse:over', function(e)
@@ -193,7 +193,7 @@ function trackMouse()
 	ma.y /= 10;
 
 	md.x = Math.abs(mc.x - ma.x); //***NOT TO BE USED TO DETERMINE SHIFT MAGNITUDE
-	md.y = Math.abs(mc.y - ma.y); 
+	md.y = mc.y-ma.y;//Math.abs(mc.y - ma.y); 
 
 	mh.x.splice(0,1); //Update mouse history with current
 	mh.x.push(mc.x);
@@ -389,7 +389,7 @@ Work.prototype.Update = function()
 {
 	this.img.tx = this.img.f.left;
 	this.img.ty = this.img.f.top;
-	//this.img.tw = this.img.f.width;
+	this.img.tw = this.img.f.getWidth();
 	//this.img.th = this.img.f.height;
 	this.img.tcx = Math.round(this.img.tx+(this.img.tw*0.5));
 	this.img.tcy = Math.round(this.img.ty+(this.img.th*0.5));
@@ -640,8 +640,8 @@ Work.prototype.PullComplete = function(i, _q)
 	this.ApplyFilter();
 
 	this.Update();
-	pullcheck = true;
 
+	//pullcheck = true;
 	//simgs[_q].pop();
 	simgs[_q].push(this.simgs[i]);
 
