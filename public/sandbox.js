@@ -20,6 +20,7 @@ var get = true;
 var right = false;
 var tgrab = false;
 var pullcheck = true;
+var jumpcheck = 0;
 var mdown = {'x': 0, 'y': 0};
 var adding = true;
 var crop = [];
@@ -218,7 +219,7 @@ socket.on('send-items', function(data)
 {
 	//console.log(data[0].url);
 	receiveImage(data[0].url);
-	if(works.length > 8) get = false;
+	if(works.length > 2) get = false;
 });
 
 function receiveImage(url)
@@ -243,8 +244,8 @@ function receiveImage(url)
 
 	imgcount++;
 
-	if(works.length == 1) works[0].tl = true; //these are the initial bookends
-	if(works.length == 2) works[1].tr = true;
+	if(works.length == 1) works[0].img.tl = true; //these are the initial bookends
+	if(works.length == 2) works[1].img.tr = true;
 }
 
 function AddToTray(img)
@@ -268,7 +269,7 @@ function ShiftAll()
 			timgs[i].f.left -= dx;
 			timgs[i].parent.Update();
 			timgs[i].f.setCoords();
-			timgs[i].parent.JumpCheck();
+			if(jumpcheck > timgs[i].tw) timgs[i].parent.JumpCheck();
 		}
 	}
 	else
@@ -278,9 +279,11 @@ function ShiftAll()
 			timgs[i].f.left += dx;//md.x;
 			timgs[i].parent.Update();
 			timgs[i].f.setCoords();
-			timgs[i].parent.JumpCheck();
+			if(jumpcheck > timgs[i].tw) timgs[i].parent.JumpCheck();
 		}
 	}
+
+	jumpcheck++;
 
 }
 
@@ -390,7 +393,7 @@ Work.prototype.Update = function()
 	this.img.tx = this.img.f.left;
 	this.img.ty = this.img.f.top;
 	this.img.tw = this.img.f.getWidth();
-	//this.img.th = this.img.f.height;
+	this.img.th = this.img.f.getHeight();
 	this.img.tcx = Math.round(this.img.tx+(this.img.tw*0.5));
 	this.img.tcy = Math.round(this.img.ty+(this.img.th*0.5));
 
@@ -430,18 +433,6 @@ Work.prototype.MakeWay = function()
 	this.Update();
 }
 
-
-Work.prototype.JumpCheck = function()
-{
-	var jc = mc.x - mdown.x;
-
-	if(Math.abs(jc) > this.img.tw)//need a different approach
-	{
-		if(this.img.tl && jc < 0) this.TrayJump('r') //jump right
-		else if(this.img.tr && jc > 0) this.TrayJump('l') //jump left
-	}
-}
-
 Work.prototype.ShiftLeft = function(d) //input will vary depending on if instantiation or mousemove
 {
 	//console.log('ShiftLeft');
@@ -453,7 +444,6 @@ Work.prototype.ShiftLeft = function(d) //input will vary depending on if instant
 			duration: this.dur,
 			onComplete:function(){
 				w.Update();
-				w.JumpCheck();
 			}
 		});
 }
@@ -469,52 +459,98 @@ Work.prototype.ShiftRight = function(d)
 			duration: this.dur,
 			onComplete:function(){
 				w.Update();
-				w.JumpCheck();
 			}
 		});
+}
+
+Work.prototype.JumpCheck = function()
+{
+	var tw = this.img.tw;
+	var jc = mc.x - mdown.x;
+
+	if(this.img.tl == true && jc < 0) this.TrayJump('r') //jump right
+	else if(this.img.tr == true && jc > 0) this.TrayJump('l') //jump left
 }
 
 Work.prototype.TrayJump = function(d)
 {
 	var w = this;
 
-	if(d == 'l'){
-
-		this.img.f.left = 0; //find jump point at left end of list
-
-		for(var i in timgs)
-		{
-			timgs[i].tl = false;
-		}
-
+	if(d == 'l')
+	{
+		//find jump point at left end of list
+		var imgs = [];
+		imgs = Sort("f.left", timgs);
+		var tx = imgs[0].f.left-this.img.tw;
+		
+		this.img.f.left = tx;
+		this.img.tr = false;
 		this.img.tl = true;
 
-		this.img.f.animate('left', '+='+this.img.tw, 
+		for(var i in timgs)
 		{
-			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
-			onComplete: function(){w.Update();}
-		});
-	} 
-	else
-	{
+			if(timgs[i].parent.ix == imgs[imgs.length-2].parent.ix) //offset
+			{
+				timgs[i].tr = true;
+			}
+			else if(timgs[i].parent.ix == imgs[0].parent.ix)
+			{
+				timgs[i].tl = false;
+			}
+		}
 
-		this.img.f.left = canvas.width; //find jump point at right end of list
+		this.Update();
+		canvas.renderAll();
+	} 
+	else if(d == 'r')
+	{
+		//find jump point at right end of list
+		var imgs = [];
+		imgs = Sort("f.left", timgs);
+		var tx = imgs[imgs.length-1].f.left+this.img.tw;
+
+		this.img.f.left = tx;
+		this.img.tl = false;
+		this.img.tr = true;
 
 		for(var i in timgs)
 		{
-			timgs[i].tr = false;
+			if(timgs[i].parent.ix == imgs[1].parent.ix)
+			{
+				timgs[i].tl = true;
+			} 
+			else if(timgs[i].parent.ix == imgs[imgs.length-1].parent.ix)
+			{
+				timgs[i].tr = false;
+			}
 		}
 
-		this.img.tr = true;
-
-		this.img.f.animate('left', '-='+this.img.tw, 
-		{
-			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
-			onComplete: function(){w.Update();}
-		});
+		this.Update();
+		canvas.renderAll();
 	}
+
+	jumpcheck = 0;
+}
+
+var Sort = function(prop, arr) //THIS SORTS NOTHING
+{
+	prop = prop.split('.');
+	var len = prop.length;
+
+	console.log('Sort');
+
+	arr.sort(function(a,b){
+		var i = 0;
+		while(i < len){a = a[prop[i]]; b = b[prop[i]]; i++}
+		if(a < b){
+			return -1;
+		}else if (a > b){
+			return 1;
+		}else{
+			return 0;
+		}
+	});
+	return arr;
 }
 
 Work.prototype.PullCheck = function()
@@ -627,7 +663,6 @@ Work.prototype.Up = function(q, _q)
 	}
 }
 
-var radius = qw*0.75;
 
 //
 Work.prototype.PullComplete = function(i, _q)
@@ -691,8 +726,6 @@ Work.prototype.ApplyFilter = function()
 
 	//this.simgs[i].f.filters.push(new fabric.Image.filters.Sepia());
   	//this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
-
-	
 }
 
 
