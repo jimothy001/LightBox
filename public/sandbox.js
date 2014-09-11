@@ -27,7 +27,6 @@ var crop = [];
 
 var mc = {'x': 0, 'y': 0}; //mouse current
 var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse history
-//var mh = {'x': [0,0,0], 'y': [0,0,0]}; //mouse history
 var ma = {'x': 0, 'y': 0}; //mouse averaged history
 var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
@@ -36,6 +35,9 @@ var LEFT = 37;
 var UP = 38;
 var RIGHT = 39;
 var DOWN = 40;
+
+//temp
+var imgcount = 1;
 
 //CANVAS EVENTS/////////////////////////////////////////////////////////////////////////////
 
@@ -48,8 +50,8 @@ canvas.on('mouse:move', function(options){
 
 	if(adding == false && tgrab == true)
 	{
-		if(md.x > md.y*0.1) ShiftAll();
-		else Pull();
+		if(md.x > Math.abs(md.y*0.1)) ShiftAll();
+		else if(md.y < 0) Pull();
 	} 
 });
 
@@ -71,6 +73,7 @@ canvas.on('mouse:down', function(options)
 canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
+	pullcheck = true;
 });
 
 canvas.on('mouse:over', function(e)
@@ -85,7 +88,7 @@ canvas.on('mouse:over', function(e)
 	crop.push(work.target.width);//.getWidth());
 	crop.push(work.target.height);//.getHeight());
 
-	console.log(work.target.width);
+	//console.log(work.target.width);
 });
 
 canvas.on('mouse:out', function(e)
@@ -93,7 +96,7 @@ canvas.on('mouse:out', function(e)
 	work = 0;
 	crop = [];
 
-	console.log(work);
+	//console.log(work);
 });
 
 window.addEventListener("keydown", function(e) //window
@@ -190,7 +193,7 @@ function trackMouse()
 	ma.y /= 10;
 
 	md.x = Math.abs(mc.x - ma.x); //***NOT TO BE USED TO DETERMINE SHIFT MAGNITUDE
-	md.y = Math.abs(mc.y - ma.y); 
+	md.y = mc.y-ma.y;//Math.abs(mc.y - ma.y); 
 
 	mh.x.splice(0,1); //Update mouse history with current
 	mh.x.push(mc.x);
@@ -213,9 +216,9 @@ function getImage()
 
 socket.on('send-items', function(data)
 {
-	console.log(data[0].url);
+	//console.log(data[0].url);
 	receiveImage(data[0].url);
-	if(works.length >= 2) get = false;
+	if(works.length > 8) get = false;
 });
 
 function receiveImage(url)
@@ -227,22 +230,28 @@ function receiveImage(url)
 		AddToTray(oImg);
 	});
 	*/
-	
+	/*
 	fabric.Image.fromURL('http://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/1024px-Crab_Nebula.jpg', function(oImg)
 	{
 		AddToTray(oImg);
 	});
-	
+	*/
+	fabric.Image.fromURL('../art/'+imgcount+'.jpg', function(oImg)
+	{
+		AddToTray(oImg);
+	});
+
+	imgcount++;
+
 	if(works.length == 1) works[0].tl = true; //these are the initial bookends
 	if(works.length == 2) works[1].tr = true;
 }
 
 function AddToTray(img)
 {
-	var work = new Work(works.length-1, img);
+	var work = new Work(works.length, img);
 	works.push(work);
 	timgs.push(work.img);
-	works[works.length-1].img.ix = timgs.length-1;
 }
 
 function ShiftAll()
@@ -301,7 +310,7 @@ function Work(_index, _img)
 	this.f.set('hasControls',false);
 
 	this.img = new Img(this, this.f); 
-	this.img.ix = null; //index is assigned only after this.img is pushed to timgs array
+	//this.img.ix = null; //index is assigned only after this.img is pushed to timgs array
 	this.iInit();
 
 	this.simgs = [];
@@ -349,10 +358,6 @@ Work.prototype.iInit = function()
 
 	this.img.f.crop = null;
 
-	this.img.f.filters.push(new fabric.Image.filters.SelectiveAlpha());
-	this.img.f.applyFilters(canvas.renderAll.bind(canvas));
-
-
 	this.Tada();
 	this.Update();
 }
@@ -384,7 +389,7 @@ Work.prototype.Update = function()
 {
 	this.img.tx = this.img.f.left;
 	this.img.ty = this.img.f.top;
-	//this.img.tw = this.img.f.width;
+	this.img.tw = this.img.f.getWidth();
 	//this.img.th = this.img.f.height;
 	this.img.tcx = Math.round(this.img.tx+(this.img.tw*0.5));
 	this.img.tcy = Math.round(this.img.ty+(this.img.th*0.5));
@@ -543,9 +548,24 @@ Work.prototype.Pull = function(q, _q)
 {
 	var w = this;
 
-	w.f.clone(function()
+	var i = w.ix+1;
+
+	fabric.Image.fromURL('../art/'+i+'.jpg', function(oImg)
 	{
-		return function(clone)
+		//AddToTray(oImg);
+		var img = new Img(w, oImg);
+		w.simgs.push(img);
+		canvas.add(w.simgs[w.simgs.length-1].f);
+		console.log(w.simgs[w.simgs.length-1].f.left);
+
+		w.Up(q, _q);
+	});
+
+	/*//this was necessary for images pulled from URLs
+	w.f.clone(function() //cloneAsImage
+	{
+
+		return function(clone) 
 		{
 			var i = new Img(w, clone);
 			w.simgs.push(i);
@@ -555,6 +575,7 @@ Work.prototype.Pull = function(q, _q)
 			w.Up(q, _q);
 		};
 	}());
+	*/
 }
 
 Work.prototype.Up = function(q, _q)
@@ -616,9 +637,11 @@ Work.prototype.PullComplete = function(i, _q)
 	//this.initCrop(i);
 	canvas.renderAll();
 
-	this.Update();
-	pullcheck = true;
+	this.ApplyFilter();
 
+	this.Update();
+
+	//pullcheck = true;
 	//simgs[_q].pop();
 	simgs[_q].push(this.simgs[i]);
 
@@ -659,6 +682,21 @@ Work.prototype.initCrop = function(i)
 
 //FILTERS /////////////////////////////////////////////////////////////////////////////
 
+Work.prototype.ApplyFilter = function()
+{
+	var i = this.simgs.length-1;
+
+	this.simgs[i].f.filters.push(new fabric.Image.filters.SelectiveAlpha());
+	this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
+
+	//this.simgs[i].f.filters.push(new fabric.Image.filters.Sepia());
+  	//this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
+
+	
+}
+
+
+
 fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
 
 	type: 'SelectiveAlpha',
@@ -668,6 +706,12 @@ fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
 			imageData = context.getImageData(0,0,canvas.width, canvas.height), //E1
 			data = imageData.data;
 	
+	//here the "canvas" is the image itself
+	//data[i-canvas.width] points to pixel above
+
+	var buffer = 0.5;
+	var asub = 0.9;
+
 
 	for(var i = 0, len = data.length; i < len; i += 4)
 	{
@@ -675,7 +719,19 @@ fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
 		var g = data[i+1];
 		var b = data[i+2];
 
-		if(r < 30 && g < 30 && b < 30) data[i+3] = 0;
+		var tot = r+g+b;
+		var avg = tot/3;
+		var rper = r/tot;
+		var gbper = (g+b)/tot;
+		var a = 255-(rper*255);
+
+		if(rper > buffer)
+		{
+			data[i] = avg;
+			data[i+1] = avg;
+			data[i+2] = avg;
+			data[i+3] = a;//gbper;//0;//a;
+		} 
 	}
 
 	context.putImageData(imageData, 0,0);
