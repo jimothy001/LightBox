@@ -68,10 +68,47 @@ canvas.on('mouse:move', function(options){
 });
 
 
-canvas.on('mouse:down', function(options)
+canvas.on('mouse:down', function(options) //INTERVENE HERE
 {
 	mdown.x = mc.x;
 	mdown.y = mc.y;
+
+	//console.log(options.e);
+	//console.log(options.target);
+
+	if(options.target != null)
+	{
+		options.target.setCoords();
+
+		//var tw = options.target.width;
+		//var th = options.target.height;
+		var tw = options.target.getWidth();
+		var th = options.target.getHeight();
+		var ta = options.target.getAngle();
+		var tl = options.target.getLeft();
+		var tt = options.target.getTop();
+		var tc = options.target.oCoords.tl;
+		var tox = options.target.getOriginX();
+		var toy = options.target.getOriginY();
+	}
+
+	var cw = canvas.width;
+	var ch = canvas.height;
+
+
+	//console.log(ta);
+	//console.log(tl);
+	//console.log(th);
+	console.log(tc);
+	console.log(tox);
+	console.log(toy);
+
+	//console.log(options.target.canvas.getPointer(options.e));
+	//console.log(canvas.getPointer(options.e));
+
+
+	//console.log(e.getPointer(e)); //if(e.target.type == "object") 
+
 
 	for(var i in timgs)
 	{
@@ -94,7 +131,7 @@ canvas.on('mouse:over', function(e)
 	work.target.set('centeredScaling', true);
 	work.target.centeredScaling = true;
 
-	//crop = [];
+	crop = [];
 	crop.push(-work.target.width);//getWidth());
 	crop.push(-work.target.height);//.getWidth());
 	crop.push(work.target.width);//.getWidth());
@@ -367,10 +404,11 @@ Work.prototype.iInit = function()
 	this.img.f.set('selectable',true);
 	this.img.f.set('evented',true);
 
-	this.img.f.crop = null;
+	this.img.crop = null;
 
 	this.Tada();
 	this.Update();
+
 }
 
 Work.prototype.Tada = function()
@@ -655,8 +693,10 @@ Work.prototype.Pull = function(q, _q)
 	{
 		//AddToTray(oImg);
 		var img = new Img(w, oImg);
+
 		w.simgs.push(img);
 		canvas.add(w.simgs[w.simgs.length-1].f);
+
 		console.log(w.simgs[w.simgs.length-1].f.left);
 
 		w.Up(q, _q);
