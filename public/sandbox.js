@@ -16,6 +16,7 @@ var tlx = 0;
 var trx = 0;
 
 var work = 0;
+var _work = 0;
 var works = [];
 var simgs = {'q1':[], 'q2':[], 'q3':[], 'q4':[]};
 var timgs = [];
@@ -28,20 +29,29 @@ var mdown = {'x': 0, 'y': 0};
 var adding = true;
 var crop = [];
 
-
 var mc = {'x': 0, 'y': 0}; //mouse current
 var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse history
 var ma = {'x': 0, 'y': 0}; //mouse averaged history
 var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
 
+var cs = 0; //color select
+var ft = 0; //filter type
 var LEFT = 37;
 var UP = 38;
 var RIGHT = 39;
 var DOWN = 40;
+var R = 82;
+var G = 71;
+var B = 66;
+var _1 = 49;
+var _2 = 50;
+var _3 = 51;
+var ESC = 27;
 
 //temp
 var imgcount = 1;
+var imglimit = 8;
 
 //CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
 //CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
@@ -76,7 +86,7 @@ canvas.on('mouse:down', function(options) //INTERVENE HERE
 	//console.log(options.e);
 	//console.log(options.target);
 
-	if(options.target != null)
+	if(typeof(options.target) == "object")
 	{
 		options.target.setCoords();
 
@@ -95,20 +105,17 @@ canvas.on('mouse:down', function(options) //INTERVENE HERE
 	var cw = canvas.width;
 	var ch = canvas.height;
 
-
 	//console.log(ta);
 	//console.log(tl);
 	//console.log(th);
-	console.log(tc);
-	console.log(tox);
-	console.log(toy);
+	//console.log(tc);
+	//console.log(tox);
+	//console.log(toy);
 
 	//console.log(options.target.canvas.getPointer(options.e));
 	//console.log(canvas.getPointer(options.e));
 
-
 	//console.log(e.getPointer(e)); //if(e.target.type == "object") 
-
 
 	for(var i in timgs)
 	{
@@ -125,11 +132,20 @@ canvas.on('mouse:up', function(options)
 	pullcheck = true;
 });
 
+
+canvas.on('mouse:out', function(e) //when mousing from one object to another this is called AFTER mouse:over
+{
+	if(e.target == work.target) //if object being left matches object that had be entered
+	{
+		work = 0;
+		crop = [];
+	}
+});
+
 canvas.on('mouse:over', function(e)
 {
 	work = e;
 	work.target.set('centeredScaling', true);
-	work.target.centeredScaling = true;
 
 	crop = [];
 	crop.push(-work.target.width);//getWidth());
@@ -138,14 +154,6 @@ canvas.on('mouse:over', function(e)
 	crop.push(work.target.height);//.getHeight());
 
 	//console.log(work.target.width);
-});
-
-canvas.on('mouse:out', function(e)
-{
-	work = 0;
-	crop = [];
-
-	//console.log(work);
 });
 
 window.addEventListener("keydown", function(e) //window
@@ -158,7 +166,6 @@ window.addEventListener("keydown", function(e) //window
          	if(work.target.opacity > 0.5)
          	{
 	         	work.target.opacity -= 0.1;
-	         	canvas.renderAll();
          	}
 	    }
 	    else if (e.keyCode == RIGHT)
@@ -166,7 +173,6 @@ window.addEventListener("keydown", function(e) //window
 			if(work.target.opacity < 1.0)
 			{
 				work.target.opacity += 0.1;
-				canvas.renderAll();
 			}
 	    }
 	    else if (e.keyCode == UP)
@@ -189,8 +195,6 @@ window.addEventListener("keydown", function(e) //window
 
 		    	work.target.scaleX += 0.01;
 		    	work.target.scaleY += 0.01;
-
-		    	canvas.renderAll();
 	    	}
 	    }
 	    else if (e.keyCode == DOWN)
@@ -213,10 +217,59 @@ window.addEventListener("keydown", function(e) //window
 
 		    	work.target.scaleX -= 0.01;
 		    	work.target.scaleY -= 0.01;
-
-		    	canvas.renderAll();
 	    	}
 	    }
+	    else if (e.keyCode == R)
+	    {
+	    	cs = 0;
+	    	work.target.filters.push(new fabric.Image.filters.CullColor());
+			work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    }
+		else if (e.keyCode == G)
+	    {
+	    	console.log("keyCode:"+e.keyCode);
+
+	    	cs = 1;
+	    	work.target.filters.push(new fabric.Image.filters.CullColor());
+			work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    }
+	    else if (e.keyCode == B)
+	    {
+	    	cs = 2;
+	    	work.target.filters.push(new fabric.Image.filters.CullColor());
+			work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    }
+	    else if (e.keyCode == _1)
+	    {
+	    	cs = 0;
+	    	work.target.filters.push(new fabric.Image.filters.IsolateColor());
+			work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    }	    
+		else if (e.keyCode == _2)
+	    {
+	    	console.log("keyCode:"+e.keyCode);
+
+	    	cs = 1;
+	    	work.target.filters.push(new fabric.Image.filters.IsolateColor());
+			work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    }
+	    else if (e.keyCode == _3)
+	    {
+	    	cs = 2;
+	    	work.target.filters.push(new fabric.Image.filters.IsolateColor());
+			work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    }
+	    else if (e.keyCode == ESC)
+	    {
+	    	for(var i in work.target.filters)
+	    	{
+	    		work.target.filters.pop();
+	    	}
+	    	work.target.applyFilters(canvas.renderAll.bind(canvas));
+	    	console.log("filters length:" + work.target.filters.length);
+	    } 
+
+		canvas.renderAll();
 
 	}
 }, true);
@@ -269,7 +322,7 @@ socket.on('send-items', function(data)
 	//console.log(data[0].url);
 	//receiveImage(data[0].url);
 	receiveImage("");
-	if(works.length > 3) get = false;
+	if(works.length > imglimit) get = false;
 });
 
 function receiveImage(url)
@@ -447,7 +500,6 @@ Work.prototype.Update = function()
 	this.img.crop.height = this.f.getHeight();
 	this.img.crop.left = this.f.left;
 	this.img.crop.top = this.f.top;*/
-
 }
 
 Work.prototype.MakeWay = function()
@@ -726,7 +778,7 @@ Work.prototype.Up = function(q, _q)
 	var s = (qw-(qm*2))/this.f.width; 
 	var l = simgs[_q].length;
 
-	console.log(this.img.f.left + " " + q.x);
+	//console.log(this.img.f.left + " " + q.x);
 	
 	this.simgs[i].f.animate('left', q.x + (l*(qm*0.4)), 
 	{
@@ -777,7 +829,9 @@ Work.prototype.PullComplete = function(i, _q)
 	//this.initCrop(i);
 	canvas.renderAll();
 
-	this.ApplyFilter();
+	//this.ApplyFilter();
+	//this.CullColor();
+	//this.IsolateColor();
 
 	this.Update();
 
@@ -831,22 +885,19 @@ Work.prototype.initCrop = function(i)
 //FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
 //FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Work.prototype.ApplyFilter = function()
+
+//CULL COLOR ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Work.prototype.CullColor = function()
 {
 	var i = this.simgs.length-1;
-
-	this.simgs[i].f.filters.push(new fabric.Image.filters.SelectiveAlpha());
+	this.simgs[i].f.filters.push(new fabric.Image.filters.CullColor());
 	this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
-
-	//this.simgs[i].f.filters.push(new fabric.Image.filters.Sepia());
-  	//this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
 }
 
+fabric.Image.filters.CullColor = fabric.util.createClass({
 
-
-fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
-
-	type: 'SelectiveAlpha',
+	type: 'CullColor',
 
 	applyTo: function(canvas) { //E1
 		var context = canvas.getContext('2d'), //E1
@@ -855,10 +906,26 @@ fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
 	
 	//here the "canvas" is the image itself
 	//data[i-canvas.width] points to pixel above
+	console.log("CullColor " + cs);
 
-	var buffer = 0.5;
-	var asub = 0.9;
+	var RGB = [0,0,0];
+	var P = [0,0,0];
 
+	for(var i = 0, len = data.length; i < len; i += 4)
+	{
+		RGB[0] += data[i];
+		RGB[1] += data[i+1];
+		RGB[2] += data[i+2];
+	}
+
+	var TOT = RGB[0] + RGB[1] + RGB[2]; //absolute rgb values added together
+
+	P[0] = RGB[0]/TOT;
+	P[1] = RGB[1]/TOT;
+	P[2] = RGB[2]/TOT;
+
+	var thr = 0.5;
+	if(P[cs] < thr) thr = P[cs];
 
 	for(var i = 0, len = data.length; i < len; i += 4)
 	{
@@ -868,16 +935,27 @@ fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
 
 		var tot = r+g+b;
 		var avg = tot/3;
-		var rper = r/tot;
-		var gbper = (g+b)/tot;
-		var a = 255-(rper*255);
 
-		if(rper > buffer)
+		var p = //percentages
+		[
+			r/tot, 
+			g/tot, 
+			b/tot
+		];
+
+		var a = //alpha subtractions
+		[
+			255-(p[0]*255),
+			255-(p[1]*255),
+			255-(p[2]*255)
+		];
+
+		if(p[cs] > thr)
 		{
 			data[i] = avg;
 			data[i+1] = avg;
 			data[i+2] = avg;
-			data[i+3] = a;//gbper;//0;//a;
+			data[i+3] = 125;//1.0;//avg;//0.1;//a[cs];
 		} 
 	}
 
@@ -886,7 +964,100 @@ fabric.Image.filters.SelectiveAlpha = fabric.util.createClass({
 	}
 });
 
-fabric.Image.filters.SelectiveAlpha.fromObject = function(object)
+fabric.Image.filters.CullColor.fromObject = function(object)
 {
-	return new fabric.Image.filters.SelectiveAlpha(object);
+	return new fabric.Image.filters.CullColor(object);
+};
+
+//ISOLATE COLOR ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Work.prototype.IsolateColor = function()
+{
+	var i = this.simgs.length-1;
+	this.simgs[i].f.filters.push(new fabric.Image.filters.IsolateColor());
+	this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+fabric.Image.filters.IsolateColor = fabric.util.createClass({
+
+	type: 'IsolateColor',
+
+	applyTo: function(canvas) 
+	{
+		var context = canvas.getContext('2d'),
+			imageData = context.getImageData(0,0,canvas.width, canvas.height),
+			data = imageData.data;
+	
+	//here the "canvas" is the image itself
+	//data[i-canvas.width] points to pixel above
+	var _cs = (cs + 1) % 3;
+	var __cs = (cs + 2) % 3;
+	var RGB = [0,0,0];
+	var P = [0,0,0];
+
+	for(var i = 0, len = data.length; i < len; i += 4)
+	{
+		RGB[0] += data[i];
+		RGB[1] += data[i+1];
+		RGB[2] += data[i+2];
+	}
+
+	var TOT = RGB[0] + RGB[1] + RGB[2]; //absolute rgb values added together
+
+	P[0] = RGB[0]/TOT;
+	P[1] = RGB[1]/TOT;
+	P[2] = RGB[2]/TOT;
+
+	var _thr = 0.5;
+	var __thr = 0.5;
+	if(P[_cs] < _thr) _thr = P[_cs];
+	if(P[__cs] < _thr) __thr = P[__cs];
+
+	for(var i = 0, len = data.length; i < len; i += 4)
+	{
+		var r = data[i];
+		var g = data[i+1];
+		var b = data[i+2];
+
+		var tot = r+g+b;
+		var avg = tot/3;
+
+		var p = //percentages
+		[
+			r/tot, 
+			g/tot, 
+			b/tot
+		];
+
+		var a = //alpha subtractions
+		[
+			255-(p[0]*255),
+			255-(p[1]*255),
+			255-(p[2]*255)
+		];
+
+		if(p[_cs] > _thr)
+		{
+			data[i] = avg;
+			data[i+1] = avg;
+			data[i+2] = avg;
+			data[i+3] = 125;//1.0;//avg;//0.1;//a[_cs];
+		} 
+		else if(p[__cs] > __thr)
+		{
+			data[i] = avg;
+			data[i+1] = avg;
+			data[i+2] = avg;
+			data[i+3] = 125;//1.0;//avg;//0.1;//a[__cs];
+		}
+	}
+
+	context.putImageData(imageData, 0,0);
+
+	}
+});
+
+fabric.Image.filters.IsolateColor.fromObject = function(object)
+{
+	return new fabric.Image.filters.IsolateColor(object);
 };
