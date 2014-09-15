@@ -49,7 +49,7 @@ var _2 = 50;
 var _3 = 51;
 var ESC = 27;
 
-//temp
+//temp//
 var imgcount = 1;
 var imglimit = 8;
 
