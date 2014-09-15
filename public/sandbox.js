@@ -12,6 +12,9 @@ var q2 = {'x':qw+qm, 'y':qh};
 var q3 = {'x':(qw*2)+qm, 'y':qh};
 var q4 = {'x':(qw*3)+qm, 'y':qh};
 
+var tlx = 0;
+var trx = 0;
+
 var work = 0;
 var works = [];
 var simgs = {'q1':[], 'q2':[], 'q3':[], 'q4':[]};
@@ -20,6 +23,7 @@ var get = true;
 var right = false;
 var tgrab = false;
 var pullcheck = true;
+var jumpcheck = 0;
 var mdown = {'x': 0, 'y': 0};
 var adding = true;
 var crop = [];
@@ -39,7 +43,15 @@ var DOWN = 40;
 //temp
 var imgcount = 1;
 
-//CANVAS EVENTS/////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
 
 canvas.on('mouse:move', function(options){
 	
@@ -56,10 +68,47 @@ canvas.on('mouse:move', function(options){
 });
 
 
-canvas.on('mouse:down', function(options)
+canvas.on('mouse:down', function(options) //INTERVENE HERE
 {
 	mdown.x = mc.x;
 	mdown.y = mc.y;
+
+	//console.log(options.e);
+	//console.log(options.target);
+
+	if(options.target != null)
+	{
+		options.target.setCoords();
+
+		//var tw = options.target.width;
+		//var th = options.target.height;
+		var tw = options.target.getWidth();
+		var th = options.target.getHeight();
+		var ta = options.target.getAngle();
+		var tl = options.target.getLeft();
+		var tt = options.target.getTop();
+		var tc = options.target.oCoords.tl;
+		var tox = options.target.getOriginX();
+		var toy = options.target.getOriginY();
+	}
+
+	var cw = canvas.width;
+	var ch = canvas.height;
+
+
+	//console.log(ta);
+	//console.log(tl);
+	//console.log(th);
+	console.log(tc);
+	console.log(tox);
+	console.log(toy);
+
+	//console.log(options.target.canvas.getPointer(options.e));
+	//console.log(canvas.getPointer(options.e));
+
+
+	//console.log(e.getPointer(e)); //if(e.target.type == "object") 
+
 
 	for(var i in timgs)
 	{
@@ -82,7 +131,7 @@ canvas.on('mouse:over', function(e)
 	work.target.set('centeredScaling', true);
 	work.target.centeredScaling = true;
 
-	//crop = [];
+	crop = [];
 	crop.push(-work.target.width);//getWidth());
 	crop.push(-work.target.height);//.getWidth());
 	crop.push(work.target.width);//.getWidth());
@@ -141,8 +190,6 @@ window.addEventListener("keydown", function(e) //window
 		    	work.target.scaleX += 0.01;
 		    	work.target.scaleY += 0.01;
 
-		    	//work.target.scale += 0.01;
-
 		    	canvas.renderAll();
 	    	}
 	    }
@@ -152,22 +199,20 @@ window.addEventListener("keydown", function(e) //window
 	    	{
 		    	//work.target.setCoords();
 
-		    	var l = work.target.left;//-work.target.getWidth()*0.5;//work.target.crop.left;
-				var t = work.target.top;//-work.target.getHeight()*0.5;//work.target.crop.top;
-				var w = work.target.getWidth();//work.target.crop.width;
-				var h = work.target.getHeight();//work.target.crop.height;
+		    	var l = work.target.left;
+				var t = work.target.top;
+				var w = work.target.getWidth();
+				var h = work.target.getHeight();
 
-				var ctx = canvas.getContext('2d');//work.target; //
+				var ctx = canvas.getContext('2d');
 				
 				work.target.clipTo = function(ctx)
 				{
-					ctx.rect(crop[0],crop[1],crop[2],crop[3]);//ctx.rect(0,0,1024,1024);////ctx.rect(0,0,w,h); // seems to only be able to reference global vars
+					ctx.rect(crop[0],crop[1],crop[2],crop[3]);// seems to only be able to reference global vars
 				};
 
 		    	work.target.scaleX -= 0.01;
 		    	work.target.scaleY -= 0.01;
-
-		    	//work.target.scale -= 0.01;
 
 		    	canvas.renderAll();
 	    	}
@@ -176,6 +221,13 @@ window.addEventListener("keydown", function(e) //window
 	}
 }, true);
 
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
 //GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
 
 function trackMouse()
@@ -199,8 +251,6 @@ function trackMouse()
 	mh.x.push(mc.x);
 	mh.y.splice(0,1);
 	mh.y.push(mc.y);
-
-	//console.log(mc.x + " a:" + ma.x + "   " + mc.y + " a:" + ma.y);
 }
 
 setInterval(getImage,1000);
@@ -217,8 +267,9 @@ function getImage()
 socket.on('send-items', function(data)
 {
 	//console.log(data[0].url);
-	receiveImage(data[0].url);
-	if(works.length > 8) get = false;
+	//receiveImage(data[0].url);
+	receiveImage("");
+	if(works.length > 3) get = false;
 });
 
 function receiveImage(url)
@@ -243,8 +294,8 @@ function receiveImage(url)
 
 	imgcount++;
 
-	if(works.length == 1) works[0].tl = true; //these are the initial bookends
-	if(works.length == 2) works[1].tr = true;
+	if(works.length == 1) works[0].img.tl = true; //these are the initial bookends
+	if(works.length == 2) works[1].img.tr = true;
 }
 
 function AddToTray(img)
@@ -258,29 +309,18 @@ function ShiftAll()
 {
 	var i = mh.x.length-1;
 
-	var dx = Math.round(Math.abs(mh.x[i] - mh.x[i-2])*0.5);
+	var dx = Math.round(mh.x[i] - mh.x[i-1]);
 
-	if(mh.x[i] < mh.x[i-2])
+	for(var i in timgs)
 	{
-		for(var i in timgs)
-		{
-			//console.log('left~'+dx);
-			timgs[i].f.left -= dx;
-			timgs[i].parent.Update();
-			timgs[i].f.setCoords();
-			timgs[i].parent.JumpCheck();
-		}
+		timgs[i].f.left += dx;
+		timgs[i].parent.Update();
+		timgs[i].f.setCoords();
+		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
+		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
 	}
-	else
-	{
-		for(var i in timgs)
-		{
-			timgs[i].f.left += dx;//md.x;
-			timgs[i].parent.Update();
-			timgs[i].f.setCoords();
-			timgs[i].parent.JumpCheck();
-		}
-	}
+
+	jumpcheck++;
 
 }
 
@@ -293,14 +333,22 @@ function Pull()
 
 		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
 		{
-			//console.log(timgs[i].tw);
 			timgs[i].parent.PullCheck();
 			break;
 		}
 	}
 }
 
-//Work Class/////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+//Work Class//////////////////////////////////////////////////////////////////////////////////////
+
 
 function Work(_index, _img)
 {
@@ -356,10 +404,11 @@ Work.prototype.iInit = function()
 	this.img.f.set('selectable',true);
 	this.img.f.set('evented',true);
 
-	this.img.f.crop = null;
+	this.img.crop = null;
 
 	this.Tada();
 	this.Update();
+
 }
 
 Work.prototype.Tada = function()
@@ -390,7 +439,7 @@ Work.prototype.Update = function()
 	this.img.tx = this.img.f.left;
 	this.img.ty = this.img.f.top;
 	this.img.tw = this.img.f.getWidth();
-	//this.img.th = this.img.f.height;
+	this.img.th = this.img.f.getHeight();
 	this.img.tcx = Math.round(this.img.tx+(this.img.tw*0.5));
 	this.img.tcy = Math.round(this.img.ty+(this.img.th*0.5));
 
@@ -410,111 +459,201 @@ Work.prototype.MakeWay = function()
 		if(right==true)
 		{
 			right = false;
-			this.ShiftRight(this.img.tw);
+			this.ShiftRight();
 		}
 		else
 		{
 			right = true;
-			this.ShiftLeft(this.img.tw);
+			this.ShiftLeft();
 		}
 	}
 	else if(x >= center.x && right)
 	{
-		this.ShiftRight(this.img.tw);
+		this.ShiftRight();
 	}
 	else if(x <= center.x && !right)
 	{
-		this.ShiftLeft(this.img.tw);
+		this.ShiftLeft();
 	}
 
 	this.Update();
 }
 
-
-Work.prototype.JumpCheck = function()
+Work.prototype.ShiftLeft = function() //input will vary depending on if instantiation or mousemove
 {
-	var jc = mc.x - mdown.x;
+	var w = this;
 
-	if(Math.abs(jc) > this.img.tw)//need a different approach
+	this.img.f.animate('left', '-='+this.img.tw, 
+		{
+			onChange: canvas.renderAll.bind(canvas),
+			duration: this.dur,
+			onComplete:function()
+			{
+				w.Update();
+				if(w.img.tl == true) tlx = w.img.f.left;
+				else if(w.img.tr == true) trx = w.img.f.left;
+			}
+		});
+}
+
+Work.prototype.ShiftRight = function()
+{
+	var w = this;
+
+	this.img.f.animate('left', '+='+this.img.tw, 
+		{
+			onChange: canvas.renderAll.bind(canvas),
+			duration: this.dur,
+			onComplete:function()
+			{
+				w.Update();
+				if(w.img.tl == true) tlx = w.img.f.left;
+				else if(w.img.tr == true) trx = w.img.f.left;
+			}
+		});
+}
+
+Work.prototype.JumpLeft = function()
+{
+	var w = this;
+
+	//find jump point at left end of list
+	var imgs = [];
+	imgs = Sort("f.left", timgs);
+	var tx = imgs[0].f.left-this.img.tw;
+	
+	tlx = tx;
+	this.img.f.left = tx;
+	this.img.tl = true;
+	this.img.tr = false;
+
+	for(var i in timgs)
 	{
-		if(this.img.tl && jc < 0) this.TrayJump('r') //jump right
-		else if(this.img.tr && jc > 0) this.TrayJump('l') //jump left
+		if(timgs[i].parent.ix == imgs[imgs.length-2].parent.ix) //offset
+		{
+			timgs[i].tr = true;
+		}
+		else if(timgs[i].parent.ix == imgs[0].parent.ix)
+		{
+			timgs[i].tl = false;
+		}
 	}
+
+	this.Update();
+	canvas.renderAll();
+	jumpcheck = 0;
 }
 
-Work.prototype.ShiftLeft = function(d) //input will vary depending on if instantiation or mousemove
+Work.prototype.JumpRight = function()
 {
-	//console.log('ShiftLeft');
 	var w = this;
 
-	this.img.f.animate('left', '-='+d, 
-		{
-			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
-			onComplete:function(){
-				w.Update();
-				w.JumpCheck();
-			}
-		});
-}
+	//find jump point at right end of list
+	var imgs = [];
+	imgs = Sort("f.left", timgs);
+	var tx = imgs[imgs.length-1].f.left+this.img.tw;
 
-Work.prototype.ShiftRight = function(d)
-{
-	//console.log('ShiftRight');
-	var w = this;
+	trx = tx;
+	this.img.f.left = tx;
+	this.img.tl = false;
+	this.img.tr = true;
 
-	this.img.f.animate('left', '+='+d, 
+	for(var i in timgs)
+	{
+		if(timgs[i].parent.ix == imgs[1].parent.ix)
 		{
-			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
-			onComplete:function(){
-				w.Update();
-				w.JumpCheck();
-			}
-		});
+			timgs[i].tl = true;
+		} 
+		else if(timgs[i].parent.ix == imgs[imgs.length-1].parent.ix)
+		{
+			timgs[i].tr = false;
+		}
+	}
+
+	this.Update();
+	canvas.renderAll();
+	jumpcheck = 0;
 }
 
 Work.prototype.TrayJump = function(d)
 {
 	var w = this;
 
-	if(d == 'l'){
-
-		this.img.f.left = 0; //find jump point at left end of list
-
-		for(var i in timgs)
-		{
-			timgs[i].tl = false;
-		}
-
+	if(d == 'l')
+	{
+		//find jump point at left end of list
+		var imgs = [];
+		imgs = Sort("f.left", timgs);
+		var tx = imgs[0].f.left-this.img.tw;
+		
+		tlx = tx;
+		this.img.f.left = tx;
+		this.img.tr = false;
 		this.img.tl = true;
 
-		this.img.f.animate('left', '+='+this.img.tw, 
+		for(var i in timgs)
 		{
-			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
-			onComplete: function(){w.Update();}
-		});
-	} 
-	else
-	{
+			if(timgs[i].parent.ix == imgs[imgs.length-2].parent.ix) //offset
+			{
+				timgs[i].tr = true;
+			}
+			else if(timgs[i].parent.ix == imgs[0].parent.ix)
+			{
+				timgs[i].tl = false;
+			}
+		}
 
-		this.img.f.left = canvas.width; //find jump point at right end of list
+		this.Update();
+		canvas.renderAll();
+	} 
+	else if(d == 'r')
+	{
+		//find jump point at right end of list
+		var imgs = [];
+		imgs = Sort("f.left", timgs);
+		var tx = imgs[imgs.length-1].f.left+this.img.tw;
+
+		trx = tx;
+		this.img.f.left = tx;
+		this.img.tl = false;
+		this.img.tr = true;
 
 		for(var i in timgs)
 		{
-			timgs[i].tr = false;
+			if(timgs[i].parent.ix == imgs[1].parent.ix)
+			{
+				timgs[i].tl = true;
+			} 
+			else if(timgs[i].parent.ix == imgs[imgs.length-1].parent.ix)
+			{
+				timgs[i].tr = false;
+			}
 		}
 
-		this.img.tr = true;
-
-		this.img.f.animate('left', '-='+this.img.tw, 
-		{
-			onChange: canvas.renderAll.bind(canvas),
-			duration: this.dur,
-			onComplete: function(){w.Update();}
-		});
+		this.Update();
+		canvas.renderAll();
 	}
+
+	jumpcheck = 0;
+}
+
+var Sort = function(prop, arr) //THIS SORTS NOTHING
+{
+	prop = prop.split('.');
+	var len = prop.length;
+
+	arr.sort(function(a,b){
+		var i = 0;
+		while(i < len){a = a[prop[i]]; b = b[prop[i]]; i++}
+		if(a < b){
+			return -1;
+		}else if (a > b){
+			return 1;
+		}else{
+			return 0;
+		}
+	});
+	return arr;
 }
 
 Work.prototype.PullCheck = function()
@@ -554,8 +693,10 @@ Work.prototype.Pull = function(q, _q)
 	{
 		//AddToTray(oImg);
 		var img = new Img(w, oImg);
+
 		w.simgs.push(img);
 		canvas.add(w.simgs[w.simgs.length-1].f);
+
 		console.log(w.simgs[w.simgs.length-1].f.left);
 
 		w.Up(q, _q);
@@ -627,7 +768,6 @@ Work.prototype.Up = function(q, _q)
 	}
 }
 
-var radius = qw*0.75;
 
 //
 Work.prototype.PullComplete = function(i, _q)
@@ -680,7 +820,16 @@ Work.prototype.initCrop = function(i)
 	});
 }
 
-//FILTERS /////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
+//FILTERS ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Work.prototype.ApplyFilter = function()
 {
@@ -691,8 +840,6 @@ Work.prototype.ApplyFilter = function()
 
 	//this.simgs[i].f.filters.push(new fabric.Image.filters.Sepia());
   	//this.simgs[i].f.applyFilters(canvas.renderAll.bind(canvas));
-
-	
 }
 
 
