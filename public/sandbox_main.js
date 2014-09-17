@@ -4,12 +4,12 @@
 //GLOBAL VARS/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //GLOBAL VARS/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//external libraries
 var socket = io.connect();
-
-var centraldiv = null;
 var canvas = new fabric.Canvas("sandbox");
-var center = {'x': canvas.width/2, 'y': canvas.height/2};
 
+//spatial parameters
+var center = {'x': canvas.width/2, 'y': canvas.height/2};
 var qm = 30;
 var qw = canvas.width/4;
 var qh = (canvas.height-(canvas.height/10))/6;
@@ -18,33 +18,35 @@ var q2 = {'x':qw+qm, 'y':qh};
 var q3 = {'x':(qw*2)+qm, 'y':qh};
 var q4 = {'x':(qw*3)+qm, 'y':qh};
 
-var tlx = 0;
-var trx = 0;
+//images
+var work = null;
+var works = []; //array of work objects
+var simgs = {'q1':[], 'q2':[], 'q3':[], 'q4':[]}; //2d array of sandbox images
+var crop = []; //temporary cropping region coordinates
+var timgs = []; //array of tray images
+var tlx = 0; //x coordinate of right-most tray image
+var trx = 0; //x coordinate of left-most tray image
 
-var work = 0;
-var _work = 0;
-var works = [];
-var simgs = {'q1':[], 'q2':[], 'q3':[], 'q4':[]};
-var timgs = [];
-var get = true;
-var right = false;
-var tgrab = false;
-var pullcheck = true;
-var jumpcheck = 0;
-var mdown = {'x': 0, 'y': 0};
-var adding = true;
-var crop = [];
+//action checks
+var adding = true; //are images being added to the tray?
+var right = false; //should an image be moved to the right so that it can make way for an incoming image? If not, left.
+var tgrab = false; //is user trying to grab an image in tray, either to move the tray or pull an image?
+var pullcheck = false; //is the user in the midst of pulling an image?
+var jumpcheck = 0; //if over tray image width triggers jump
 
+//mouse
 var mc = {'x': 0, 'y': 0}; //mouse current
 var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse history
 var ma = {'x': 0, 'y': 0}; //mouse averaged history
 var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
+var mdown = {'x': 0, 'y': 0}; //mouse down coordinates, separate from mouse current
 
-//temp//
+//temp
 var cs = 0; //color select
-var imgcount = 1;
-var imglimit = 8;
+var imgcount = 1; //number of images that have been added to tray
+var imglimit = 8; //limit for imgcount
+var get = true;  //should we continue asking for images from the local host?
 
 //temp ascii keyCodes
 var LEFT = 37;
@@ -73,7 +75,7 @@ canvas.on('mouse:move', function(options)
 
 	trackMouse();
 
-	if(adding == false && tgrab == true)
+	if(adding == false && tgrab == true && pullcheck == false)
 	{
 		if(md.x > Math.abs(md.y*0.1)) ShiftAll();
 		else if(md.y < 0) Pull();
@@ -135,7 +137,7 @@ canvas.on('mouse:down', function(options)
 canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
-	pullcheck = true;
+	pullcheck = false;
 });
 
 
@@ -159,8 +161,8 @@ function trackMouse()
 	ma.x /= 10;
 	ma.y /= 10;
 
-	md.x = Math.abs(mc.x - ma.x); //***NOT TO BE USED TO DETERMINE SHIFT MAGNITUDE
-	md.y = mc.y-ma.y;//Math.abs(mc.y - ma.y); 
+	md.x = Math.abs(mc.x - ma.x);
+	md.y = mc.y-ma.y;
 
 	mh.x.splice(0,1); //Update mouse history with current
 	mh.x.push(mc.x);
@@ -190,6 +192,8 @@ function ShiftAll()
 //FIGURES OUT WHICH IMAGE TO PULL FROM TRAY BASED ON MOUSE POSITION
 function Pull()
 {
+	pullcheck = true;
+
 	for(var i in timgs)
 	{
 		var d = mdown.x - timgs[i].f.left;
@@ -197,7 +201,7 @@ function Pull()
 
 		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
 		{
-			timgs[i].parent.PullCheck();
+			timgs[i].parent.PullDir();
 			break;
 		}
 	}

@@ -282,28 +282,23 @@ var Sort = function(prop, arr)
 //ON PULLING A THUMBNAIL INTO SANDBOX/////////////////////////////////////////////////////////////////////////////////////////
 
 //CHECKS WHICH SANDBOX SECTION AN IMAGE SHOULD BE 'PULLED' INTO, CALLS PULL()
-Work.prototype.PullCheck = function()
+Work.prototype.PullDir = function()
 {	
-	if(pullcheck == true)
+	if(this.img.f.left <= qw)
 	{
-		pullcheck = false;
-
-		if(this.img.f.left <= qw)
-		{
-			this.Pull(q1, 'q1');
-		}
-		else if(this.img.f.left > qw && this.img.f.left <= qw*2)
-		{
-			this.Pull(q2, 'q2');
-		}
-		else if(this.img.f.left > qw*2 && this.img.f.left <= qw*3)
-		{
-			this.Pull(q3, 'q3');
-		}
-		else if(this.img.f.left > qw*3)
-		{
-			this.Pull(q4, 'q4');
-		}
+		this.Pull(q1, 'q1');
+	}
+	else if(this.img.f.left > qw && this.img.f.left <= qw*2)
+	{
+		this.Pull(q2, 'q2');
+	}
+	else if(this.img.f.left > qw*2 && this.img.f.left <= qw*3)
+	{
+		this.Pull(q3, 'q3');
+	}
+	else if(this.img.f.left > qw*3)
+	{
+		this.Pull(q4, 'q4');
 	}
 }
 
@@ -435,7 +430,8 @@ Work.prototype.initCrop = function(i)
 		var h = simgs[_q][ix].f.crop.height;
 
 		simgs[_q][ix].f.clipTo = function(ctx){
-			//ctx.rect(-simgs[_q][ix].f.width*0.5, -simgs[_q][ix].f.height*0.5, simgs[_q][ix].f.width, simgs[_q][ix].f.height); // seems to only be able to reference global vars
+			//ctx.rect(-simgs[_q][ix].f.width*0.5, -simgs[_q][ix].f.height*0.5, simgs[_q][ix].f.width, simgs[_q][ix].f.height); 
+			// seems to only be able to reference global vars
 			ctx.rect(l,t,w,h);
 			//simgs[_q][ix].crop;
 		};
