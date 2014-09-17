@@ -1,6 +1,8 @@
 
-//GLOBAL VARS///////////////////////////////////////////////////////////////////////////////////////
-
+//GLOBAL VARS/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//GLOBAL VARS/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//GLOBAL VARS/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//GLOBAL VARS/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var socket = io.connect();
 
@@ -39,8 +41,12 @@ var ma = {'x': 0, 'y': 0}; //mouse averaged history
 var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
 
+//temp//
 var cs = 0; //color select
-var ft = 0; //filter type
+var imgcount = 1;
+var imglimit = 8;
+
+//temp ascii keyCodes
 var LEFT = 37;
 var UP = 38;
 var RIGHT = 39;
@@ -53,12 +59,13 @@ var _2 = 50;
 var _3 = 51;
 var ESC = 27;
 
-//temp//
-var imgcount = 1;
-var imglimit = 8;
 
-//CANVAS EVENTS///////////////////////////////////////////////////////////////////////////////////////
+//FABRIC CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//FABRIC CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//FABRIC CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//FABRIC CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//ON MOUSEMOVE CALL TRACKMOUSE() AND POSSIBLY SHIFT OR PULL THUMBNAILS
 canvas.on('mouse:move', function(options)
 {	
 	mc.x = options.e.clientX;
@@ -73,14 +80,37 @@ canvas.on('mouse:move', function(options)
 	} 
 });
 
+//ON MOUSEOVER DEFINE GLOBAL WORK VAR AS EVENT TARGET
+canvas.on('mouse:over', function(e)
+{
+	if(typeof(e.target == "object"))
+	{
+		work = e;
+		work.target.set('centeredScaling', true);
 
-canvas.on('mouse:down', function(options) //INTERVENE HERE
+		crop = [];
+		crop.push(-work.target.width);//getWidth());
+		crop.push(-work.target.height);//.getWidth());
+		crop.push(work.target.width);//.getWidth());
+		crop.push(work.target.height);//.getHeight());
+	}
+});
+
+//RESET VARS ON MOUSEOUT, ACCOUNT FOR TIMING
+canvas.on('mouse:out', function(e) //when mousing from one object to another this is called AFTER mouse:over for some reason
+{
+	if(e.target == work.target) //if object being left matches object that had be entered
+	{
+		work = 0;
+		crop = [];
+	}
+});
+
+//ON MOUSEDOWN SEE IF WE ARE CLICKING ON A FABRIC OBJECT OR TRAY
+canvas.on('mouse:down', function(options)
 {
 	mdown.x = mc.x;
 	mdown.y = mc.y;
-
-	//console.log(options.e);
-	//console.log(options.target);
 
 	if(typeof(options.target) == "object")
 	{
@@ -92,10 +122,6 @@ canvas.on('mouse:down', function(options) //INTERVENE HERE
 		var tl = options.target.oCoords.tl;
 	}
 
-	var cw = canvas.width;
-	var ch = canvas.height;
-
-
 	for(var i in timgs)
 	{
 		if(mdown.x > timgs[i].tx && mdown.x < timgs[i].tx + timgs[i].tw && mdown.y > (canvas.height/10)*9)
@@ -105,6 +131,7 @@ canvas.on('mouse:down', function(options) //INTERVENE HERE
 	}
 });
 
+//ON MOUSEUP RESET CHECK VARS
 canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
@@ -112,54 +139,98 @@ canvas.on('mouse:up', function(options)
 });
 
 
-canvas.on('mouse:out', function(e) //when mousing from one object to another this is called AFTER mouse:over
+//GLOBAL FUNCTIONS CALLED FROM CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS CALLED FROM CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS CALLED FROM CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////
+//GLOBAL FUNCTIONS CALLED FROM CANVAS EVENTS////////////////////////////////////////////////////////////////////////////////////
+
+//MOUSE SIGNAL SMOOTHING, CALLED FROM MOUSEMOVE
+function trackMouse()
 {
-	if(e.target == work.target) //if object being left matches object that had be entered
+	ma.x = 0;//clear avgs
+	ma.y = 0;
+
+	for(var i = 0; i < 10; i++) //for signal smoothing
 	{
-		work = 0;
-		crop = [];
+		ma.x += mh.x[i];
+		ma.y += mh.y[i];
 	}
-});
+	
+	ma.x /= 10;
+	ma.y /= 10;
 
-canvas.on('mouse:over', function(e)
+	md.x = Math.abs(mc.x - ma.x); //***NOT TO BE USED TO DETERMINE SHIFT MAGNITUDE
+	md.y = mc.y-ma.y;//Math.abs(mc.y - ma.y); 
+
+	mh.x.splice(0,1); //Update mouse history with current
+	mh.x.push(mc.x);
+	mh.y.splice(0,1);
+	mh.y.push(mc.y);
+}
+
+//SHIFTS ALL IMAGES TRAY
+function ShiftAll()
 {
-	work = e;
-	work.target.set('centeredScaling', true);
+	var i = mh.x.length-1;
 
-	crop = [];
-	crop.push(-work.target.width);//getWidth());
-	crop.push(-work.target.height);//.getWidth());
-	crop.push(work.target.width);//.getWidth());
-	crop.push(work.target.height);//.getHeight());
+	var dx = Math.round(mh.x[i] - mh.x[i-1]);
 
-	//console.log(work.target.width);
-});
+	for(var i in timgs)
+	{
+		timgs[i].f.left += dx;
+		timgs[i].parent.Update();
+		timgs[i].f.setCoords();
+		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
+		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
+	}
+
+	jumpcheck++;
+}
+
+//FIGURES OUT WHICH IMAGE TO PULL FROM TRAY BASED ON MOUSE POSITION
+function Pull()
+{
+	for(var i in timgs)
+	{
+		var d = mdown.x - timgs[i].f.left;
+		var h = canvas.height - (canvas.height/20);
+
+		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
+		{
+			timgs[i].parent.PullCheck();
+			break;
+		}
+	}
+}
+
+//KEYDOWN EVENTS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//KEYDOWN EVENTS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//KEYDOWN EVENTS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//KEYDOWN EVENTS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 window.addEventListener("keydown", function(e) //window
 {
 	//e = e || window.event;
 	if(typeof(work.target) == "object")
 	{
-		if (e.keyCode == LEFT)
+		if (e.keyCode == LEFT) //SUBTRACT OPACITY
 		{
          	if(work.target.opacity > 0.5)
          	{
 	         	work.target.opacity -= 0.1;
          	}
 	    }
-	    else if (e.keyCode == RIGHT)
+	    else if (e.keyCode == RIGHT) //ADD OPACITY
 	    {
 			if(work.target.opacity < 1.0)
 			{
 				work.target.opacity += 0.1;
 			}
 	    }
-	    else if (e.keyCode == UP)
+	    else if (e.keyCode == UP) //ZOOM IN - PROBLEMATIC
 	    {
 	    	if(work.target.scaleX < 1.0)
 	    	{
-		    	//work.target.setCoords();
-
 				var l = work.target.left;//-work.target.getWidth()*0.5;
 				var t = work.target.top;//-work.target.getHeight()*0.5;
 				var w = work.target.getWidth();
@@ -176,12 +247,10 @@ window.addEventListener("keydown", function(e) //window
 		    	work.target.scaleY += 0.01;
 	    	}
 	    }
-	    else if (e.keyCode == DOWN)
+	    else if (e.keyCode == DOWN) //ZOOM OUT - PROBLEMATIC
 	    {
 	    	if(work.target.scaleX > 0.2) 
 	    	{
-		    	//work.target.setCoords();
-
 		    	var l = work.target.left;
 				var t = work.target.top;
 				var w = work.target.getWidth();
@@ -245,33 +314,13 @@ window.addEventListener("keydown", function(e) //window
 	}
 }, true);
 
-//GLOBAL FUNCTIONS/////////////////////////////////////////////////////////////////////////////
+//RECEIVE IMAGES FROM SERVER/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//RECEIVE IMAGES FROM SERVER/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//RECEIVE IMAGES FROM SERVER/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//RECEIVE IMAGES FROM SERVER/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function trackMouse()
-{
-	ma.x = 0;//clear avgs
-	ma.y = 0;
-
-	for(var i = 0; i < 10; i++) //for signal smoothing
-	{
-		ma.x += mh.x[i];
-		ma.y += mh.y[i];
-	}
-	
-	ma.x /= 10;
-	ma.y /= 10;
-
-	md.x = Math.abs(mc.x - ma.x); //***NOT TO BE USED TO DETERMINE SHIFT MAGNITUDE
-	md.y = mc.y-ma.y;//Math.abs(mc.y - ma.y); 
-
-	mh.x.splice(0,1); //Update mouse history with current
-	mh.x.push(mc.x);
-	mh.y.splice(0,1);
-	mh.y.push(mc.y);
-}
-
-setInterval(getImage,1000);
-
+//TEMPORARY - ASK FOR IMAGES FROM LOCAL HOST
+setInterval(getImage,500);
 function getImage()
 {
 	if(get)
@@ -281,14 +330,19 @@ function getImage()
 	}
 }
 
+//LISTENS FOR MESSAGE WITH IMAGE URL FROM LOCAL HOST
+//CALL RECEIVEIMAGE()
 socket.on('send-items', function(data)
 {
-	//console.log(data[0].url);
 	//receiveImage(data[0].url);
 	receiveImage("");
+
 	if(works.length > imglimit) get = false;
 });
 
+//CREATE NEW FABRIC IMAGE OBJECT VIA URL FROM LOCAL HOST
+// - TEMPORARY - USE IMAGE DIRECTLY FROM LOCAL HOST DUE TO PERMISSIONS ISSUE
+//CALL ADDTOTRAY()
 function receiveImage(url)
 {
 	//console.log(url);
@@ -299,7 +353,9 @@ function receiveImage(url)
 	});
 	*/
 	/*
-	fabric.Image.fromURL('http://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Crab_Nebula.jpg/1024px-Crab_Nebula.jpg', function(oImg)
+	fabric.Image.fromURL('http://upload.wikimedia.org/wikipedia/
+	commons/thumb/0/00/Crab_Nebula.jpg/1024px-Crab_Nebula.jpg', 
+	function(oImg)
 	{
 		AddToTray(oImg);
 	});
@@ -315,6 +371,8 @@ function receiveImage(url)
 	if(works.length == 2) works[1].img.tr = true;
 }
 
+//INSTANTIATE WORK OBJECT WITH FABRIC IMAGE OBJECT
+//PUSH WORK OBJECT AND ITS THUMBNAIL FABRIC IMAGE OBJECT TO GLOBAL LISTS
 function AddToTray(img)
 {
 	var work = new Work(works.length, img);
@@ -322,36 +380,3 @@ function AddToTray(img)
 	timgs.push(work.img);
 }
 
-function ShiftAll()
-{
-	var i = mh.x.length-1;
-
-	var dx = Math.round(mh.x[i] - mh.x[i-1]);
-
-	for(var i in timgs)
-	{
-		timgs[i].f.left += dx;
-		timgs[i].parent.Update();
-		timgs[i].f.setCoords();
-		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
-		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
-	}
-
-	jumpcheck++;
-
-}
-
-function Pull()
-{
-	for(var i in timgs)
-	{
-		var d = mdown.x - timgs[i].f.left;
-		var h = canvas.height - (canvas.height/20);
-
-		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
-		{
-			timgs[i].parent.PullCheck();
-			break;
-		}
-	}
-}
