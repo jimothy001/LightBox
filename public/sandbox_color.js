@@ -15,7 +15,7 @@ fabric.Image.filters.CullColor = fabric.util.createClass({
 	
 	//here the "canvas" is the image itself
 	//data[i-canvas.width] points to pixel above
-	console.log("CullColor " + cs);
+	console.log("CullColor " + colorselect);
 
 	var RGB = [0,0,0];
 	var P = [0,0,0];
@@ -34,7 +34,7 @@ fabric.Image.filters.CullColor = fabric.util.createClass({
 	P[2] = RGB[2]/TOT;
 
 	var thr = 0.5;
-	if(P[cs] < thr) thr = P[cs];
+	if(P[colorselect] < thr) thr = P[colorselect];
 
 	for(var i = 0, len = data.length; i < len; i += 4)
 	{
@@ -59,12 +59,12 @@ fabric.Image.filters.CullColor = fabric.util.createClass({
 			255-(p[2]*255)
 		];
 
-		if(p[cs] > thr)
+		if(p[colorselect] > thr)
 		{
 			data[i] = avg;
 			data[i+1] = avg;
 			data[i+2] = avg;
-			data[i+3] = 125;//1.0;//avg;//0.1;//a[cs];
+			data[i+3] = 125;//1.0;//avg;//0.1;//a[colorselect];
 		} 
 	}
 
@@ -96,8 +96,8 @@ fabric.Image.filters.IsolateColor = fabric.util.createClass({
 	
 	//here the "canvas" is the image itself
 	//data[i-canvas.width] points to pixel above
-	var _cs = (cs + 1) % 3;
-	var __cs = (cs + 2) % 3;
+	var _cs = (colorselect + 1) % 3;
+	var __cs = (colorselect + 2) % 3;
 	var RGB = [0,0,0];
 	var P = [0,0,0];
 

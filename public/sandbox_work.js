@@ -397,13 +397,13 @@ Work.prototype.PullComplete = function(i, _q)
 
 	this.simgs[i].f.setCoords();
 	simgs[_q].push(this.simgs[i]);
-	//this.initCrop(i);
+	//this.initCrop(i); - CROPPING - PROBLEMATIC******
 	
 	this.Update();
 	canvas.renderAll();
 }
 
-//INSTANTIATES CROPPING RECTANGLE
+//INSTANTIATES CROPPING RECTANGLE - PROBLEMATIC******
 Work.prototype.initCrop = function(i)
 {
 	var l = -this.simgs[i].f.width*0.5;
@@ -419,7 +419,6 @@ Work.prototype.initCrop = function(i)
 		fill: "rgba(255,255,255,0)"
 	});
 
-	//COME BACK TO THIS ISSUE
 	/*
 		var ix = simgs[_q].length-1;
 		var ctx = simgs[_q][ix].f;//canvas.getContext();//
