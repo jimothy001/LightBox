@@ -7,99 +7,23 @@
 		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 		<script type="text/javascript" src="lib/fabric.js"></script>
 	<style>
-		#sandbox {
-				width: 100%;
-				height:90%;
-				background-color: black;
-				position: relative;
-				float: left;
-				display: block;
-		}
-		
-		#tray {
-				width: 100%;
-				height:10%;
-				background-color: black;
-				position: relative;
-				float: left;
-				display: block;
-		}
-
-		.trayimg {
-			width: 100px;
-			height: 100px;
+		#sandbox 
+		{
+			width: 100%;
+			height:90%;
+			background-color: white;
 			position: relative;
 			float: left;
-			background-size: 100px;
+			display: block;
 		}
-
-		.img {
-			width: 20%;
-			height: 70%;
-			position: relative;
-			float: left;
-			/*background-size: 100px;*/
-		}
-	
 	</style>
 	</head>
 	
 	<body>
 		<canvas id="sandbox" width="1280" height="600"></canvas>
-
-		<!--<div id="sandbox"></div>-->
-		<!--<img src = "/art/1.jpg" id = "art1">
-		<img src = "/art/2.jpg" id = "art2">
-		<img src = "/art/3.jpg" id = "art3">
-		<img src = "/art/4.jpg" id = "art4">
-		<img src = "/art/5.jpg" id = "art5">
-		<img src = "/art/6.jpg" id = "art6">
-		<img src = "/art/7.jpg" id = "art7">
-		<img src = "/art/8.jpg" id = "art8">
-		<img src = "/art/9.jpg" id = "art9">
-		<img src = "/art/10.jpg" id = "art10">-->
-		<div id="tray"></div>
-
-	<script type="text/javascript" src="sandbox.js" ></script>  
-
-	<!--<script>
-		
-		var i = 0;
-		var images = [];
-		getMoreArt();
-		$("#preview").hide();
-		$("#preview").on("click", function() {
-			$(this).hide();
-			$("#map").css("opacity", 1);
-
-		});
 	
-		function getMoreArt() {
-			$.get("http://api.harvardartmuseums.org/object?hasImage=1&sort=random&fields=primaryimageurl&apikey=83cb5d60-e29e-11e3-8aa2-6f2d47dd4045&size=100", function(data) {
-				$.each(data.records, function(j, art) {
-					if(art.primaryimageurl) images.push(art.primaryimageurl);
-				});
-				i++;
-				if(i < 1) getMoreArt();
-				else populateMap();
-			});	
-		}
-		
-		function populateMap() {
-			$.each(images, function(j, val) {
-				var $div = $("<div class='image'></div>");
-				$div.css("background-image", "url('"+val+"')");
-				$("#map").append($div);
-			});
-			
-			$(".image").on("click", function(e) {
-				console.log(this);
-				$("#preview").css("background-image", "url('"+images[$(e.target).index()]+"')");
-				$("#map").css("opacity", .5);
-				$("#preview").show();
-			});
-		}
-	
-	</script>-->
+	<script type="text/javascript" src="sandbox_color.js"></script>
+	<script type="text/javascript" src="sandbox_work.js"></script>
+	<script type="text/javascript" src="sandbox_main.js"></script>
 	</body>
 </html>
