@@ -23,11 +23,11 @@
 		}
 		
 		.image {
-			width: 50px;
-			height: 50px;
+			width: 27px;
+			height: 27px;
 			position: relative;
 			float: left;
-			background-size: 100px;
+			background-size: cover;
 		}
 		
 		#preview {
@@ -87,11 +87,17 @@
 	
 	<script>
 		var i = 0;
-		var images = [];
+		var art = {};
+		art.records = [];
 		var curr = false;
 		var host = window.location.host;
 		var socket = io(host);
-		getMoreArt();
+		var images2 = [];
+		
+		var galleries = ["1006", "1330", "1520", "2100", "2220", "2340", "2410", "2460", "2600", "4000"];
+
+		getMoreArt(0);
+		
 		$("#preview").css("opacity", 0);
 		
 		$("#preview").on("click", function(e) {
@@ -114,23 +120,29 @@
 		socket.on('send-items', function(data) {
 			console.log(data);
 		});
-	
-		function getMoreArt() {
-			$.get("http://api.harvardartmuseums.org/object?hasImage=1&sort=random&fields=primaryimageurl&apikey=83cb5d60-e29e-11e3-8aa2-6f2d47dd4045&size=100", function(data) {
-				$.each(data.records, function(j, art) {
-					if(art.primaryimageurl) images.push(art.primaryimageurl);
+
+
+		function getMoreArt(count) {
+			$.get("http://api.harvardartmuseums.org/object?gallery=any&apikey=f5473230-3f68-11e4-89b4-73adcea7266b&size=100&from="+count, function(data) {
+				console.log(data.info.totalrecords);
+				$.each(data.records, function(j, record) {
+					if(record.primaryimageurl) art.records.push(record);
+					else console.log("no art");
 				});
-				i++;
-				if(i < 2) getMoreArt();
-				else populateMap();
+				var next = count+100;
+				if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
+				else {
+					//$("html").html(JSON.stringify(data));
+					populateMap();
+				}
 			});	
 		}
 		
 		function populateMap() {
-			$.each(images, function(j, val) {
+			$.each(art.records, function(j, val) {
 				var $div = $("<div class='image'></div>");
-				$div.css("background-image", "url('"+val+"')");
-				$div.attr("data-src", val);
+				$div.css("background-image", "url('"+val.primaryimageurl+"')");
+				$div.attr("data-src", val.primaryimageurl);
 				$div.attr("data-index", j);
 				
 				$("#map").append($div);
@@ -138,9 +150,8 @@
 			
 			$(".image").on("click", function(e) {
 				var $img = $("<img class = 'img-preview' src='"+$(this).attr("data-src")+"'><div class='button'>Add to tray</div>");
-				curr = images[$(this).attr("data-index")];
+				curr = art.records[$(this).attr("data-index")];
 				$("#preview").append($img);
-				console.log($img);
 				$("#map").css("opacity", .1);
 				$("#preview").addClass("active");
 				$("#preview").animate({opacity: 1}, 500, function() {
