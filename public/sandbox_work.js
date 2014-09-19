@@ -27,7 +27,7 @@ function Img(_parent, _img)
 	this.parent = _parent;
 	this.f = _img;
 
-	//image sized and positioned as thumbnail
+	//image sized as thumbnail
 	this.tw = Math.round(canvas.width/20); //width
 	this.f.scaleToWidth(this.tw);
 	this.th = this.f.getHeight(); //height

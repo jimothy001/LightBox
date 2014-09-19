@@ -35,12 +35,13 @@ var pullcheck = false; //is the user in the midst of pulling an image?
 var jumpcheck = 0; //if over tray image width triggers jump
 
 //mouse
-var mc = {'x': 0, 'y': 0}; //mouse current
-var mh = {'x': [0,0,0,0,0,0,0,0,0,0], 'y': [0,0,0,0,0,0,0,0,0,0]}; //mouse history
-var ma = {'x': 0, 'y': 0}; //mouse averaged history
-var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
+var mc = {x: 0, y: 0}; //mouse current
+var mh = {x: [0,0,0,0,0,0,0,0,0,0], y: [0,0,0,0,0,0,0,0,0,0]}; //mouse history
+var ma = {x: 0, y: 0}; //mouse averaged history
+var md = {x: 0, y: 0}; //mouse delta = current - averaged history
 						   //used for deciding whether to shift() or pull()
-var mdown = {'x': 0, 'y': 0}; //mouse down coordinates, separate from mouse current
+var mdown = {x: 0, y: 0}; //mouse down coordinates, separate from mouse current
+var px = {x:0, y:0}; //equivilant of mouse position in original image, used for pixel sampling
 
 //temp
 var colorselect = 0; //color select
@@ -59,6 +60,8 @@ var B = 66;
 var _1 = 49;
 var _2 = 50;
 var _3 = 51;
+var Q = 81;
+var W = 87;
 var ESC = 27;
 
 //GET IMAGES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -270,12 +273,13 @@ window.addEventListener("keydown", function(e) //window
 	    }
 	    else
 	    {
-		    if (e.keyCode == R) CullColor(0);
-			else if (e.keyCode == G) CullColor(1);
-		    else if (e.keyCode == B) CullColor(2);
-		    else if (e.keyCode == _1) IsolateColor(0);
-			else if (e.keyCode == _2) IsolateColor(1);
-		    else if (e.keyCode == _3) IsolateColor(2);
+		    if (e.keyCode == R) CullChannel(0);
+			else if (e.keyCode == G) CullChannel(1);
+		    else if (e.keyCode == B) CullChannel(2);
+		    else if (e.keyCode == _1) IsolateChannel(0);
+			else if (e.keyCode == _2) IsolateChannel(1);
+		    else if (e.keyCode == _3) IsolateChannel(2);
+		    else if (e.keyCode == Q) CullColor();
 		    else if (e.keyCode == ESC) ClearFilters();
 		}
 
@@ -349,17 +353,36 @@ function Pull()
 	}
 }
 
-function CullColor(c)
+function CullChannel(c)
 {
 	colorselect = c;
 	F.filters.push(new fabric.Image.filters.CullColor());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
-function IsolateColor(c)
+function IsolateChannel(c)
 {
 	colorselect = c;
 	F.filters.push(new fabric.Image.filters.IsolateColor());
+	F.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function CullColor()
+{
+	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
+	var iw = F.getWidth();
+	var ih = F.getHeight();
+	var ow = F.getOriginalSize().width;
+	var oh = F.getOriginalSize().height;
+	 
+	px = {x:0, y:0};
+	px.x = (mc.x - tl.x) * (ow / iw);
+	px.y = (mc.y - tl.y) * (oh / ih);
+
+	console.log("ow: " + ow + "  " + "oh: " + oh);
+	console.log("px.x: " + px.x + "  " + "px.y: " + px.y);
+
+	F.filters.push(new fabric.Image.filters.CullColor());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
