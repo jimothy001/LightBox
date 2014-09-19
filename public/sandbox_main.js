@@ -77,10 +77,18 @@ function getImage()
 	}
 }
 
+/*socket.on('updated-db', function(data)
+{
+	var data = {};
+	socket.emit('get-items', data);
+});*/
+
 //LISTENS FOR MESSAGE WITH IMAGE URL FROM LOCAL HOST
 //CALL RECEIVEIMAGE()
 socket.on('send-items', function(data)
 {
+	console.log('!');
+
 	//receiveImage(data[0].url);
 	receiveImage("");
 
@@ -92,6 +100,8 @@ socket.on('send-items', function(data)
 //CALL ADDTOTRAY()
 function receiveImage(url)
 {
+	//console.log(url);
+
 	fabric.Image.fromURL('../art/'+imgcount+'.jpg', function(oImg)
 	{
 		AddToTray(oImg);
@@ -138,7 +148,7 @@ canvas.on('mouse:over', function(e)
 	if(typeof(e.target == "object"))
 	{
 		F = e.target;
-		F.set('centeredScaling', true);
+		canvas.setActiveObject(F);
 
 		crop = [];
 		crop.push(-F.width);//getWidth());
@@ -155,6 +165,7 @@ canvas.on('mouse:out', function(e) //when mousing from one object to another thi
 	{
 		F = 0; //make F non-object
 		crop = []; //empty crop rect coordinates
+		canvas.discardActiveObject();
 	}
 });
 
