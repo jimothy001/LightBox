@@ -63,15 +63,31 @@ Work.prototype.TrayParameters = function(f)
 //ASSIGN "SANDBOX" PARAMETERS FOR FABRIC OBJECT
 Work.prototype.SandboxParameters = function(f)
 {
-	f.set('hasBorders',true);
+	f.set('hasBorders',false);
 	f.set('hasControls',true);
+	f.set
+	({
+		cornerColor: 'rgba(50,50,50,0.4)', //'gray',
+		transparentCorners: true
+	});
 	f.set('lockMovementX',false);
 	f.set('lockMovementY',false);
 	f.set('lockRotation',false);
 	f.set('lockScalingX',false);
 	f.set('lockScalingY',false);
+	f.set('centeredScaling', true);
 	f.set('selectable',true);
 	f.set('evented',true);
+	f.set('hasRotatingPoint', false);
+
+	f.set
+	({
+		left: this.img.f.left,
+		top: this.img.f.left,
+		width: this.img.f.width,
+		height: this.img.f.height
+	});
+
 }
 
 //ADDS WORK'S VARS BASED ON THOSE OF CURRENT FABRIC IMAGE
@@ -314,6 +330,8 @@ Work.prototype.Pull = function(q, _q)
 		//AddToTray(oImg);
 		var img = new Img(w, oImg);
 		w.SandboxParameters(img.f);
+		
+
 		w.simgs.push(img);
 		canvas.add(w.simgs[w.simgs.length-1].f);
 
