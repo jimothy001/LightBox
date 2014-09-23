@@ -43,7 +43,10 @@ var md = {'x': 0, 'y': 0}; //mouse delta = current - averaged history
 var mdown = {'x': 0, 'y': 0}; //mouse down coordinates, separate from mouse current
 
 //temp
+var imagezoom = 1;
 var colorselect = 0; //color select
+var zoomselect = 0;
+var zoomdir = 0;
 var imgcount = 1; //number of images that have been added to tray
 var imglimit = 8; //limit for imgcount
 var get = true;  //should we continue asking for images from the local host?
@@ -60,6 +63,11 @@ var _1 = 49;
 var _2 = 50;
 var _3 = 51;
 var ESC = 27;
+
+var A = 65;
+var D = 68;
+var SHIFT = 16;
+
 
 //GET IMAGES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //GET IMAGES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -217,15 +225,20 @@ window.addEventListener("keydown", function(e) //window
 				F.opacity += 0.1;
 			}
 	    }
-	    else if (e.keyCode == UP) //ZOOM IN - PROBLEMATIC******
+	   /* else if (e.keyCode == UP) //ZOOM IN - PROBLEMATIC******
 	    {
+
+	    	console.log('scale larger');
+
 	    	if(F.scaleX < 1.0)
 	    	{
 				var l = F.left;//-F.getWidth()*0.5;
 				var t = F.top;//-F.getHeight()*0.5;
 				var w = F.getWidth();
 				var h = F.getHeight();
-
+				
+				console.log(l);
+				
 				var ctx = canvas.getContext('2d');//F; //
 				
 				F.clipTo = function(ctx)
@@ -239,6 +252,9 @@ window.addEventListener("keydown", function(e) //window
 	    }
 	    else if (e.keyCode == DOWN) //ZOOM OUT - PROBLEMATIC*******
 	    {
+
+	    	console.log('scale smaller');
+
 	    	if(F.scaleX > 0.2) 
 	    	{
 		    	var l = F.left;
@@ -256,7 +272,19 @@ window.addEventListener("keydown", function(e) //window
 		    	F.scaleX -= 0.01;
 		    	F.scaleY -= 0.01;
 	    	}
-	    }
+	    }*/
+
+	    ///SCALING WITH FRAME
+	    else if (e.keyCode == UP) {Zoominframe('scale','in');}
+	    else if (e.keyCode == DOWN) {Zoominframe('scale','out');}
+
+
+	   	///ZOOMING & PANNING WITHIN FRAME
+	   	else if (e.keyCode == A) {ZoomPaninframe('zoom','in');}
+	    else if (e.keyCode == D) {ZoomPaninframe('zoom','out');}
+	   	else if (e.keyCode == SHIFT) {ZoomPaninframe('pan');}	    
+    
+
 	    else
 	    {
 		    if (e.keyCode == R) CullColor(0);
@@ -338,6 +366,37 @@ function Pull()
 	}
 }
 
+function ZoomPaninframe(d,c)
+{
+	direction = c;
+	command = d;
+
+	if(direction == 'scale'){
+		var w_old = F.getWidth();
+		var h_old = F.getHeight();
+		if(zoomdir == 'in'){
+			F.scaleX += 0.01;
+			F.scaleY += 0.01;
+		}
+		if(direction == 'out'){
+			F.scaleX -= 0.01;
+			F.scaleY -= 0.01;
+		}
+		//get new image frame dimensions
+		var w = F.getWidth();
+		var h = F.getHeight();
+		//center image frame
+		F.left = F.left - (w - w_old)/2;
+		F.top = F.top - (h - h_old)/2;
+	}
+
+	if(command == 'zoom' || command == 'pan'){
+	F.filters.push(new fabric.Image.filters.ZoomPaninframe());
+	F.applyFilters(canvas.renderAll.bind(canvas));
+	}
+}
+
+
 function CullColor(c)
 {
 	colorselect = c;
@@ -360,3 +419,6 @@ function ClearFilters()
 	}
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
+
+
+		
