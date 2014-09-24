@@ -381,9 +381,7 @@ function Pull()
 	}
 }
 
-<<<<<<< HEAD
-function CullChannel(c)
-=======
+
 function ZoomPaninframe(d,c)
 {
 	direction = c;
@@ -416,7 +414,6 @@ function ZoomPaninframe(d,c)
 
 
 function CullColor(c)
->>>>>>> krystelle
 {
 	colorselect = c;
 	F.filters.push(new fabric.Image.filters.CullColor());
