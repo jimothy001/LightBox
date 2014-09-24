@@ -280,6 +280,7 @@ window.addEventListener("keydown", function(e) //window
 			else if (e.keyCode == _2) IsolateChannel(1);
 		    else if (e.keyCode == _3) IsolateChannel(2);
 		    else if (e.keyCode == Q) CullColor();
+		    else if (e.keyCode == W) IsolateColor();
 		    else if (e.keyCode == ESC) ClearFilters();
 		}
 
@@ -369,21 +370,15 @@ function IsolateChannel(c)
 
 function CullColor()
 {
-	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
-	var iw = F.getWidth();
-	var ih = F.getHeight();
-	var ow = F.getOriginalSize().width;
-	var oh = F.getOriginalSize().height;
-	 
-	px = {x:0, y:0};
-	px.x = (mc.x - tl.x) * (ow / iw);
-	px.y = (mc.y - tl.y) * (oh / ih);
-
-	console.log("ow: " + ow + "  " + "oh: " + oh);
-	console.log("px.x: " + px.x + "  " + "px.y: " + px.y);
-
+	SetPXCoords();
 	F.filters.push(new fabric.Image.filters.CullColor());
-	//F.filters.push(new fabric.Image.filters.PXTest());
+	F.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function IsolateColor()
+{
+	SetPXCoords();
+	F.filters.push(new fabric.Image.filters.IsolateColor());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
@@ -394,4 +389,17 @@ function ClearFilters()
 		F.filters.pop();
 	}
 	F.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function SetPXCoords()
+{
+	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
+	var iw = F.getWidth();
+	var ih = F.getHeight();
+	var ow = F.getOriginalSize().width;
+	var oh = F.getOriginalSize().height;
+	 
+	px = {x:0, y:0};
+	px.x = (mc.x - tl.x) * (ow / iw);
+	px.y = (mc.y - tl.y) * (oh / ih);
 }
