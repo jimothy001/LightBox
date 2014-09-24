@@ -102,7 +102,7 @@ socket.on('send-items', function(data)
 // - TEMPORARY - USE IMAGE DIRECTLY FROM LOCAL HOST DUE TO PERMISSIONS ISSUE
 //CALL ADDTOTRAY()
 function receiveImage(url)
-{
+{ 
 	//console.log(url);
 
 	fabric.Image.fromURL('../art/'+imgcount+'.jpg', function(oImg)
@@ -383,6 +383,7 @@ function CullColor()
 	console.log("px.x: " + px.x + "  " + "px.y: " + px.y);
 
 	F.filters.push(new fabric.Image.filters.CullColor());
+	//F.filters.push(new fabric.Image.filters.PXTest());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
