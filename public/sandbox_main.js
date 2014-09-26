@@ -182,7 +182,7 @@ canvas.on('mouse:down', function(e)
 	{
 		for(var i in timgs)
 		{
-			if(mdown.x > timgs[i].tx && mdown.x < timgs[i].tx + timgs[i].tw)
+			if(mdown.x > timgs[i].f.left && mdown.x < timgs[i].f.left + timgs[i].f.getWidth())
 			{
 				tgrab = true;
 			}
@@ -190,8 +190,8 @@ canvas.on('mouse:down', function(e)
 	}
 	else if(typeof(e.target) == "object") //for pixel selection
 	{
+		//cropping vars
 		e.target.setCoords();
-
 		var tw = e.target.getWidth();
 		var th = e.target.getHeight();
 		var ta = e.target.getAngle();
@@ -332,9 +332,10 @@ function ShiftAll()
 	{
 		timgs[i].f.setCoords();
 
+		timgs[i].f.left += dx;
 		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
 		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
-		timgs[i].f.left += dx;
+		
 		timgs[i].parent.Update();	
 		canvas.renderAll();
 	}
@@ -374,7 +375,7 @@ function Pull()
 		var d = mdown.x - timgs[i].f.left;
 		var h = canvas.height - (canvas.height/20);
 
-		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
+		if(d > 0 && d < timgs[i].f.getWidth() && mdown.y > h) //if d is between 0 and thumb width
 		{
 			timgs[i].parent.PullDir();
 			break;
