@@ -32,7 +32,6 @@ var adding = true; //are images being added to the tray?
 var right = false; //should an image be moved to the right so that it can make way for an incoming image? If not, left.
 var tgrab = false; //is user trying to grab an image in tray, either to move the tray or pull an image?
 var pullcheck = false; //is the user in the midst of pulling an image?
-var jumpcheck = 0; //if over tray image width triggers jump
 
 //mouse
 var mc = {x: 0, y: 0}; //mouse current
@@ -191,7 +190,7 @@ canvas.on('mouse:down', function(e)
 	{
 		for(var i in timgs)
 		{
-			if(mdown.x > timgs[i].tx && mdown.x < timgs[i].tx + timgs[i].tw)
+			if(mdown.x > timgs[i].f.left && mdown.x < timgs[i].f.left + timgs[i].f.getWidth())
 			{
 				tgrab = true;
 			}
@@ -199,8 +198,8 @@ canvas.on('mouse:down', function(e)
 	}
 	else if(typeof(e.target) == "object") //for pixel selection
 	{
+		//cropping vars
 		e.target.setCoords();
-
 		var tw = e.target.getWidth();
 		var th = e.target.getHeight();
 		var ta = e.target.getAngle();
@@ -308,6 +307,7 @@ window.addEventListener("keydown", function(e) //window
 			else if (e.keyCode == _2) IsolateChannel(1);
 		    else if (e.keyCode == _3) IsolateChannel(2);
 		    else if (e.keyCode == Q) CullColor();
+		    else if (e.keyCode == W) IsolateColor();
 		    else if (e.keyCode == ESC) ClearFilters();
 		}
 
@@ -347,20 +347,50 @@ function trackMouse()
 //SHIFTS ALL IMAGES TRAY
 function ShiftAll()
 {
-	var i = mh.x.length-1;
+	var i = mh.x.length-1; //index for latest in mouse history
 
-	var dx = Math.round(mh.x[i] - mh.x[i-1]);
+	var dir = mh.x[i] - mh.x[i-1];//Math.round(mh.x[i] - mh.x[i-1]); //delta x	
+	var dx = 4;
+
+	if(dir < 0) dx *= -1;
+
+	console.log(dx);
 
 	for(var i in timgs)
 	{
-		timgs[i].f.left += dx;
-		timgs[i].parent.Update();
 		timgs[i].f.setCoords();
+
+		timgs[i].f.left += dx;
 		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
 		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
+		
+		timgs[i].parent.Update();	
+		canvas.renderAll();
 	}
 
-	jumpcheck++;
+/*
+	timgs[0].f.setCoords();
+	if(timgs[0].f.left < tlx) timgs[0].parent.JumpRight();
+	else if(timgs[0].f.left > trx) timgs[0].parent.JumpLeft();
+	timgs[0].f.left += dx;
+	timgs[0].parent.Update();
+	canvas.renderAll();
+
+	for(var j = 1; j < timgs.length; j++) //for(var i in timgs)
+	{
+		timgs[j].f.setCoords();
+		
+		if(timgs[j-1].f.left > tlx) timgs[j].f.left = timgs[j-1].f.left - timgs[j].f.getWidth();
+		else if(j+1 < timgs.length) timgs[j].f.left = timgs[j+1].f.left + timgs[j].f.getWidth();
+		else if(timgs[0].f.left > tlx) timgs[j].f.left = timgs[0].f.left - timgs[j].f.getWidth();
+		//else if(timgs[0].f.left < trx) timgs[j].f.left = timgs[0].f.left - timgs[j].f.getWidth();
+
+		if(timgs[j].f.left < tlx) timgs[j].parent.JumpRight();
+		else if(timgs[j].f.left > trx) timgs[j].parent.JumpLeft();
+		timgs[j].parent.Update();
+	}
+	canvas.renderAll();
+	*/
 }
 
 //FIGURES OUT WHICH IMAGE TO PULL FROM TRAY BASED ON MOUSE POSITION
@@ -373,7 +403,7 @@ function Pull()
 		var d = mdown.x - timgs[i].f.left;
 		var h = canvas.height - (canvas.height/20);
 
-		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
+		if(d > 0 && d < timgs[i].f.getWidth() && mdown.y > h) //if d is between 0 and thumb width
 		{
 			timgs[i].parent.PullDir();
 			break;
@@ -416,34 +446,28 @@ function ZoomPaninframe(d,c)
 function CullColor(c)
 {
 	colorselect = c;
-	F.filters.push(new fabric.Image.filters.CullColor());
+	F.filters.push(new fabric.Image.filters.CullChannel());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
 function IsolateChannel(c)
 {
 	colorselect = c;
-	F.filters.push(new fabric.Image.filters.IsolateColor());
+	F.filters.push(new fabric.Image.filters.IsolateChannel());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
 function CullColor()
 {
-	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
-	var iw = F.getWidth();
-	var ih = F.getHeight();
-	var ow = F.getOriginalSize().width;
-	var oh = F.getOriginalSize().height;
-	 
-	px = {x:0, y:0};
-	px.x = (mc.x - tl.x) * (ow / iw);
-	px.y = (mc.y - tl.y) * (oh / ih);
-
-	console.log("ow: " + ow + "  " + "oh: " + oh);
-	console.log("px.x: " + px.x + "  " + "px.y: " + px.y);
-
+	SetPXCoords();
 	F.filters.push(new fabric.Image.filters.CullColor());
-	//F.filters.push(new fabric.Image.filters.PXTest());
+	F.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function IsolateColor()
+{
+	SetPXCoords();
+	F.filters.push(new fabric.Image.filters.IsolateColor());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
@@ -456,5 +480,16 @@ function ClearFilters()
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
+function SetPXCoords()
+{
+	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
+	var iw = F.getWidth();
+	var ih = F.getHeight();
+	var ow = F.getOriginalSize().width;
+	var oh = F.getOriginalSize().height;
+	 
+	px = {x:0, y:0};
+	px.x = (mc.x - tl.x) * (ow / iw);
+	px.y = (mc.y - tl.y) * (oh / ih);
+}
 
-		

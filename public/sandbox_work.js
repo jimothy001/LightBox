@@ -21,26 +21,21 @@ function Work(_index, _img)
 	this.Update();
 }
 
-//CHILD OF PRIMARY OBJECT THAT CARRIES FABRIC OBJECT - MAY LATER PROVE UNNECESSARY
+//CHILD OF PRIMARY OBJECT THAT CARRIES FABRIC OBJECT - MAY LATER PROVE UNNECESSARY?
 function Img(_parent, _img)
 {
 	this.parent = _parent;
 	this.f = _img;
 
 	//image sized as thumbnail
-	this.tw = Math.round(canvas.width/20); //width
-	this.f.scaleToWidth(this.tw);
-	this.th = this.f.getHeight(); //height
+	var w = Math.round(canvas.width/20); //width
+	this.f.scaleToWidth(w);
+	//this.th = this.f.getHeight(); //height
 
-	this.tx = Math.round(center.x-(this.tw*0.5)); //x pos - left
-	this.ty = canvas.height;//y pos - top
+	this.f.left = Math.round(center.x-(this.f.getWidth()*0.5)); //x pos - left
+	this.f.top = canvas.height;//y pos - top
 	this.tl = false; //true if image is at left end of tray
 	this.tr = false; //true if image is at right end of tray
-	this.selected = false; //true if image is selected
-
-	//set fabric object parameters
-	this.f.left = this.tx;
-	this.f.top = this.ty;
 
 	//rect for cropping
 	this.crop = null;
@@ -93,15 +88,10 @@ Work.prototype.SandboxParameters = function(f)
 //ADDS WORK'S VARS BASED ON THOSE OF CURRENT FABRIC IMAGE
 Work.prototype.Update = function()
 {
-	this.img.tx = this.img.f.left;
-	this.img.ty = this.img.f.top;
-	this.img.tw = this.img.f.getWidth();
-	this.img.th = this.img.f.getHeight();
-
-	/*this.img.crop.width = this.f.getWidth();
-	this.img.crop.height = this.f.getHeight();
-	this.img.crop.left = this.f.left;
-	this.img.crop.top = this.f.top;*/
+	//this.img.tx = this.img.f.left;
+	//this.img.ty = this.img.f.top;
+	//this.img.tw = this.img.f.getWidth();
+	//this.img.th = this.img.f.getHeight();
 }
 
 //ON THUMBNAIL INSTANTIATION/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,7 +111,7 @@ Work.prototype.Tada = function()
 
 	canvas.add(this.img.f); //add little image to canvas immediately
 
-	this.img.f.animate('top', '-='+this.img.th, {
+	this.img.f.animate('top', '-='+this.img.f.getHeight(), { //th
 		onChange: canvas.renderAll.bind(canvas),
 		duration: this.dur,
 		//easing: fabric.util.ease.easeOutBounce,
@@ -139,7 +129,7 @@ Work.prototype.MakeWay = function()
 {
 	var x = this.img.f.left + (this.img.f.getWidth()*0.5);
 
-	if(x == center.x)//
+	if(x == center.x)
 	{
 		if(right==true)
 		{
@@ -169,7 +159,7 @@ Work.prototype.ShiftLeft = function()
 {
 	var w = this;
 
-	this.img.f.animate('left', '-='+this.img.tw, 
+	this.img.f.animate('left', '-='+this.img.f.getWidth(),//tw, 
 		{
 			onChange: canvas.renderAll.bind(canvas),
 			duration: this.dur,
@@ -187,7 +177,7 @@ Work.prototype.ShiftRight = function()
 {
 	var w = this;
 
-	this.img.f.animate('left', '+='+this.img.tw, 
+	this.img.f.animate('left', '+='+this.img.f.getWidth(),//tw, 
 		{
 			onChange: canvas.renderAll.bind(canvas),
 			duration: this.dur,
@@ -214,7 +204,7 @@ Work.prototype.JumpLeft = function()
 	//find jump point at left end of list
 	var imgs = [];
 	imgs = Sort("f.left", timgs);
-	var tx = imgs[0].f.left-this.img.tw;
+	var tx = imgs[0].f.left-this.img.f.getWidth();
 	
 	tlx = tx;
 	this.img.f.left = tx;
@@ -234,8 +224,7 @@ Work.prototype.JumpLeft = function()
 	}
 
 	this.Update();
-	canvas.renderAll();
-	jumpcheck = 0;
+	//canvas.renderAll();
 }
 
 //CAUSES THUMBNAIL TO JUMP TO RIGHT END OF TRAY, 
@@ -247,7 +236,7 @@ Work.prototype.JumpRight = function()
 	//find jump point at right end of list
 	var imgs = [];
 	imgs = Sort("f.left", timgs);
-	var tx = imgs[imgs.length-1].f.left+this.img.tw;
+	var tx = imgs[imgs.length-1].f.left+this.img.f.getWidth();
 
 	trx = tx;
 	this.img.f.left = tx;
@@ -267,8 +256,7 @@ Work.prototype.JumpRight = function()
 	}
 
 	this.Update();
-	canvas.renderAll();
-	jumpcheck = 0;
+	//canvas.renderAll();
 }
 
 //RETURNS ARRAY OF TRAY IMAGES REORDERED BY LEFT X COORDINATE, 
