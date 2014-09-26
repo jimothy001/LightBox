@@ -168,18 +168,20 @@ fabric.Image.filters.CullColor = fabric.util.createClass({
 			data = imageData.data;
 	
 		var p = (((canvas.width * Math.round(px.y)) + Math.round(px.x))*4)-4; //index of pixel
-		var sr = 10; //sample radius	
+		var sr = 5; //sample radius	
 
 		var P = AreaRGBpercentages(p, sr, canvas, data);
 		//console.log("AVG: " + (P[0]*255) + " " + (P[1]*255) + " " + (P[2]*255));
 
-		var thr = 0.08;
+		//var thr = 0.08;
+		var T = FindRGBThreshold(P, data);
+		console.log(T);
 
 		for(var i = 0, len = data.length; i < len; i += 4)
 		{
 			var rgbv = CompareRGB(i, P, data);
 
-			if(rgbv[0] < thr && rgbv[1] < thr && rgbv[2] < thr) //should select color
+			if(rgbv[0] < T[0] && rgbv[1] < T[1] && rgbv[2] < T[2]) //should select color
 			{
 				data[i] = rgbv[3];
 				data[i+1] = rgbv[3];
@@ -213,18 +215,20 @@ fabric.Image.filters.IsolateColor = fabric.util.createClass({
 			data = imageData.data;
 	
 		var p = (((canvas.width * Math.round(px.y)) + Math.round(px.x))*4)-4; //index of pixel
-		var sr = 10; //sample radius	
+		var sr = 5; //sample radius	
 
 		var P = AreaRGBpercentages(p, sr, canvas, data);
 		//console.log("AVG: " + (P[0]*255) + " " + (P[1]*255) + " " + (P[2]*255));
 
-		var thr = 0.02;
+		//var thr = 0.02;
+		var T = FindRGBThreshold(P, data);
+		console.log(T);
 
 		for(var i = 0, len = data.length; i < len; i += 4)
 		{
 			var rgbv = CompareRGB(i, P, data);
 
-			if(rgbv[0] > thr && rgbv[1] > thr && rgbv[2] > thr) //should select color
+			if(rgbv[0] > T[0] && rgbv[1] > T[1] && rgbv[2] > T[2]) //should select color
 			{
 				data[i] = rgbv[3];
 				data[i+1] = rgbv[3];
@@ -283,24 +287,70 @@ var AreaRGBpercentages = function(p, sr, icanvas, data) //pixel index, sample ra
 	return P;
 }
 
+var FindRGBThreshold = function(P, data)
+{
+	var RGB = [0,0,0];
+	for(var i = 0, len = data.length; i < len; i += 4) //get RGB totals from entire image
+	{
+		RGB[0] += data[i];
+		RGB[1] += data[i+1];
+		RGB[2] += data[i+2];
+		//data[i+3]; //leverage alpha?
+	}
+
+	//get avg of RGB to compare against
+	var AVG = [RGB[0]/data.length, RGB[1]/data.length, RGB[2]/data.length]; //rgb avgs
+	var vTOT = AVG[0] + AVG[1] + AVG[2]; //total rgb avgs
+	var pAVG = [AVG[0]/vTOT, AVG[1]/vTOT, AVG[2]/vTOT]; //rgb avgs as percentages
+
+	//get avg of differences between all pixes and RGB avg - to what degree does each color channel vary?
+	var dRGB = [0,0,0];
+	for(var i = 0, len = data.length; i < len; i += 4) //get RGB totals from entire image
+	{
+		dRGB[0] += Math.abs(data[i]-AVG[0]);
+		dRGB[1] += Math.abs(data[i+1]-AVG[1]);
+		dRGB[2] += Math.abs(data[i+2]-AVG[2]);
+	}
+
+	var dTOT = dRGB[0] + dRGB[1] + dRGB[2]; //overall contrast of image
+	var D = [dRGB[0]/dTOT, dRGB[1]/dTOT, dRGB[2]/dTOT]; //percentages of averaged variation from average channel values
+														//if difference between pixel values and sampled values greater than average variation 
+														//(or portion thereof) from all three channels do something
+
+
+	var pdTOT = 1/(dTOT/data.length);
+
+	var adj = 0.75; //try raising and lowering 
+	var T = [0,0,0];
+	T[0] = Math.abs(P[0] - D[0])*adj;//+pdTOT;//-
+	T[1] = Math.abs(P[1] - D[1])*adj;//+pdTOT;
+	T[2] = Math.abs(P[2] - D[2])*adj;//+pdTOT;
+
+	//T[0] = P[0] - (P[0] * D[0]);//Math.abs(pdTOT * D[0]);//Math.abs(P[0] - D[0]);//Math.abs(P[0] - pAVG[0]);//Math.abs(P[0] - D[0]) * pAVG[0];//pAVG[0]*D[0];//Math.abs(pAVG[0] - D[0]);//P[0] * Math.abs(pAVG[0] - D[0]);//D[0] * P[0];//Math.abs(P[0]-pAVG[0])*D[0]; //the higher the dif between P and pAVG the looser the threshold for color removal or isolation
+	//T[1] = P[1] - (P[1] * D[1]);//Math.abs(pdTOT * D[1]);//Math.abs(P[1] - pAVG[1]);//Math.abs(P[1] - D[1]) * pAVG[1];//pAVG[1]*D[1];//Math.abs(pAVG[1] - D[1]);//P[1] * Math.abs(pAVG[1] - D[1]);//D[1] * P[1];//Math.abs(P[1]-pAVG[1])*D[1]; //the lower the dif between P and pAVG the tighter the threshold for color removal or isolation
+	//T[2] = P[2] - (P[2] * D[2]);//Math.abs(pdTOT * D[2]);//Math.abs(P[2] - pAVG[2]);//Math.abs(P[2] - D[2]) * pAVG[2];//pAVG[2]*D[2];//Math.abs(pAVG[2] - D[2]);//P[2] * Math.abs(pAVG[2] - D[2]);//D[2] * P[2];//Math.abs(P[2]-pAVG[2])*D[2];
+
+	return T;
+}
+
 var CompareRGB = function(i, P, data) //index, percentages to compare against, image data
 {
-		var _r = data[i];
-		var _g = data[i+1];
-		var _b = data[i+2];
-		var tot = _r+_g+_b;
-		var avg = tot/3;
+	var _r = data[i];
+	var _g = data[i+1];
+	var _b = data[i+2];
+	var tot = _r+_g+_b;
+	var avg = tot/3;
 
-		var p = //percentages
-		[
-			_r/tot, 
-			_g/tot, 
-			_b/tot
-		];
+	var p = //percentages
+	[
+		_r/tot, 
+		_g/tot, 
+		_b/tot
+	];
 
-		var rgbv = [Math.abs(p[0]-P[0]), Math.abs(p[1]-P[1]), Math.abs(p[2]-P[2]), avg]
-		
-		return rgbv;
+	var rgbv = [Math.abs(p[0]-P[0]), Math.abs(p[1]-P[1]), Math.abs(p[2]-P[2]), avg]
+	
+	return rgbv;
 }
 
 

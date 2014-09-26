@@ -357,14 +357,14 @@ function Pull()
 function CullChannel(c)
 {
 	colorselect = c;
-	F.filters.push(new fabric.Image.filters.CullColor());
+	F.filters.push(new fabric.Image.filters.CullChannel());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
 function IsolateChannel(c)
 {
 	colorselect = c;
-	F.filters.push(new fabric.Image.filters.IsolateColor());
+	F.filters.push(new fabric.Image.filters.IsolateChannel());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
