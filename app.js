@@ -8,7 +8,6 @@ var errorhandler = require('errorhandler');
 var mongoose = require('mongoose');
 
 
-
 var app=express();
 var http=require('http');
 
@@ -34,6 +33,7 @@ app.use(errorhandler({
 	dumpExceptions: true,
 	showStack: true
 }));
+
 
 //make a little server that serves contents of 'public'
 var server = http.createServer(function(req,res){
