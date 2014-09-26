@@ -97,11 +97,6 @@ Work.prototype.Update = function()
 	this.img.ty = this.img.f.top;
 	this.img.tw = this.img.f.getWidth();
 	this.img.th = this.img.f.getHeight();
-
-	/*this.img.crop.width = this.f.getWidth();
-	this.img.crop.height = this.f.getHeight();
-	this.img.crop.left = this.f.left;
-	this.img.crop.top = this.f.top;*/
 }
 
 //ON THUMBNAIL INSTANTIATION/////////////////////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +134,9 @@ Work.prototype.MakeWay = function()
 {
 	var x = this.img.f.left + (this.img.f.getWidth()*0.5);
 
-	if(x == center.x)//
+	//this.ShiftRight();
+
+	if(x == center.x)
 	{
 		if(right==true)
 		{
@@ -234,8 +231,7 @@ Work.prototype.JumpLeft = function()
 	}
 
 	this.Update();
-	canvas.renderAll();
-	jumpcheck = 0;
+	//canvas.renderAll();
 }
 
 //CAUSES THUMBNAIL TO JUMP TO RIGHT END OF TRAY, 
@@ -267,8 +263,7 @@ Work.prototype.JumpRight = function()
 	}
 
 	this.Update();
-	canvas.renderAll();
-	jumpcheck = 0;
+	//canvas.renderAll();
 }
 
 //RETURNS ARRAY OF TRAY IMAGES REORDERED BY LEFT X COORDINATE, 

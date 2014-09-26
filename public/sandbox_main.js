@@ -32,7 +32,6 @@ var adding = true; //are images being added to the tray?
 var right = false; //should an image be moved to the right so that it can make way for an incoming image? If not, left.
 var tgrab = false; //is user trying to grab an image in tray, either to move the tray or pull an image?
 var pullcheck = false; //is the user in the midst of pulling an image?
-var jumpcheck = 0; //if over tray image width triggers jump
 
 //mouse
 var mc = {x: 0, y: 0}; //mouse current
@@ -320,20 +319,49 @@ function trackMouse()
 //SHIFTS ALL IMAGES TRAY
 function ShiftAll()
 {
-	var i = mh.x.length-1;
+	var i = mh.x.length-1; //index for latest in mouse history
 
-	var dx = Math.round(mh.x[i] - mh.x[i-1]);
+	var dir = mh.x[i] - mh.x[i-1];//Math.round(mh.x[i] - mh.x[i-1]); //delta x	
+	var dx = 4;
+
+	if(dir < 0) dx *= -1;
+
+	console.log(dx);
 
 	for(var i in timgs)
 	{
-		timgs[i].f.left += dx;
-		timgs[i].parent.Update();
 		timgs[i].f.setCoords();
+
 		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
 		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
+		timgs[i].f.left += dx;
+		timgs[i].parent.Update();	
+		canvas.renderAll();
 	}
 
-	jumpcheck++;
+/*
+	timgs[0].f.setCoords();
+	if(timgs[0].f.left < tlx) timgs[0].parent.JumpRight();
+	else if(timgs[0].f.left > trx) timgs[0].parent.JumpLeft();
+	timgs[0].f.left += dx;
+	timgs[0].parent.Update();
+	canvas.renderAll();
+
+	for(var j = 1; j < timgs.length; j++) //for(var i in timgs)
+	{
+		timgs[j].f.setCoords();
+		
+		if(timgs[j-1].f.left > tlx) timgs[j].f.left = timgs[j-1].f.left - timgs[j].f.getWidth();
+		else if(j+1 < timgs.length) timgs[j].f.left = timgs[j+1].f.left + timgs[j].f.getWidth();
+		else if(timgs[0].f.left > tlx) timgs[j].f.left = timgs[0].f.left - timgs[j].f.getWidth();
+		//else if(timgs[0].f.left < trx) timgs[j].f.left = timgs[0].f.left - timgs[j].f.getWidth();
+
+		if(timgs[j].f.left < tlx) timgs[j].parent.JumpRight();
+		else if(timgs[j].f.left > trx) timgs[j].parent.JumpLeft();
+		timgs[j].parent.Update();
+	}
+	canvas.renderAll();
+	*/
 }
 
 //FIGURES OUT WHICH IMAGE TO PULL FROM TRAY BASED ON MOUSE POSITION
