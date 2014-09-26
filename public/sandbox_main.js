@@ -32,6 +32,7 @@ var adding = true; //are images being added to the tray?
 var right = false; //should an image be moved to the right so that it can make way for an incoming image? If not, left.
 var tgrab = false; //is user trying to grab an image in tray, either to move the tray or pull an image?
 var pullcheck = false; //is the user in the midst of pulling an image?
+var jumpcheck = 0; //if over tray image width triggers jump
 
 //mouse
 var mc = {x: 0, y: 0}; //mouse current
@@ -190,7 +191,7 @@ canvas.on('mouse:down', function(e)
 	{
 		for(var i in timgs)
 		{
-			if(mdown.x > timgs[i].f.left && mdown.x < timgs[i].f.left + timgs[i].f.getWidth())
+			if(mdown.x > timgs[i].tx && mdown.x < timgs[i].tx + timgs[i].tw)
 			{
 				tgrab = true;
 			}
@@ -198,8 +199,8 @@ canvas.on('mouse:down', function(e)
 	}
 	else if(typeof(e.target) == "object") //for pixel selection
 	{
-		//cropping vars
 		e.target.setCoords();
+
 		var tw = e.target.getWidth();
 		var th = e.target.getHeight();
 		var ta = e.target.getAngle();
@@ -307,7 +308,6 @@ window.addEventListener("keydown", function(e) //window
 			else if (e.keyCode == _2) IsolateChannel(1);
 		    else if (e.keyCode == _3) IsolateChannel(2);
 		    else if (e.keyCode == Q) CullColor();
-		    else if (e.keyCode == W) IsolateColor();
 		    else if (e.keyCode == ESC) ClearFilters();
 		}
 
@@ -347,50 +347,20 @@ function trackMouse()
 //SHIFTS ALL IMAGES TRAY
 function ShiftAll()
 {
-	var i = mh.x.length-1; //index for latest in mouse history
+	var i = mh.x.length-1;
 
-	var dir = mh.x[i] - mh.x[i-1];//Math.round(mh.x[i] - mh.x[i-1]); //delta x	
-	var dx = 4;
-
-	if(dir < 0) dx *= -1;
-
-	console.log(dx);
+	var dx = Math.round(mh.x[i] - mh.x[i-1]);
 
 	for(var i in timgs)
 	{
-		timgs[i].f.setCoords();
-
 		timgs[i].f.left += dx;
+		timgs[i].parent.Update();
+		timgs[i].f.setCoords();
 		if(timgs[i].f.left < tlx) timgs[i].parent.JumpRight();
 		else if(timgs[i].f.left > trx) timgs[i].parent.JumpLeft();
-		
-		timgs[i].parent.Update();	
-		canvas.renderAll();
 	}
 
-/*
-	timgs[0].f.setCoords();
-	if(timgs[0].f.left < tlx) timgs[0].parent.JumpRight();
-	else if(timgs[0].f.left > trx) timgs[0].parent.JumpLeft();
-	timgs[0].f.left += dx;
-	timgs[0].parent.Update();
-	canvas.renderAll();
-
-	for(var j = 1; j < timgs.length; j++) //for(var i in timgs)
-	{
-		timgs[j].f.setCoords();
-		
-		if(timgs[j-1].f.left > tlx) timgs[j].f.left = timgs[j-1].f.left - timgs[j].f.getWidth();
-		else if(j+1 < timgs.length) timgs[j].f.left = timgs[j+1].f.left + timgs[j].f.getWidth();
-		else if(timgs[0].f.left > tlx) timgs[j].f.left = timgs[0].f.left - timgs[j].f.getWidth();
-		//else if(timgs[0].f.left < trx) timgs[j].f.left = timgs[0].f.left - timgs[j].f.getWidth();
-
-		if(timgs[j].f.left < tlx) timgs[j].parent.JumpRight();
-		else if(timgs[j].f.left > trx) timgs[j].parent.JumpLeft();
-		timgs[j].parent.Update();
-	}
-	canvas.renderAll();
-	*/
+	jumpcheck++;
 }
 
 //FIGURES OUT WHICH IMAGE TO PULL FROM TRAY BASED ON MOUSE POSITION
@@ -403,7 +373,7 @@ function Pull()
 		var d = mdown.x - timgs[i].f.left;
 		var h = canvas.height - (canvas.height/20);
 
-		if(d > 0 && d < timgs[i].f.getWidth() && mdown.y > h) //if d is between 0 and thumb width
+		if(d > 0 && d < timgs[i].tw && mdown.y > h) //if d is between 0 and thumb width
 		{
 			timgs[i].parent.PullDir();
 			break;
@@ -446,28 +416,34 @@ function ZoomPaninframe(d,c)
 function CullColor(c)
 {
 	colorselect = c;
-	F.filters.push(new fabric.Image.filters.CullChannel());
+	F.filters.push(new fabric.Image.filters.CullColor());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
 function IsolateChannel(c)
 {
 	colorselect = c;
-	F.filters.push(new fabric.Image.filters.IsolateChannel());
+	F.filters.push(new fabric.Image.filters.IsolateColor());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
 function CullColor()
 {
-	SetPXCoords();
-	F.filters.push(new fabric.Image.filters.CullColor());
-	F.applyFilters(canvas.renderAll.bind(canvas));
-}
+	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
+	var iw = F.getWidth();
+	var ih = F.getHeight();
+	var ow = F.getOriginalSize().width;
+	var oh = F.getOriginalSize().height;
+	 
+	px = {x:0, y:0};
+	px.x = (mc.x - tl.x) * (ow / iw);
+	px.y = (mc.y - tl.y) * (oh / ih);
 
-function IsolateColor()
-{
-	SetPXCoords();
-	F.filters.push(new fabric.Image.filters.IsolateColor());
+	console.log("ow: " + ow + "  " + "oh: " + oh);
+	console.log("px.x: " + px.x + "  " + "px.y: " + px.y);
+
+	F.filters.push(new fabric.Image.filters.CullColor());
+	//F.filters.push(new fabric.Image.filters.PXTest());
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
@@ -480,16 +456,221 @@ function ClearFilters()
 	F.applyFilters(canvas.renderAll.bind(canvas));
 }
 
-function SetPXCoords()
-{
-	var tl = {x:F.oCoords.tl.x, y:F.oCoords.tl.y};
-	var iw = F.getWidth();
-	var ih = F.getHeight();
-	var ow = F.getOriginalSize().width;
-	var oh = F.getOriginalSize().height;
-	 
-	px = {x:0, y:0};
-	px.x = (mc.x - tl.x) * (ow / iw);
-	px.y = (mc.y - tl.y) * (oh / ih);
-}
 
+zoomtest()
+function zoomtest(){
+	fabric.Cropzoomimage = fabric.util.createClass(fabric.Image, 
+	{
+	type: 'cropzoomimage',
+	zoomedXY: false,
+	initialize: function(element, options) 
+	{
+		options || (options = {});
+		this.callSuper('initialize', element, options);
+		this.set({
+			orgSrc: element.src,
+			cx: 0, // clip-x
+			cy: 0, // clip-y
+			cw: element.width, // clip-width
+			ch: element.height // clip-height
+		});
+	},
+
+	zoomBy: function(x, y, z, callback) 
+	{
+		if (x || y) { this.zoomedXY = true; }
+		this.cx += x;
+		this.cy += y;
+
+		if (z) {
+			this.cw -= z;
+			this.ch -= z/(this.width/this.height);
+		}
+
+		if (z && !this.zoomedXY) { 
+			// Zoom to center of image initially
+			this.cx = this.width / 2 - (this.cw / 2);
+			this.cy = this.height / 2 - (this.ch / 2);
+		}
+
+		if (this.cw > this.width) { this.cw = this.width; }
+		if (this.ch > this.height) { this.ch = this.height; }
+		if (this.cw < 1) { this.cw = 1; }
+		if (this.ch < 1) { this.ch = 1; }
+		if (this.cx < 0) { this.cx = 0; }
+		if (this.cy < 0) { this.cy = 0; }
+		if (this.cx > this.width - this.cw) { this.cx = this.width - this.cw; }
+		if (this.cy > this.height - this.ch) { this.cy = this.height - this.ch; }
+
+		this.rerender(callback);
+	},
+
+	rerender: function(callback) 
+	{
+		var img = new Image(), obj = this;
+		img.onload = function() {
+			var canvas = fabric.util.createCanvasElement();
+			canvas.width = obj.width;
+			canvas.height = obj.height;
+			canvas.getContext('2d').drawImage(this, obj.cx, obj.cy, obj.cw, obj.ch, 0, 0, obj.width, obj.height);
+
+			img.onload = function() {
+				obj.setElement(this);
+				obj.applyFilters(demo.canvas.renderAll.bind(demo.canvas));
+				obj.set({
+					left: obj.left,
+					top: obj.top,
+					angle: obj.angle
+				});
+				obj.setCoords();
+				if (callback) { callback(obj); }
+			};
+			img.src = canvas.toDataURL('image/png');
+		};
+		img.src = this.orgSrc;
+
+	},
+
+	toObject: function()
+	{
+		return fabric.util.object.extend(this.callSuper('toObject'), {
+			orgSrc: this.orgSrc,
+			cx: this.cx,
+			cy: this.cy,
+			cw: this.cw,
+			ch: this.ch
+		});
+	}
+});
+
+fabric.Cropzoomimage.async = true;
+fabric.Cropzoomimage.fromObject = function(object, callback) {
+	fabric.util.loadImage(object.src, function(img) {
+		fabric.Image.prototype._initFilters.call(object, object, function(filters) {
+			object.filters = filters || [];
+			var instance = new fabric.Cropzoomimage(img, object);
+			if (callback) { callback(instance); }
+		});
+	}, null, {crossOrigin: 'Anonymous'});
+};
+
+var demo = {
+	canvas: null,
+
+	zoomBy: function(x, y, z) {
+		var activeObject = demo.canvas.getActiveObject();
+		if (activeObject) {
+			activeObject.zoomBy(x, y, z, function(){demo.canvas.renderAll()});
+		}
+	},
+
+	objManip: function(prop, value) {
+		var obj = demo.canvas.getActiveObject();
+		if (!obj) { return true; }
+		
+		switch(prop) {
+			case 'zoomBy-x':
+				obj.zoomBy(value, 0, 0, function(){demo.canvas.renderAll()});
+				break;
+			case 'zoomBy-y':
+				obj.zoomBy(0, value, 0, function(){demo.canvas.renderAll()});
+				break;
+			case 'zoomBy-z':
+				obj.zoomBy(0, 0, value, function(){demo.canvas.renderAll()});
+				break;
+			default:
+				obj.set(prop, obj.get(prop) + value);
+				break;
+		}
+
+		if ('left' === prop || 'top' === prop) { obj.setCoords(); }
+		demo.canvas.renderAll();
+		return false;
+	},
+
+	init: function() {
+		// Init canvas:
+		demo.canvas = new fabric.Canvas('sandbox');
+
+		var img = new Image(); 
+		img.onload = function() {
+			var fImg = new fabric.Cropzoomimage(this, {
+				originX: 'center',
+				originY: 'center',
+				scaleX: 0.25,
+				scaleY: 0.25,
+				left: demo.canvas.getWidth()/2,
+				top: demo.canvas.getHeight()/2
+			});
+			//fImg.setCrossOrigin('anonymous');
+			demo.canvas.add(fImg);
+			demo.canvas.setActiveObject(fImg);
+		};
+		//img.src = 'http://www.webgear.nl/pics/tulips.jpg';
+		img.src = 'art/5.jpg';
+
+
+
+
+
+		this.initKeyboard();
+	},
+
+	initKeyboard: function() {
+		document.onkeydown = function(event) {
+			var key = window.event ? window.event.keyCode : event.keyCode;
+
+			switch(key) {
+				case 68: case 109: // -
+					if (event.shiftKey) {
+						return demo.objManip('zoomBy-x',29); return false;
+					}else{
+						return demo.objManip('zoomBy-z', -100);
+					}
+					return true;
+				case 65: case 107: // +
+					if (event.shiftKey) {
+						return demo.objManip('zoomBy-x',-20); return false;
+					}else{
+						return demo.objManip('zoomBy-z', 100);
+					}
+					return true;
+			/*	case 65: // left
+					if (event.shiftKey) {
+						return demo.objManip('zoomBy-x',-20); return false;
+					}
+					//if (event.ctrlKey || event.metaKey) {
+					//	return demo.objManip('angle', -1);
+					//}
+					return demo.objManip('left', -1);
+				case 68: // right
+					if (event.shiftKey) {
+						return demo.objManip('zoomBy-x',29); return false;
+					}
+					//if (event.ctrlKey || event.metaKey) {
+					//	return demo.objManip('angle', 1);
+					//}
+					return demo.objManip('left', 1);*/
+				case 87: // up
+					if (event.shiftKey) {
+						return demo.objManip('zoomBy-y', -20);
+					}
+					if (!event.ctrlKey && !event.metaKey) {
+						return demo.objManip('top', -1);
+					}
+					return true;
+				case 83: // down
+					if (event.shiftKey) {
+						return demo.objManip('zoomBy-y', 20);
+					}
+					//if (!event.ctrlKey && !event.metaKey) {
+					//	return demo.objManip('top', 1);
+					//}
+					return true;
+			}
+		};
+	}
+};
+
+window.onload = function() { demo.init(); };
+}

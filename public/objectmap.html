@@ -4,7 +4,9 @@
 
 		<title>SANDBOX</title>
 			
-
+		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+			<script src="lib/color-thief.js"></script>
 	<style>
 	
 		body {
@@ -26,13 +28,6 @@
 			position: relative;
 			float: left;
 			background-size: cover;
-		}
-		
-		.image:hover {
-			z-index:1000;
-			-moz-box-shadow: 0 0 8px 3px #ffffff;
-			-webkit-box-shadow: 0 0 8px 3px #ffffff;
-			box-shadow: 0 0 8px 3px #ffffff;
 		}
 		
 		#preview {
@@ -78,22 +73,9 @@
 		
 		.button:hover {
 			text-decoration: underline;
-			cursor: pointer;			
-		}
-		
-		.metadata {
-			position: absolute;
-			color: white;
-			opacity: .6;
-			font-family: sans-serif;
-		}
-		
-		.metadata p {
-			background-color: red;
-			margin: 20px;
-			float: left;
-			padding: 3px;
-			clear:both;
+			cursor: pointer;
+
+			
 		}
 	
 	</style>
@@ -102,20 +84,6 @@
 	<body>
 		<div id="map"></div>
 		<div id="preview"></div>
-		
-	<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
-	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-	<script src="lib/color-thief.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
-	
-	<script id="preview-template" type="text/x-handlebars-template">
-		<img class ='img-preview' src='{{primaryimageurl}}'>
-		<div class='button'>Add to tray</div>
-		<div class='metadata'>
-			<p id='sort'></p>
-			<p>description: {{#if description}} {{description}} {{else}} no description {{/if}}</p>
-		</div>
-	</script>
 	
 	<script>
 		var i = 0;
@@ -125,8 +93,6 @@
 		var host = window.location.host;
 		var socket = io(host);
 		var images2 = [];
-		var sort = window.location.search.substr(1);
-		var grid = true;
 		
 		var galleries = ["1006", "1330", "1520", "2100", "2220", "2340", "2410", "2460", "2600", "4000"];
 
@@ -134,53 +100,18 @@
 		
 		$("#preview").css("opacity", 0);
 		
-		
-		$(document).on("click", function(e) {
-			if($(e.target).hasClass("button")) {
+		$("#preview").on("click", function(e) {
+			if($(e.target).hasClass("img-preview")) {
+				$(this).animate({opacity: 0}, 500, function() {
+					$(this).removeClass("active");
+					$(this).empty();
+					$("#map").css("opacity", 1);
+					curr = false;
+				});
+			} else if($(e.target).hasClass("button")) {
 				console.log(curr);
 				socket.emit('add-item', {
 					url: curr
-				});
-			} else if($(e.target).hasClass("image")) {
-				curr = art.records[$(e.target).attr("data-index")];
-				
-				var source = $("#preview-template").html();
-    	
-    		var template = Handlebars.compile(source);
-    		
-			//	var $previewblock = $("<img class ='img-preview' src='"+$(e.target).attr("data-src")+"'><div class='button'>Add to tray</div>");
-			//	var $sort = $("<div class='sort-field'><p>"+sort+": "+curr[sort]+"</p><p>description: "+curr["description"]+"</p></div>");
-			
-				
-			//	$previewblock.append($previewblock);
-				
-				$("#preview").html(template(curr));
-				$("#map").css("opacity", .1);
-				$("#preview").addClass("active");
-				$("#sort").html(sort+": "+curr[sort]); 
-				var $text = $("#preview .metadata");
-				var $img = $("#preview .img-preview");
-				$text.css("margin-left", $img.css("margin-left"));
-				$text.css("margin-top", $img.css("margin-top"));
-				$text.height($img.height());
-				$text.width($img.width());
-				$text.hide();
-				
-				$(".img-preview").on("mouseover", function() {
-					$text.show();
-				});
-				$(".img-preview").on("mouseout", function() {
-					$text.hide();
-				});			
-				$("#preview").animate({opacity: 1}, 500, function() {
-				
-				});
-			} else {
-				$("#preview").animate({opacity: 0}, 500, function() {
-					$("#preview").removeClass("active");
-					$("#preview").empty();
-					$("#map").css("opacity", 1);
-					curr = false;
 				});
 			}
 		});
@@ -190,15 +121,7 @@
 			console.log(data);
 		});
 
-		function customSort(a,b) {
-			if ( a[sort] < b[sort] )
-					return -1;
-			if ( a[sort] > b[sort] )
-					return 1;
-			return 0;
-		
-		}
-		
+
 		function getMoreArt(count) {
 			$.get("http://api.harvardartmuseums.org/object?gallery=any&apikey=f5473230-3f68-11e4-89b4-73adcea7266b&size=100&from="+count, function(data) {
 				console.log(data.info.totalrecords);
@@ -209,7 +132,7 @@
 				var next = count+100;
 				if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
 				else {
-					art.records.sort(customSort);
+					//$("html").html(JSON.stringify(data));
 					populateMap();
 				}
 			});	
@@ -225,7 +148,17 @@
 				$("#map").append($div);
 			});
 			
-	
+			$(".image").on("click", function(e) {
+				var $img = $("<img class = 'img-preview' src='"+$(this).attr("data-src")+"'><div class='button'>Add to tray</div>");
+				curr = art.records[$(this).attr("data-index")];
+				$("#preview").append($img);
+				$("#map").css("opacity", .1);
+				$("#preview").addClass("active");
+				$("#preview").animate({opacity: 1}, 500, function() {
+				
+				});
+
+			});
 		}
 		
 

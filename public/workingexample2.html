@@ -1,0 +1,39 @@
+
+<!DOCTYPE html>
+<html lang="en" ng-app="kitchensink">
+  <head>
+    <meta charset="utf-8">
+
+
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.8/fabric.min.js" ></script>  
+
+  </head>
+  <body>
+
+
+
+
+
+<canvas id="c" width="500" height="500" style="border:1px solid #aaa"></canvas>
+
+<script id="main">(function() {
+  var canvas = this.__canvas = new fabric.Canvas('c');
+  fabric.Object.prototype.transparentCorners = false;
+
+  var radius = 300;
+
+  fabric.Image.fromURL('art/4.jpg', function(img) {
+    img.scale(0.5).set({
+      left: 100,
+      top: 100,
+    });
+    canvas.add(img).setActiveObject(img);
+  });
+
+
+})();
+</script>
+
+
+  </body>
+</html>
