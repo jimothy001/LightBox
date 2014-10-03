@@ -56,7 +56,9 @@ var sample1 = {"accessionyear":"1951","technique":null,"mediacount":0,"edition":
 var sample2 = {"accessionyear":null,"technique":null,"mediacount":0,"edition":null,"totalpageviews":474,"groupcount":0,"people":[{"birthplace":"Nolde, Germany","name":"Emil Nolde","prefix":null,"personid":27860,"role":"Artist","displayorder":1,"culture":"German","displaydate":"1867 - 1956","deathplace":"Seebüll, Germany","displayname":"Emil Nolde"}],"objectnumber":"BR54.117","colorcount":10,"lastupdate":"2014-10-02T04:42:11-0400","rank":139951,"imagecount":2,"description":null,"dateoflastpageview":"2014-09-30","dateoffirstpageview":"2009-05-13","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:78656_dynmc","colors":[{"percent":0.42988179669031,"spectrum":"#d0577c","color":"#7d3219","css3":"#8b4513","hue":"Orange"},{"percent":0.11338061465721,"spectrum":"#c25687","color":"#7d4b32","css3":"#8b4513","hue":"Brown"},{"percent":0.096973995271868,"spectrum":"#2eb45d","color":"#323232","css3":"#2f4f4f","hue":"Grey"},{"percent":0.085768321513002,"spectrum":"#3db657","color":"#321919","css3":"#000000","hue":"Brown"},{"percent":0.070732860520095,"spectrum":"#b65590","color":"#966464","css3":"#808080","hue":"Violet"},{"percent":0.064160756501182,"spectrum":"#a6549c","color":"#7d4b64","css3":"#696969","hue":"Violet"},{"percent":0.040236406619385,"spectrum":"#c25687","color":"#af7d7d","css3":"#bc8f8f","hue":"Red"},{"percent":0.032813238770686,"spectrum":"#e46867","color":"#966432","css3":"#a0522d","hue":"Orange"},{"percent":0.026335697399527,"spectrum":"#c15689","color":"#c89696","css3":"#bc8f8f","hue":"Red"},{"percent":0.011536643026005,"spectrum":"#5e6db3","color":"#4b6464","css3":"#696969","hue":"Blue"}],"dated":"1913","contextualtextcount":0,"copyright":"© Nolde Stiftung Seebüll, Germany","period":null,"url":"http://harvardartmuseums.org/art/223804","provenance":"Städtisches Museum Moritzburg, Halle, 1924, confiscated; by the Nazi government, 1937. Private collection, Germany, sold; [Feigl Gallery], 1954, sold; to Busch-Reisinger Museum, 1954.","images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:78656_dynmc","primarydisplay":1,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"78656"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:13359_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"13359"}],"publicationcount":6,"objectid":223804,"culture":"German","verificationleveldescription":"Good. Object is well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"painting"}],"department":"Busch-Reisinger Museum","state":null,"markscount":0,"contact":"am_moderncontemporary@harvard.edu","titlescount":2,"id":223804,"title":"The Mulatto","verificationlevel":3,"division":"Modern and Contemporary Art","style":null,"commentary":null,"relatedcount":0,"datebegin":1913,"totaluniquepageviews":276,"dimensions":"77.5 x 73 cm (30 1/2 x 28 3/4 in.)\r\nframed: 91.4 x 87.2 x 3 cm (36 x 34 5/16 x 1 3/16 in.)","exhibitioncount":7,"dateend":1913,"creditline":"Harvard Art Museums/Busch-Reisinger Museum, G. David Thompson Fund","imagepermissionlevel":1,"signed":"signed on recto at l.l.: Nolde","century":"20th century","medium":"Oil on canvas","peoplecount":1,"accesslevel":1,"classification":"Paintings"};		
 
 
-addImage(sample1);
+addImage(sample1, order);
+order++;
+addImage(sample2, order);
 
 
 $(document).mousedown(function(options) {
@@ -116,8 +118,8 @@ $(document).mousemove(function(options) {
 	if(active) {
 		if(secondR && active.oCoords.br.x > currCanvas.width) {
 			secondR.setVisible(true);
-			secondR.setScaleX(active.scaleX);
-			secondR.setScaleY(active.scaleY);
+			secondR.setScaleX(active.getHeight() / secondR.height);
+			secondR.setScaleY(active.getHeight() / secondR.height);
 			secondR.setTop(active.getTop());
 			
 			var dx = currCanvas.width - active.oCoords.bl.x;
@@ -128,8 +130,8 @@ $(document).mousemove(function(options) {
 		
 		if(secondL && active.oCoords.bl.x < 0) {
 			secondL.setVisible(true);
-			secondL.setScaleX(active.scaleX);
-			secondL.setScaleY(active.scaleY);
+			secondL.setScaleX(active.getHeight() / secondL.height);
+			secondL.setScaleY(active.getHeight() / secondL.height);
 			secondL.setTop(active.getTop());
 			
 			var dx = currCanvas.width + active.oCoords.bl.x;;
@@ -170,7 +172,7 @@ $(document).mouseup(function(options) {
 
 
 
-function addImage(objData) {
+function addImage(objData, index) {
 		var w = 200;
 		var h;
 		var obj = {};
@@ -179,13 +181,13 @@ function addImage(objData) {
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
 			oImg.setWidth(w);
 			oImg.setHeight(h);
-			oImg.set("orderid", order);
+			oImg.set("orderid", index);
 			oImg.set("lockRotation",true);
 
 			p1.add(oImg);
 	
 			var group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
-			group.set("orderid", order);
+			group.set("orderid", index);
 			group.set("lockRotation",true);
 			group.setVisible(false);
 			var hcount = 0;
@@ -205,13 +207,13 @@ function addImage(objData) {
 			p2.add(group);
 		});
 		
-		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
+		fabric.Image.fromURL(objData.primaryimageurl, function(oImg)
 		{
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
 
 			oImg.setWidth(w);
 			oImg.setHeight(h);
-			oImg.set("orderid", order);
+			oImg.set("orderid", index);
 			oImg.set("lockRotation",true);
 			oImg.setLeft(-w/2);
 			oImg.setTop(-1.5*h);
@@ -245,7 +247,7 @@ function addImage(objData) {
 
 			oImg.setWidth(w);
 			oImg.setHeight(h);
-			oImg.set("orderid", order);
+			oImg.set("orderid", index);
 			oImg.set("lockRotation",true);
 			oImg.setLeft(-w/2);
 			oImg.setTop(-1.5*h);
@@ -256,7 +258,6 @@ function addImage(objData) {
 		});		
 		
 		activeObjs.push(obj);	
-		order++;
 		
 }
 
