@@ -23,6 +23,10 @@
 		.canvas-container {
 			float:left;
 		}
+		
+		html {
+			overflow: hidden;
+		}
 	</style>
 	</head>
 	
@@ -72,6 +76,7 @@ $(document).mousedown(function(options) {
 		currCanvas = p1;
 		prevcanvas = null;
 		nextcanvas = p2;
+		
 	} else if(id == "p2") {
 		currCanvas = p2;
 		prevcanvas = p1;
@@ -227,42 +232,40 @@ function addImage(objData, index) {
 
 			oImg.setVisible(false);
 			p5.add(oImg);
-	/*		
-			var img2 = fabric.util.object.clone(oImg);
-			var img3 = fabric.util.object.clone(oImg);
-			var group = new fabric.Group([], {left: 0, top: 0, width: w, height: h*3});
 
-			img2.setTop(-h/2);
-			img3.setTop(h/2);
-			RGBify(img2, 2);
-			RGBify(oImg, 0);
-			RGBify(img3, 1);
+		
 
-			group.add(oImg);
-			group.add(img2);
-			group.add(img3);
-			group.set('orderid', order);
-			//
-			p3.add(group);
-			//oImg.on*/
+			var p4group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
+			p4group.set("orderid", index);
+
+			for(var j=1; j < 2; j++) {
+				fabric.Image.fromURL(objData.images[j].baseimageurl, function(oImg2)
+					{
+						var h2 = (oImg2.getHeight() / oImg2.getWidth()) * w;
+						var w2 = w;
+						if (h2 > h ) {
+							h2 = h;
+							w2 = (h2/oImg2.getHeight())*oImg2.getWidth();
+						}
+						oImg2.setWidth(w2);
+						oImg2.setHeight(h2);
+						oImg2.set("lockRotation",true);
+						oImg2.setLeft(-w2/2);
+						oImg2.setTop(-h2/2);
+						console.log(j);
+						oImg2.setVisible(true);		
+						p4group.add(oImg2);
+
+					});		
+					p4group.count = objData.images.length - 2;
+					p4group.curr = p4group.count;
+					p4group.setVisible(false);
+					p4.add(p4group);
+					p4.renderAll()
+				}
 		});
-
-	fabric.Image.fromURL("./art/"+objData.id+"_alt.jpg", function(oImg)
-		{
-			h = (oImg.getHeight() / oImg.getWidth()) * w;
-
-			oImg.setWidth(w);
-			oImg.setHeight(h);
-			oImg.set("orderid", index);
-			oImg.set("lockRotation",true);
-			oImg.setLeft(-w/2);
-			oImg.setTop(-1.5*h);
-
-			oImg.setVisible(false);
-			p4.add(oImg);
-
-		});		
-
+	
+	
 	fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
 		{
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
@@ -273,7 +276,7 @@ function addImage(objData, index) {
 			oImg.set("lockRotation",true);
 			oImg.setLeft(-w/2);
 			oImg.setTop(-1.5*h);
-			Pixelate(oImg, 30)
+			Pixelate(oImg, 25)
 			oImg.setVisible(false);
 			p2.add(oImg);
 
@@ -287,15 +290,21 @@ function RGBify(obj, num) {
 	switch(num) {
 		case 0:
 			obj.filters = [new fabric.Image.filters.Redify()];
+			obj.next = 1;
+			obj.prev = 2;
 			break;
 		case 1:
 			obj.filters = [new fabric.Image.filters.Greenify()];
+			obj.next = 2;
+			obj.prev = 0;
 			break;
 		case 2:
 			obj.filters = [new fabric.Image.filters.Blueify()];
+			obj.next = 0;
+			obj.prev = 1;
 			break;
 	}
-	obj.applyFilters(p5.renderAll.bind(p3));
+	obj.applyFilters(p5.renderAll.bind(p5));
 }
 
 function Pixelate(obj, num) {
@@ -303,8 +312,51 @@ function Pixelate(obj, num) {
       blocksize: num
     })];
 	
-	obj.applyFilters(p2.renderAll.bind(p5));
+	obj.applyFilters(p2.renderAll.bind(p2));
 }
+
+var LEFT = 37;
+var UP = 38;
+var RIGHT = 39;
+var DOWN = 40;
+
+window.addEventListener("keydown", function(e) //window
+{
+	//e = e || window.event;
+	if(currCanvas == p2) {
+			if (e.keyCode == UP && active.filters[0].blocksize > 5) Pixelate(active, active.filters[0].blocksize - 5);
+			else if (e.keyCode == DOWN && active.filters[0].blocksize < 80) {
+				Pixelate(active, active.filters[0].blocksize +5);
+				return false;
+			}
+	} else if(currCanvas == p1) {
+			if (e.keyCode == UP && active.opacity < 1) {
+				active.setOpacity(active.opacity + .1 );
+				p1.renderAll();
+			} else if(e.keyCode == DOWN && active.opacity > .2) {
+				active.setOpacity(active.opacity - .1 );
+				p1.renderAll();
+			}
+	} else if(currCanvas == p5) {
+			if (e.keyCode == UP) {
+				RGBify(active, active.next);
+			} else if(e.keyCode == DOWN) {
+				RGBify(active, active.prev);
+			}		
+	} /*else if(currCanvas == p4) {
+			if (e.keyCode == UP) {
+				active.getObjects()[active.curr].setVisible(false);
+				var next = active.curr + 1;
+				if (next > active.count) next = 0;
+				active.getObjects()[next].setVisible(true);
+				active.curr = next;
+				p4.renderAll();
+			} else if(e.keyCode == DOWN) {
+				console.log(active);
+			}		
+	}*/
+	
+});
 
 </script>
 
