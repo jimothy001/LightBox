@@ -31,6 +31,7 @@
 		<canvas id="p2" width="320" height="600"></canvas>
 		<canvas id="p3" width="320" height="600"></canvas>
 		<canvas id="p4" width="320" height="600"></canvas>
+		<canvas id="p5" width="320" height="600"></canvas>
 		
 		
 		<script type="text/javascript" src="sandbox_channels.js"></script>
@@ -42,6 +43,7 @@ var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
 var p3 = new fabric.Canvas("p3");
 var p4 = new fabric.Canvas("p4");
+var p5 = new fabric.Canvas("p5");
 
 var activeObjs = [];
 var active;
@@ -81,6 +83,10 @@ $(document).mousedown(function(options) {
 	} else if(id == "p4") {
 		currCanvas = p4;
 		prevcanvas = p3;
+		nextcanvas = p5;
+	} else if(id == "p5") {
+		currCanvas = p5;
+		prevcanvas = p4;
 		nextcanvas = null;
 	}
 	
@@ -204,10 +210,10 @@ function addImage(objData, index) {
 					group.add(rect);
 			});
 		
-			p2.add(group);
+			p3.add(group);
 		});
 		
-		fabric.Image.fromURL(objData.primaryimageurl, function(oImg)
+		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
 		{
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
 
@@ -220,7 +226,7 @@ function addImage(objData, index) {
 			RGBify(oImg, 0);
 
 			oImg.setVisible(false);
-			p3.add(oImg);
+			p5.add(oImg);
 	/*		
 			var img2 = fabric.util.object.clone(oImg);
 			var img3 = fabric.util.object.clone(oImg);
@@ -256,6 +262,22 @@ function addImage(objData, index) {
 			p4.add(oImg);
 
 		});		
+
+	fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
+		{
+			h = (oImg.getHeight() / oImg.getWidth()) * w;
+
+			oImg.setWidth(w);
+			oImg.setHeight(h);
+			oImg.set("orderid", index);
+			oImg.set("lockRotation",true);
+			oImg.setLeft(-w/2);
+			oImg.setTop(-1.5*h);
+			Pixelate(oImg, 30)
+			oImg.setVisible(false);
+			p2.add(oImg);
+
+		});				
 		
 		activeObjs.push(obj);	
 		
@@ -273,9 +295,16 @@ function RGBify(obj, num) {
 			obj.filters = [new fabric.Image.filters.Blueify()];
 			break;
 	}
-	obj.applyFilters(p3.renderAll.bind(p3));
+	obj.applyFilters(p5.renderAll.bind(p3));
 }
 
+function Pixelate(obj, num) {
+	obj.filters = [new fabric.Image.filters.Pixelate({
+      blocksize: num
+    })];
+	
+	obj.applyFilters(p2.renderAll.bind(p5));
+}
 
 </script>
 
