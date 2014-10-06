@@ -7,7 +7,7 @@
 //external libraries
 var socket = io.connect();
 var canvas = new fabric.Canvas("sandbox");
-
+canvas.getContext('2D').globalCompositeOperation = 'lighter';
 //spatial parameters
 var center = {'x': canvas.width/2, 'y': canvas.height/2}; //canvas center
 var qw = canvas.width/4; //quadrant width
@@ -288,7 +288,7 @@ window.addEventListener("keydown", function(e) //window
 	    }*/
 
 	    ///SCALING WITH FRAME
-	    else if (e.keyCode == UP) {Zoominframe('scale','in');}
+	    else if (e.keyCode == UP) {RGBify()}
 	    else if (e.keyCode == DOWN) {Zoominframe('scale','out');}
 
 
@@ -493,3 +493,49 @@ function SetPXCoords()
 	px.y = (mc.y - tl.y) * (oh / ih);
 }
 
+function Redify(obj) {
+	obj.filters.push(new fabric.Image.filters.Redify());
+	obj.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function Greenify(obj) {
+	obj.filters.push(new fabric.Image.filters.Greenify());
+	obj.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function Blueify(obj) {
+	obj.filters.push(new fabric.Image.filters.Blueify());
+	obj.applyFilters(canvas.renderAll.bind(canvas));
+}
+
+function RGBify() {
+	console.log(F);
+	var w = 200;
+	var h = (F.getHeight() / F.getWidth()) * w;
+	console.log(h);
+	fabric.Image.fromURL(F.getSrc(), function(oImg1)
+	{
+		canvas.add(oImg1);
+		oImg1.setWidth(w);
+		oImg1.setHeight(h);
+		//oImg.height = F.height;
+		Redify(oImg1);
+	});
+	fabric.Image.fromURL(F.getSrc(), function(oImg2)
+	{
+			canvas.add(oImg2);
+		oImg2.setWidth(w);
+		oImg2.setHeight(h);
+		//oImg.height = F.height;
+		Greenify(oImg2);
+	});
+	fabric.Image.fromURL(F.getSrc(), function(oImg3)
+	{
+			canvas.add(oImg3);
+
+		oImg3.setWidth(w);
+		oImg3.setHeight(h);
+		Blueify(oImg3);
+	});	
+
+}

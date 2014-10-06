@@ -83,13 +83,13 @@
 		
 		.metadata {
 			position: absolute;
-			color: white;
+			background-color: black;
 			opacity: .6;
+			color: white;
 			font-family: sans-serif;
 		}
 		
 		.metadata .p {
-			background-color: red;
 			margin: 20px;
 			float: left;
 			padding: 3px;
@@ -97,8 +97,7 @@
 		}
 		
 		canvas {
-			width: 100%;
-			height: 100%;
+			
 		}
 	
 	</style>
@@ -106,28 +105,30 @@
 	
 	<body>
 		<canvas id="map"></canvas>
-		<div id="preview"></div>
+		<div id="preview">
+			<img class ='img-preview'>
+			<div class='button'>Add to tray</div>
+			<div class='metadata'>
+			<span class="p" id='sort'></span>
+			<span class="p">Description:  <span id="description"></span></span>
+			<span class="p">Title: <span id="title"></span></span>
+			<span class="p">Dated: <span id="date"></span></span>
+			
+		</div></div>
 		
 	<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
-	<script type="text/javascript" src="lib/fabric.js"></script>
 	
 	<script id="preview-template" type="text/x-handlebars-template">
 		<img class ='img-preview' src='{{primaryimageurl}}'>
 		<div class='button'>Add to tray</div>
 		<div class='metadata'>
 			<span class="p" id='sort'></span>
-			<span class="p">description: {{#if description}} {{description}} {{else}} no description {{/if}}</span>
-			{{#if colors}}
-			<span class="p">
-				<ul>colors:
-				{{#each colors}}
-					<li><span style="color:{{color}}">{{hue}} : {{percent}}</span></li>
-				{{/each}}
-				</ul>
-			</span>
-			{{/if}}
+			<span class="p">Description: {{#if description}} {{description}} {{else}} No description {{/if}}</span>
+			<span class="p">Title: {{#if title}} {{title}} {{else}} No title {{/if}}</span>
+			<span class="p">Dated: {{#if dated}} {{dated}} {{else}} No date {{/if}}</span>
+			
 		</div>
 	</script>
 	
@@ -142,34 +143,39 @@
 		var sort = window.location.search.substr(1);
 		var grid = true;
 		
-		var galleries = ["1006", "1330", "1520", "2100", "2220", "2340", "2410", "2460", "2600", "4000"];
-
-
+		var map = document.getElementById('map');
+		var ctx = map.getContext('2d');
+		var h;
+		var itemX = 0;
+	
+		map.height = window.innerHeight - 15;
+		map.width = window.innerWidth - 15;
+		
 		getMoreArt(0);
 		
 		$("#preview").css("opacity", 0);
 		
 		
 		$(document).on("click", function(e) {
+			console.log(e);
 			if($(e.target).hasClass("button")) {
 				console.log(curr);
 				socket.emit('add-item', {
 					url: curr
 				});
-			} else if($(e.target).hasClass("image")) {
-				curr = art.records[$(e.target).attr("data-index")];
+			} else if($(e.target).attr("id") == "map") {
+					var x = Math.floor((e.offsetX) / h);
+					console.log(x);
+					console.log(y);
+					var y = Math.floor((e.offsetY) / h);
+					curr = art.records[y*itemX+x];
 				
-				var source = $("#preview-template").html();
-    	
-    		var template = Handlebars.compile(source);
-    		
-			//	var $previewblock = $("<img class ='img-preview' src='"+$(e.target).attr("data-src")+"'><div class='button'>Add to tray</div>");
-			//	var $sort = $("<div class='sort-field'><p>"+sort+": "+curr[sort]+"</p><p>description: "+curr["description"]+"</p></div>");
+				$("#preview .img-preview").attr("src", curr.primaryimageurl);
+				$("#title").html(curr.title);
+				$("#description").html(curr.description);
+				$("#date").html(curr.dated);
 			
 				
-			//	$previewblock.append($previewblock);
-				
-				$("#preview").html(template(curr));
 				$("#map").css("opacity", .1);
 				$("#preview").addClass("active");
 				$("#sort").html(sort+": "+curr[sort]); 
@@ -190,10 +196,11 @@
 				$("#preview").animate({opacity: 1}, 500, function() {
 				
 				});
-			} else {
-				$("#preview").animate({opacity: 0}, 500, function() {
+			} else {					
+				
+					$("#preview").animate({opacity: 0}, 500, function() {
 					$("#preview").removeClass("active");
-					$("#preview").empty();
+					//$("#preview").empty();
 					$("#map").css("opacity", 1);
 					curr = false;
 				});
@@ -231,16 +238,31 @@
 		}
 		
 		function populateMap() {
-			$.each(art.records, function(j, val) {
-				var $div = $("<div class='image'></div>");
-				$div.css("background-image", "url('"+val.primaryimageurl+"')");
-				$div.attr("data-src", val.primaryimageurl);
-				$div.attr("data-index", j);
-				
-				$("#map").append($div);
-			});
-			
-	
+			h = Math.sqrt((window.innerWidth - 20)*(window.innerHeight-20) / art.records.length);
+			itemX = Math.floor(map.width / h);
+			var x = 0;
+			var y = 0;
+			$.each(art.records, function(j, val) {				
+				setTimeout(function() {
+				var base_image = new Image();
+				base_image.src = val.primaryimageurl;
+				base_image.onload = function(){
+				//	w = (base_image.width / base_image.height) * h;
+					if(x+h > map.width) {
+							x = 0;
+							y += h;
+					}
+					var size = base_image.height;
+					if(base_image.height > base_image.width) size = base_image.width;
+					ctx.drawImage(base_image, 0, 0, size, size, x, y, h, h);		
+					x += h;
+					if(x > map.width) {
+						x = 0;
+						y += h;
+					}	
+				}
+				}, j*100);		
+			});	
 		}
 
 
