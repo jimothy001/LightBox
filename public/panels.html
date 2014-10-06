@@ -17,28 +17,94 @@
 		}
 		
 		canvas {
-			border: 1px solid #ccc;
+
 		}
 		
 		.canvas-container {
 			float:left;
-			margin: 5px;
+			position: 'relative'
 		}
 		
-		html {
-			overflow: hidden;
+		html,body {
+
+			margin: 0;
+			padding: 0;
 		}
+		.closebutton, .maxbutton, .minbutton{
+			position: absolute;
+			z-index: 999;
+			display: none;
+			border-radius: 50%;
+		    width: 40px;
+		    height: 40px;
+		    border: 3px solid #fff;
+		    color: white;
+		    z-index: 999;
+		}
+		.closebutton:hover, .maxbutton:hover, .minbutton:hover{
+			cursor: pointer;
+		}
+		.closebutton{
+		    background: url('img/icon_close.png');
+		}
+		.maxbutton{
+		    background: url('img/icon_max.png');
+		}
+		.minbutton{
+		    background: url('img/icon_min.png');
+		}
+		.panel{
+			margin: 10px;
+			border: 1px solid #ccc;
+		}
+		.panel_zoom{
+			margin: 10px;
+			position: absolute;
+			top: 0;
+			left: 0;
+			display: none;
+			border: 1px solid #ccc;
+		}
+		.divider div{
+			height: 602px;
+			width: 10px;
+			border-left: 1px solid #ccc;
+			border-right: 1px solid #ccc;
+			background: white;
+			position: absolute;
+			top: 10px;
+			z-index: 99999;
+		}
+		.divider div:nth-child(1) {left: 325px;}
+		.divider div:nth-child(2) {left: 645px;}
+		.divider div:nth-child(3) {left: 965px;}
+		.divider div:nth-child(4) {left: 1285px;}
 	</style>
 	</head>
 	
 	<body>
-		<canvas id="p1" width="320" height="600"></canvas>
-		<canvas id="p2" width="320" height="600"></canvas>
-		<canvas id="p3" width="320" height="600"></canvas>
-		<canvas id="p4" width="320" height="600"></canvas>
-		<canvas id="p5" width="320" height="600"></canvas>
+		<div class="closebutton"></div>
+		<div class="maxbutton"></div>
+		<div class="minbutton"></div>
+
+<div class='divider'>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+</div>
+		<canvas id="p1" class="panel" width="320" height="600"></canvas>
+		<canvas id="p2" class="panel" width="320" height="600"></canvas>
+		<canvas id="p3" class="panel" width="320" height="600"></canvas>
+		<canvas id="p4" class="panel" width="320" height="600"></canvas>
+		<canvas id="p5" class="panel" width="320" height="600"></canvas>
 		
+
+<div class="panel_zoom">
+<canvas id="pzoom" width="1600" height="600"></canvas>	
+</div>
 		
+
 		<script type="text/javascript" src="sandbox_channels.js"></script>
 		
 <script>
@@ -50,7 +116,16 @@ var p3 = new fabric.Canvas("p3");
 var p4 = new fabric.Canvas("p4");
 var p5 = new fabric.Canvas("p5");
 
+
+var pzoom = new fabric.Canvas("pzoom");
+
+//keycodes
+var PLUS = 187;
+var MINUS = 189;
+// end keycodes
+
 var activeObjs = [];
+var activezoom;
 var active;
 var secondR;
 var secondL;
@@ -58,6 +133,7 @@ var down = false;
 var currCanvas;
 var nextcanvas;
 var prevcanvas;
+var occur_once = false;
 var order = 0;
 var sample1 = {"accessionyear":"1951","technique":null,"mediacount":0,"edition":null,"totalpageviews":636,"groupcount":1,"people":[{"birthplace":"Paris","name":"Georges Pierre Seurat","prefix":null,"personid":28633,"role":"Artist","displayorder":1,"culture":"French","displaydate":"1859 - 1891","deathplace":"Paris","displayname":"Georges Pierre Seurat"}],"objectnumber":"1951.62","colorcount":10,"lastupdate":"2014-10-02T04:42:16-0400","rank":142,"imagecount":3,"description":null,"dateoflastpageview":"2014-10-01","dateoffirstpageview":"2009-05-16","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251930_dynmc","colors":[{"percent":0.34326241134752,"spectrum":"#86c440","color":"#96964b","css3":"#cd853f","hue":"Green"},{"percent":0.27148936170213,"spectrum":"#2eb45d","color":"#324b32","css3":"#2f4f4f","hue":"Green"},{"percent":0.17475177304965,"spectrum":"#4ab851","color":"#4b6432","css3":"#556b2f","hue":"Green"},{"percent":0.067375886524823,"spectrum":"#8163ab","color":"#9696af","css3":"#a9a9a9","hue":"Blue"},{"percent":0.06645390070922,"spectrum":"#64bc46","color":"#647d32","css3":"#556b2f","hue":"Green"},{"percent":0.022198581560284,"spectrum":"#8c5fa8","color":"#afafaf","css3":"#a9a9a9","hue":"Grey"},{"percent":0.014893617021277,"spectrum":"#c25687","color":"#7d4b32","css3":"#8b4513","hue":"Brown"},{"percent":0.013829787234043,"spectrum":"#c25687","color":"#af967d","css3":"#bc8f8f","hue":"Brown"},{"percent":0.0092198581560284,"spectrum":"#e9715f","color":"#c8af7d","css3":"#d2b48c","hue":"Brown"},{"percent":0.0090070921985816,"spectrum":"#8c5fa8","color":"#c8c8c8","css3":"#c0c0c0","hue":"Grey"}],"dated":"1884-1885","contextualtextcount":0,"copyright":null,"period":null,"url":"http://harvardartmuseums.org/art/229049","provenance":"Georges Lecomte, Paris. [Reid Gallery, Glasgow], sold ; to [Alex Reid and Lefèvre,Ltd., London],  sold; to D. W. T. Cargill, Lanark, Scotland, (1927-1932).Bignou Gallery, New York. Stanley L. Barbee, Beverly Hills, CA, sold; [at his sale, Parke-Bernet, NY, April 20, 1944, no. 17]; to Maurice Wertheim, New York, 1944 - 1951), bequest; to Fogg Art Museum, 1951. \r\n\r\nNotes:\r\nReid Gallery and Lefèvre partnered in the 1920s. Alex Reid and Lefèvre,Ltd., was also known as The Lefevre Gallery.","images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251930_dynmc","primarydisplay":1,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251930"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251959_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251959"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:80668_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"80668"}],"publicationcount":28,"objectid":229049,"culture":"French","verificationleveldescription":"Best. Object is extensively researched, well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"painting"}],"department":"Department of Paintings, Sculpture & Decorative Arts","state":null,"markscount":2,"contact":"am_europeanamerican@harvard.edu","titlescount":1,"id":229049,"title":"Seated Figures, Study for \"A Sunday Afternoon on the Island of La Grande Jatte\"","verificationlevel":4,"division":"European and American Art","style":null,"commentary":null,"relatedcount":1,"datebegin":1884,"totaluniquepageviews":470,"dimensions":"16.2 x 25.5 cm (6 3/8 x 10 1/16 in.)\r\nframed: 38.1 x 47.9 x 8 cm (15 x 18 7/8 x 3 1/8 in.)","exhibitioncount":23,"dateend":1885,"creditline":"Harvard Art Museums/Fogg Museum, Bequest from the Collection of Maurice Wertheim, Class of 1906","imagepermissionlevel":0,"signed":"l.r.: Seurat","century":"19th century","medium":"Oil on panel","peoplecount":1,"accesslevel":1,"classification":"Paintings"};
 var sample2 = {"accessionyear":null,"technique":null,"mediacount":0,"edition":null,"totalpageviews":474,"groupcount":0,"people":[{"birthplace":"Nolde, Germany","name":"Emil Nolde","prefix":null,"personid":27860,"role":"Artist","displayorder":1,"culture":"German","displaydate":"1867 - 1956","deathplace":"Seebüll, Germany","displayname":"Emil Nolde"}],"objectnumber":"BR54.117","colorcount":10,"lastupdate":"2014-10-02T04:42:11-0400","rank":139951,"imagecount":2,"description":null,"dateoflastpageview":"2014-09-30","dateoffirstpageview":"2009-05-13","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:78656_dynmc","colors":[{"percent":0.42988179669031,"spectrum":"#d0577c","color":"#7d3219","css3":"#8b4513","hue":"Orange"},{"percent":0.11338061465721,"spectrum":"#c25687","color":"#7d4b32","css3":"#8b4513","hue":"Brown"},{"percent":0.096973995271868,"spectrum":"#2eb45d","color":"#323232","css3":"#2f4f4f","hue":"Grey"},{"percent":0.085768321513002,"spectrum":"#3db657","color":"#321919","css3":"#000000","hue":"Brown"},{"percent":0.070732860520095,"spectrum":"#b65590","color":"#966464","css3":"#808080","hue":"Violet"},{"percent":0.064160756501182,"spectrum":"#a6549c","color":"#7d4b64","css3":"#696969","hue":"Violet"},{"percent":0.040236406619385,"spectrum":"#c25687","color":"#af7d7d","css3":"#bc8f8f","hue":"Red"},{"percent":0.032813238770686,"spectrum":"#e46867","color":"#966432","css3":"#a0522d","hue":"Orange"},{"percent":0.026335697399527,"spectrum":"#c15689","color":"#c89696","css3":"#bc8f8f","hue":"Red"},{"percent":0.011536643026005,"spectrum":"#5e6db3","color":"#4b6464","css3":"#696969","hue":"Blue"}],"dated":"1913","contextualtextcount":0,"copyright":"© Nolde Stiftung Seebüll, Germany","period":null,"url":"http://harvardartmuseums.org/art/223804","provenance":"Städtisches Museum Moritzburg, Halle, 1924, confiscated; by the Nazi government, 1937. Private collection, Germany, sold; [Feigl Gallery], 1954, sold; to Busch-Reisinger Museum, 1954.","images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:78656_dynmc","primarydisplay":1,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"78656"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:13359_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"13359"}],"publicationcount":6,"objectid":223804,"culture":"German","verificationleveldescription":"Good. Object is well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"painting"}],"department":"Busch-Reisinger Museum","state":null,"markscount":0,"contact":"am_moderncontemporary@harvard.edu","titlescount":2,"id":223804,"title":"The Mulatto","verificationlevel":3,"division":"Modern and Contemporary Art","style":null,"commentary":null,"relatedcount":0,"datebegin":1913,"totaluniquepageviews":276,"dimensions":"77.5 x 73 cm (30 1/2 x 28 3/4 in.)\r\nframed: 91.4 x 87.2 x 3 cm (36 x 34 5/16 x 1 3/16 in.)","exhibitioncount":7,"dateend":1913,"creditline":"Harvard Art Museums/Busch-Reisinger Museum, G. David Thompson Fund","imagepermissionlevel":1,"signed":"signed on recto at l.l.: Nolde","century":"20th century","medium":"Oil on canvas","peoplecount":1,"accesslevel":1,"classification":"Paintings"};		
@@ -69,10 +145,12 @@ addImage(sample2, order);
 order++;
 addImage(sample3, order);
 
+
 $(document).mousedown(function(options) {
 	down = true;
 	secondR = false;
 	secondL = false;
+	occur_once = false;
 	var id = $(options.target).prev().attr("id");
 	if(id == "p1") {
 		currCanvas = p1;
@@ -96,8 +174,7 @@ $(document).mousedown(function(options) {
 		prevcanvas = p4;
 		nextcanvas = null;
 	}
-	
-	
+
 	if(currCanvas.getActiveObject()) {
 		active = currCanvas.getActiveObject();
 		active.bringToFront();
@@ -112,6 +189,7 @@ $(document).mousedown(function(options) {
 
 					nextcanvas.renderAll();
 				}
+				hover_elements();
 			});
 		}
 
@@ -126,11 +204,96 @@ $(document).mousedown(function(options) {
 
 					prevcanvas.renderAll();
 				}
+				hover_elements();
 			});
 		}
 	}
 
+function hover_elements(){
+	var rightcorner_x = active.left+active.getWidth()-50;
+	var rightcorner_y = active.top+20;
+	
+	$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y})
+		.bind( "click", function() {active.remove();$(".closebutton,.maxbutton").hide();});
+
+	$(".maxbutton").css({'left':rightcorner_x,'top':rightcorner_y+60})
+		.bind( "click", function() {
+				if(!occur_once){
+					$(".panel_zoom").show();
+					console.log(active._originalElement.src);
+					var zoom_mult = pzoom.width;
+					fabric.Image.fromURL(active._originalElement.src, function(img) {
+						img.set({
+						//scaleX: zoom_mult,
+						//scaleY: (canvas.height*zoom_mult)/F.height,
+						width: zoom_mult,
+						height: active.height * (zoom_mult/active.width),
+						left: (zoom_mult-pzoom.width)/(-2),
+						top: ((active.height * (zoom_mult/active.width))-pzoom.height)/(-2)
+						});			
+						pzoom.add(img).setActiveObject(img);
+						activezoom = pzoom.getActiveObject();
+
+
+
+
+
+
+					});
+
+				$(".closebutton,.maxbutton").remove();
+				$(".minbutton").css({'left':pzoom.width-50,'top':20}).show()
+				.bind( "click", function() {
+					////REMOVE LARGE DUPLICATE IMAGE
+					if(pzoom.getActiveObject()){
+					pzoom.getActiveObject().remove();
+					}
+					$(".panel_zoom").hide();
+
+					///BRING BACK AND SHOW CLOSE/MAX BUTTONS
+					$("body").append('<div class="closebutton"></div><div class="maxbutton"></div>');
+					$(".minbutton").hide();
+				});
+				}occur_once = true;
+			});
+
+	$(".closebutton,.maxbutton").show();
+	
+}
+
+
+
 });
+
+
+///ON PLUS OR MINUS KEY, ZOOM IN OR OUT
+window.addEventListener("keydown", function(e){
+	///get old dimensions
+	var w_old = activezoom.getWidth();
+	var h_old = activezoom.getHeight();
+	if (e.keyCode == PLUS) {
+		console.log('zoomin');
+		activezoom.scaleX += 0.05;
+		activezoom.scaleY += 0.05;
+	}
+	if (e.keyCode == MINUS) {
+		if(activezoom.getWidth()-(activezoom.getWidth()*0.05) > pzoom.width){
+		console.log(activezoom.getWidth()-(activezoom.getWidth()*0.05)+ ' <= ' +pzoom.width+' can zoom out');
+		activezoom.scaleX -= 0.05;
+		activezoom.scaleY -= 0.05;
+		}
+	}
+	//get new dimensions
+	var w = activezoom.getWidth();
+	var h = activezoom.getHeight();
+	//center image frame
+	activezoom.left = activezoom.left - (w - w_old)/2;
+	activezoom.top = activezoom.top - (h - h_old)/2;
+
+pzoom.renderAll();
+	
+	});
+
 
 $(document).mousemove(function(options) {
 	if(active) {
