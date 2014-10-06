@@ -15,7 +15,9 @@
 		#map {
 				width: 100%;
 				height:100%;
-				position: relative;
+				position: absolute;
+				top: 0px;
+				left: 0px;
 				float: left;
 				display: block;
 		}
@@ -28,11 +30,13 @@
 			background-size: cover;
 		}
 		
-		.image:hover {
+		#highlight {
 			z-index:1000;
 			-moz-box-shadow: 0 0 8px 3px #ffffff;
 			-webkit-box-shadow: 0 0 8px 3px #ffffff;
 			box-shadow: 0 0 8px 3px #ffffff;
+			display: block;
+			position: absolute;
 		}
 		
 		#preview {
@@ -104,6 +108,8 @@
 	</head>
 	
 	<body>
+		<!--	<div id="highlight"></div> -->
+
 		<canvas id="map"></canvas>
 		<div id="preview">
 			<img class ='img-preview'>
@@ -116,21 +122,12 @@
 			
 		</div></div>
 		
+		
 	<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
 	
-	<script id="preview-template" type="text/x-handlebars-template">
-		<img class ='img-preview' src='{{primaryimageurl}}'>
-		<div class='button'>Add to tray</div>
-		<div class='metadata'>
-			<span class="p" id='sort'></span>
-			<span class="p">Description: {{#if description}} {{description}} {{else}} No description {{/if}}</span>
-			<span class="p">Title: {{#if title}} {{title}} {{else}} No title {{/if}}</span>
-			<span class="p">Dated: {{#if dated}} {{dated}} {{else}} No date {{/if}}</span>
-			
-		</div>
-	</script>
+
 	
 	<script>
 		var i = 0;
@@ -154,7 +151,17 @@
 		getMoreArt(0);
 		
 		$("#preview").css("opacity", 0);
-		
+	/*	
+		$(document).on("mousemove", function(e) {
+			var x = Math.floor((e.clientX) / h) * h;
+			var y = Math.floor((e.clientY) / h) * h;
+			console.log(x);
+			console.log(y);
+			$("#highlight").css("top",y);
+			$("#highlight").css("left",x);
+			
+		});
+		*/
 		
 		$(document).on("click", function(e) {
 			console.log(e);
@@ -201,6 +208,7 @@
 				
 					$("#preview").animate({opacity: 0}, 500, function() {
 					$("#preview").removeClass("active");
+					$("#preview .img-preview").attr("src", "");
 					//$("#preview").empty();
 					$("#map").css("opacity", 1);
 					curr = false;
@@ -246,6 +254,12 @@
 				var y = Math.floor(i/itemX)*h;
 				addImage(i, x, y);	
 			}
+			
+			/*
+			$("#highlight").width(h);
+			$("#highlight").height(h);
+			$("#highlight").css("z-index", 1000);
+			*/
 						
 		
 		}
