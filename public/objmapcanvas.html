@@ -170,32 +170,33 @@
 					var y = Math.floor((e.offsetY) / h);
 					curr = art.records[y*itemX+x];
 				
-				$("#preview .img-preview").attr("src", curr.primaryimageurl);
-				$("#title").html(curr.title);
-				$("#description").html(curr.description);
-				$("#date").html(curr.dated);
+					$("#preview .img-preview").attr("src", curr.primaryimageurl);
+					$("#title").html(curr.title);
+					$("#description").html(curr.description);
+					$("#date").html(curr.dated);
 			
 				
-				$("#map").css("opacity", .1);
-				$("#preview").addClass("active");
-				$("#sort").html(sort+": "+curr[sort]); 
-				var $text = $("#preview .metadata");
-				var $img = $("#preview .img-preview");
-				$text.css("margin-left", $img.css("margin-left"));
-				$text.css("margin-top", $img.css("margin-top"));
-				$text.height($img.height());
-				$text.width($img.width());
-				$text.hide();
-				
-				$(".img-preview").on("mouseover", function() {
-					$text.show();
-				});
-				$(".img-preview").on("mouseout", function() {
+					$("#map").css("opacity", .1);
+					$("#preview").addClass("active");
+					$("#sort").html(sort+": "+curr[sort]); 
+					var $text = $("#preview .metadata");
+
 					$text.hide();
-				});			
-				$("#preview").animate({opacity: 1}, 500, function() {
 				
-				});
+					$(".img-preview").on("mouseover", function() {
+						var $img = $("#preview .img-preview");
+						$text.css("margin-left", $img.css("margin-left"));
+						$text.css("margin-top", $img.css("margin-top"));
+						$text.height($img.height());
+						$text.width($img.width());
+						$text.show();
+					});
+					$(".img-preview").on("mouseout", function() {
+						$text.hide();
+					});			
+					$("#preview").animate({opacity: 1}, 500, function() {
+				
+					});
 			} else {					
 				
 					$("#preview").animate({opacity: 0}, 500, function() {
@@ -240,31 +241,28 @@
 		function populateMap() {
 			h = Math.sqrt((window.innerWidth - 20)*(window.innerHeight-20) / art.records.length);
 			itemX = Math.floor(map.width / h);
-			var x = 0;
-			var y = 0;
-			$.each(art.records, function(j, val) {				
-				setTimeout(function() {
-				var base_image = new Image();
-				base_image.src = val.primaryimageurl;
-				base_image.onload = function(){
-				//	w = (base_image.width / base_image.height) * h;
-					if(x+h > map.width) {
-							x = 0;
-							y += h;
-					}
-					var size = base_image.height;
-					if(base_image.height > base_image.width) size = base_image.width;
-					ctx.drawImage(base_image, 0, 0, size, size, x, y, h, h);		
-					x += h;
-					if(x > map.width) {
-						x = 0;
-						y += h;
-					}	
-				}
-				}, j*100);		
-			});	
+			for(i=0; i < art.records.length; i++) {
+				var x = (i % itemX)*h;
+				var y = Math.floor(i/itemX)*h;
+				addImage(i, x, y);	
+			}
+						
+		
 		}
 
+	function addImage(order, x, y) {
+		var base_image = new Image();
+		base_image.src = art.records[order].primaryimageurl;
+		base_image.onload = function(){
+
+		
+			var size = base_image.height;
+			if(base_image.height > base_image.width) size = base_image.width;
+			ctx.drawImage(base_image, 0, 0, size, size, x, y, h, h);		
+			
+			
+		}				
+	}
 
 	
 	</script>
