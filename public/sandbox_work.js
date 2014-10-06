@@ -310,9 +310,10 @@ Work.prototype.PullDir = function()
 //PUSHES IT TO WORKS' ARRAY OF SANDBOX IMAGES, CALLS UP()
 Work.prototype.Pull = function(q, _q)
 {
+
 	var w = this;
 	var i = w.ix+1;
-
+console.log(w);
 	fabric.Image.fromURL('../art/'+i+'.jpg', function(oImg)
 	{
 		//AddToTray(oImg);
@@ -386,11 +387,11 @@ Work.prototype.Up = function(q, _q)
 	{
 		var o = 0.3 + (0.6/l);
 
-		this.simgs[i].f.animate('opacity', o, 
+		/*this.simgs[i].f.animate('opacity', o, 
 		{
 			onChange: canvas.renderAll.bind(canvas),
 			duration: w.dur
-		});
+		});*/
 	}
 }
 

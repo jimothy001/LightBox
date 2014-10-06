@@ -7,7 +7,7 @@
 //external libraries
 var socket = io.connect();
 var canvas = new fabric.Canvas("sandbox");
-canvas.getContext('2D').globalCompositeOperation = 'lighter';
+
 //spatial parameters
 var center = {'x': canvas.width/2, 'y': canvas.height/2}; //canvas center
 var qw = canvas.width/4; //quadrant width
@@ -157,15 +157,10 @@ canvas.on('mouse:move', function(options)
 		else if(md.y < 0) Pull();
 	} 
 });
-var occur_once2 = false;
+
 //ON MOUSEOVER DEFINE GLOBAL WORK VAR AS EVENT TARGET
 canvas.on('mouse:over', function(e)
 {
-
-///IF MOUSE IS ABOVE TRAY
-if(mc.y < canvas.height-130){
-console.log(mc.y + 'abooove the line');
-	occur_once2 = false;
 	if(typeof(e.target == "object"))
 	{
 		F = e.target;
@@ -176,67 +171,9 @@ console.log(mc.y + 'abooove the line');
 		crop.push(-F.height);//.getWidth());
 		crop.push(F.width);//.getWidth());
 		crop.push(F.height);//.getHeight());
-
-		var rightcorner_x = F.left+F.getWidth()-50;
-		var rightcorner_y = F.top+20;
-		//console.log(rightcorner_x);
-		$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y})
-			.bind( "click", function() {F.remove();$(".closebutton,.maxbutton").hide();});
-
-
-	
-		$(".maxbutton").css({'left':rightcorner_x,'top':rightcorner_y+60})
-			.bind( "click", function() {
-				if(!occur_once2){
-				//console.log('canvas width: ' + canvas.width + 'image width: '+ F.width);
-				var zoom_mult = canvas.width
-
-				////DUPLICAT IMAGE AND FILL SCREEN
-				fabric.Image.fromURL(F._originalElement.src, function(img) {
-					img.set({
-					//scaleX: zoom_mult,
-					//scaleY: (canvas.height*zoom_mult)/F.height,
-					width: zoom_mult,
-					height: F.height * (zoom_mult/F.width),
-					left: (zoom_mult-canvas.width)/(-2),
-					top: ((F.height * (zoom_mult/F.width))-canvas.height)/(-2)
-					});			
-					canvas.add(img).setActiveObject(img);
-				});
-
-
-				
-				$(".closebutton,.maxbutton").remove();
-				$(".minbutton").css({'left':canvas.width-50,'top':20}).show()
-				.bind( "click", function() {
-					////REMOVE LARGE DUPLICATE IMAGE
-					F.remove(); 
-					///BRING BACK AND SHOW CLOSE/MAX BUTTONS
-					$("body").append('<div class="closebutton"></div><div class="maxbutton"></div>');
-					$(".minbutton").hide();
-				});
-				
-				}
-				occur_once2 = true;
-
-
-			})
-
-
-
-
-		
-		$(".closebutton,.maxbutton").stop().fadeIn(300);
-
-		
-
-
 	}
-}
-
-
 });
-	
+
 //RESET VARS ON MOUSEOUT, ACCOUNT FOR TIMING
 canvas.on('mouse:out', function(e) //when mousing from one object to another this is called AFTER mouse:over for some reason
 {
@@ -245,7 +182,6 @@ canvas.on('mouse:out', function(e) //when mousing from one object to another thi
 		F = 0; //make F non-object
 		crop = []; //empty crop rect coordinates
 		canvas.discardActiveObject();
-		$(".closebutton,.maxbutton").hide();
 	}
 });
 
@@ -274,7 +210,6 @@ canvas.on('mouse:down', function(e)
 		var th = e.target.getHeight();
 		var ta = e.target.getAngle();
 		var tl = e.target.oCoords.tl;
-		$(".closebutton,.maxbutton").hide();
 	}
 });
 
@@ -283,12 +218,6 @@ canvas.on('mouse:up', function(options)
 {
 	tgrab = false;
 	pullcheck = false;
-		
-		var rightcorner_x = F.left+F.getWidth()-50;
-		var rightcorner_y = F.top+20;
-		$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y}).bind( "click", function() {F.remove();})
-		$(".maxbutton").css({'left':rightcorner_x,'top':rightcorner_y+60})
-		$(".closebutton,.maxbutton").stop().fadeIn(300);
 });
 
 //KEYDOWN EVENTS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,18 +244,60 @@ window.addEventListener("keydown", function(e) //window
 				F.opacity += 0.1;
 			}
 	    }
-	  
+	   /* else if (e.keyCode == UP) //ZOOM IN - PROBLEMATIC******
+	    {
+
+	    	console.log('scale larger');
+
+	    	if(F.scaleX < 1.0)
+	    	{
+				var l = F.left;//-F.getWidth()*0.5;
+				var t = F.top;//-F.getHeight()*0.5;
+				var w = F.getWidth();
+				var h = F.getHeight();
+				
+				console.log(l);
+				
+				var ctx = canvas.getContext('2d');//F; //
+				
+				F.clipTo = function(ctx)
+				{
+					ctx.rect(crop[0],crop[1],crop[2],crop[3]);//ctx.rect(0,0,w,h); // ctx.rect(0,0,1024,1024);//// seems to only be able to reference global vars
+				};
+
+		    	F.scaleX += 0.01;
+		    	F.scaleY += 0.01;
+	    	}
+	    }
+	    else if (e.keyCode == DOWN) //ZOOM OUT - PROBLEMATIC*******
+	    {
+
+	    	console.log('scale smaller');
+
+	    	if(F.scaleX > 0.2) 
+	    	{
+		    	var l = F.left;
+				var t = F.top;
+				var w = F.getWidth();
+				var h = F.getHeight();
+
+				var ctx = canvas.getContext('2d');
+				
+				F.clipTo = function(ctx)
+				{
+					ctx.rect(crop[0],crop[1],crop[2],crop[3]);// seems to only be able to reference global vars
+				};
+
+		    	F.scaleX -= 0.01;
+		    	F.scaleY -= 0.01;
+	    	}
+	    }*/
 
 	    ///SCALING WITH FRAME
 	    else if (e.keyCode == UP) {Zoomwithframe('in');}
-	    else if (e.keyCode == DOWN) {
-	    	if(F.getWidth() <= canvas.width){
-	    	console.log(F.getWidth()+ ' <= ' +canvas.width+' can zoom out');}else{console.log('CANT zoom out');
-	    	Zoomwithframe('out');
-	    	}
-	    }
+	    else if (e.keyCode == DOWN) {Zoomwithframe('out');}
 
-/*
+
 	   	///ZOOMING & PANNING WITHIN FRAME
 	   	else if (e.keyCode == A) {Zoominframe('in');}
 	    else if (e.keyCode == D) {Zoominframe('out');}
@@ -397,7 +368,7 @@ var timer = null, mouseX = 0, mouseY = 0, enableHandler = false;
 
 
 	   	}	    
-    */
+    
 
 	    else
 	    {
@@ -518,12 +489,12 @@ function Zoomwithframe(c)
 	var w_old = F.getWidth();
 	var h_old = F.getHeight();
 	if(direction == 'in'){
-		F.scaleX += 0.05;
-		F.scaleY += 0.05;
+		F.scaleX += 0.01;
+		F.scaleY += 0.01;
 	}
 	if(direction == 'out'){
-		F.scaleX -= 0.05;
-		F.scaleY -= 0.05;
+		F.scaleX -= 0.01;
+		F.scaleY -= 0.01;
 	}
 	//get new image frame dimensions
 	var w = F.getWidth();
@@ -604,49 +575,3 @@ function SetPXCoords()
 	px.y = (mc.y - tl.y) * (oh / ih);
 }
 
-function Redify(obj) {
-	obj.filters.push(new fabric.Image.filters.Redify());
-	obj.applyFilters(canvas.renderAll.bind(canvas));
-}
-
-function Greenify(obj) {
-	obj.filters.push(new fabric.Image.filters.Greenify());
-	obj.applyFilters(canvas.renderAll.bind(canvas));
-}
-
-function Blueify(obj) {
-	obj.filters.push(new fabric.Image.filters.Blueify());
-	obj.applyFilters(canvas.renderAll.bind(canvas));
-}
-
-function RGBify() {
-	console.log(F);
-	var w = 200;
-	var h = (F.getHeight() / F.getWidth()) * w;
-	console.log(h);
-	fabric.Image.fromURL(F.getSrc(), function(oImg1)
-	{
-		canvas.add(oImg1);
-		oImg1.setWidth(w);
-		oImg1.setHeight(h);
-		//oImg.height = F.height;
-		Redify(oImg1);
-	});
-	fabric.Image.fromURL(F.getSrc(), function(oImg2)
-	{
-			canvas.add(oImg2);
-		oImg2.setWidth(w);
-		oImg2.setHeight(h);
-		//oImg.height = F.height;
-		Greenify(oImg2);
-	});
-	fabric.Image.fromURL(F.getSrc(), function(oImg3)
-	{
-			canvas.add(oImg3);
-
-		oImg3.setWidth(w);
-		oImg3.setHeight(h);
-		Blueify(oImg3);
-	});	
-
-}
