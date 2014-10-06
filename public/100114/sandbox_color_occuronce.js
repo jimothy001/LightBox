@@ -12,7 +12,12 @@ fabric.Image.filters.CullChannel = fabric.util.createClass({
 		var context = canvas.getContext('2d'), //E1
 			imageData = context.getImageData(0,0,canvas.width, canvas.height), //E1
 			data = imageData.data;
-	
+
+
+	if(!occur_once){ ///occur_once
+	console.log('once');
+		
+
 	//here the "canvas" is the image itself
 	//data[i-canvas.width] points to pixel above
 	console.log("CullChannel " + colorselect);
@@ -63,6 +68,9 @@ fabric.Image.filters.CullChannel = fabric.util.createClass({
 
 	context.putImageData(imageData, 0,0);
 
+}//end occur_once
+occur_once = true
+
 	}
 });
 
@@ -85,7 +93,12 @@ fabric.Image.filters.IsolateChannel = fabric.util.createClass({
 		var context = canvas.getContext('2d'),
 			imageData = context.getImageData(0,0,canvas.width, canvas.height),
 			data = imageData.data;
-	
+
+
+	if(!occur_once){ ///occur_once
+	console.log('once');
+
+
 	//here the "canvas" is the image itself
 	//data[i-canvas.width] points to pixel above
 	var _cs = (colorselect + 1) % 3;
@@ -144,7 +157,8 @@ fabric.Image.filters.IsolateChannel = fabric.util.createClass({
 	}
 
 	context.putImageData(imageData, 0,0);
-
+} //end occur_once
+occur_once = true
 	}
 });
 
@@ -166,7 +180,10 @@ fabric.Image.filters.CullColor = fabric.util.createClass({
 		var context = canvas.getContext('2d'), 
 			imageData = context.getImageData(0,0,canvas.width, canvas.height), //E1
 			data = imageData.data;
-	
+
+		if(!occur_once){ ///occur_once
+	console.log('once');
+
 		var p = (((canvas.width * Math.round(px.y)) + Math.round(px.x))*4)-4; //index of pixel
 		var sr = 5; //sample radius	
 
@@ -191,6 +208,9 @@ fabric.Image.filters.CullColor = fabric.util.createClass({
 		}
 		
 		context.putImageData(imageData, 0,0);
+} //end occur_once	
+occur_once = true
+
 	}
 });
 
@@ -214,6 +234,11 @@ fabric.Image.filters.IsolateColor = fabric.util.createClass({
 			imageData = context.getImageData(0,0,canvas.width, canvas.height), //E1
 			data = imageData.data;
 	
+
+
+	if(!occur_once){ ///occur_once
+	console.log('once');
+
 		var p = (((canvas.width * Math.round(px.y)) + Math.round(px.x))*4)-4; //index of pixel
 		var sr = 5; //sample radius	
 
@@ -238,6 +263,10 @@ fabric.Image.filters.IsolateColor = fabric.util.createClass({
 		}
 		
 		context.putImageData(imageData, 0,0);
+
+} //end occur_once
+occur_once = true	
+
 	}
 });
 

@@ -16,12 +16,38 @@
 			float: left;
 			display: block;
 		}
+		.closebutton, .maxbutton, .minbutton{
+			position: absolute;
+			z-index: 999;
+			display: none;
+			border-radius: 50%;
+		    width: 40px;
+		    height: 40px;
+		    border: 3px solid #fff;
+		    color: white;
+		    z-index: 999;
+		}
+		.closebutton:hover, .maxbutton:hover, .minbutton:hover{
+			cursor: pointer;
+		}
+		.closebutton{
+		    background: url('img/icon_close.png');
+		}
+		.maxbutton{
+		    background: url('img/icon_max.png');
+		}
+		.minbutton{
+		    background: url('img/icon_min.png');
+		}
 	</style>
 	</head>
 	
 	<body>
+		<div class="closebutton"></div>
+		<div class="maxbutton"></div>
+		<div class="minbutton"></div>
 		<canvas id="sandbox" width="1280" height="600"></canvas>
-		<script type="text/javascript" src="sandbox_zoom.js"></script>
+		<script type="text/javascript" src="sandbox_zoom_pan.js"></script>
 		<script type="text/javascript" src="sandbox_color.js"></script>
 		<script type="text/javascript" src="sandbox_work.js"></script>
 		<script type="text/javascript" src="sandbox_main.js"></script>

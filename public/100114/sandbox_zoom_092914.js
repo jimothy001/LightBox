@@ -13,6 +13,12 @@ fabric.Image.filters.ZoomPaninframe = fabric.util.createClass({
 		imageData = context.getImageData(0,0,canvas.width, canvas.height), //E1
 		data = imageData.data;
 	
+
+		
+		if(!occur_once){
+
+
+
 		//here the "canvas" is the image itself
 		//data[i-canvas.width] points to pixel above
 		
@@ -22,12 +28,15 @@ fabric.Image.filters.ZoomPaninframe = fabric.util.createClass({
 
 		if(command == 'zoom'){
 
-			var scalecrop = 0;
+			//scalecrop += 0.1;
+
+
 				
 			//Scaling commands	
-			if(direction == 'in'){scalecrop = 1.2; }
-			if(direction == 'out'){scalecrop = 0.90;}	
+			if(direction == 'in'){scalecrop += 0.1; }
+			if(direction == 'out'){scalecrop -= 0.1;}	
 
+			var scaled = 1+scalecrop;
 			//Draw image on new temp canvas
 			//	var newCanvas = $("<canvas id='newcanvas'>")
 			//	 .attr("width", imageData.width)
@@ -35,14 +44,20 @@ fabric.Image.filters.ZoomPaninframe = fabric.util.createClass({
 			//	newCanvas.getContext("2d").putImageData(imageData, 0, 0);
 
 			//Center image in frame when zooming
-			var shift_x = -1*((F.getWidth()*scalecrop)-F.getWidth());
-			var shift_y = -1*((F.getHeight()*scalecrop)-F.getHeight());
+			var shift_x = -1*((F.getWidth()*scaled)-F.getWidth());
+			var shift_y = -1*((F.getHeight()*scaled)-F.getHeight());
 
-			context.scale(scalecrop, scalecrop);
+			context.scale(scaled, scaled);
 			context.drawImage(canvas, shift_x, shift_y);
 			var imageData = context.getImageData(0,0,canvas.width, canvas.height); 
 			
 			context.putImageData(imageData, x,y);
+			
+			var new_w = F.getWidth()*scaled;
+			var new_h = F.getWidth()*scaled;
+			console.log('scaled by: '+ scaled);
+			console.log('wxh: '+ F.getWidth()*scaled + ' x ' +F.getHeight()*scaled);
+
 		}
 		
 
@@ -63,9 +78,18 @@ fabric.Image.filters.ZoomPaninframe = fabric.util.createClass({
 		}
 
 
+
+
+
+
+
+		}
+		occur_once = true
 		
 	}
 });
+
+
 
 fabric.Image.filters.ZoomPaninframe.fromObject = function(object)
 {
