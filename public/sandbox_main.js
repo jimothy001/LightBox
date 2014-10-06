@@ -161,13 +161,14 @@ var occur_once2 = false;
 //ON MOUSEOVER DEFINE GLOBAL WORK VAR AS EVENT TARGET
 canvas.on('mouse:over', function(e)
 {
-
+console.log(F);
 ///IF MOUSE IS ABOVE TRAY
 if(mc.y < canvas.height-130){
 console.log(mc.y + 'abooove the line');
 	occur_once2 = false;
 	if(typeof(e.target == "object"))
 	{
+
 		F = e.target;
 		canvas.setActiveObject(F);
 
