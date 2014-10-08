@@ -89,7 +89,10 @@ mongoose.connect(server, function (err, res) {
 });
 
 
-var Art = mongoose.model('Art', {created: Date, url: String});
+var Art = mongoose.model('Art', {
+	created: Date, 
+	objectid: String
+});
 
 
 
@@ -108,30 +111,27 @@ var Art = mongoose.model('Art', {created: Date, url: String});
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-io.sockets.on('connection', function (socket) {
-	
-	//attach a custom user object to the socket
-	socket.user={"sharedData":{}};
-	socket.user.id= ""+count;	//assign a unique id to the user
-
-	socket.user.socket=socket;	//assign the socket to hte user so that each user knows her connection conduit	
-	users[socket.user.id]=socket.user; //register the new user to the list of users
-	socket.user.sharedData.id = socket.user.id;
-
+io.on('connection', function (socket) {
+	console.log("connected!");
 
 	//this event is automatically fired when a user disconnects
 	socket.on('disconnect', function () {
 		//socket.emit('Bye', {"bye":"bye"});
 		//SaveEdit("UserLeft", {"id":socket.user.id, "ci":socket.user.ci, "s_id":socket.id});	//notify all other users that this socket's user left
-		delete users[socket.user.id];    //delete the user from the list
+		console.log("disconnected!");
 	});
 
 
 	socket.on('add-item', function(data) {
-		console.dir(data);
-		var art = new Art({url: data.url, created: new Date()});
-		art.save();
+		console.dir("!!!!!");
 		socket.emit('updated-db', data);
+		var art = new Art({
+			objectid: data.objectid, 
+			created: new Date()
+		});
+		art.save();
+		io.emit('updated-db', data);
+
 	});
 	
 	socket.on('get-items', function(data) {
@@ -140,7 +140,7 @@ io.sockets.on('connection', function (socket) {
 		Art.find().sort('-created').limit(10).exec(function(err, results) {
 			if(err) return res.send(err);
 			console.log(results);
-			socket.emit('send-items', results);
+			io.emit('send-items', results);
 		});
 		
 	});

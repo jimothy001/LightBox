@@ -20,9 +20,14 @@
 
 		}
 		
-		.canvas-container {
+		#panels .canvas-container {
 			float:left;
 			position: 'relative'
+		}
+		
+		#tray {
+			clear: both;
+			margin: 25px 10px 0 10px;
 		}
 		
 		html,body {
@@ -93,32 +98,35 @@
 <div></div>
 <div></div>
 </div>
+
+	<div id="panels">
 		<canvas id="p1" class="panel" width="320" height="600"></canvas>
 		<canvas id="p2" class="panel" width="320" height="600"></canvas>
 		<canvas id="p3" class="panel" width="320" height="600"></canvas>
 		<canvas id="p4" class="panel" width="320" height="600"></canvas>
-		<canvas id="p5" class="panel" width="320" height="600"></canvas>
+	</dic>
+
+		<canvas id="tray" class="tray" width="1275" height="50"></canvas>
 		
 
-<div class="panel_zoom">
-<canvas id="pzoom" width="1600" height="600"></canvas>	
-</div>
+		<div class="panel_zoom">
+			<canvas id="pzoom" width="1275" height="600"></canvas>	
+		</div>
 		
 
 		<script type="text/javascript" src="sandbox_channels.js"></script>
-		
+		<script src="/socket.io/socket.io.js"></script> 
+
 <script>
-//normal
 var p1 = new fabric.Canvas("p1");
-//color bands
 var p2 = new fabric.Canvas("p2");
 var p3 = new fabric.Canvas("p3");
 var p4 = new fabric.Canvas("p4");
-var p5 = new fabric.Canvas("p5");
+
 var pointer = new canvasPointer();
-var canvases = [p1, p2, p3, p4, p5];
+var canvases = [p1, p2, p3, p4];
 
-
+var order = 0;
 
 var pzoom = new fabric.Canvas("pzoom");
 
@@ -128,7 +136,9 @@ var MINUS = 189;
 // end keycodes
 
 var activeObjs = [];
+var dbObjs = [];
 var activeSet = null;
+var trayCount = 0;
 
 var activezoom;
 var active;
@@ -136,19 +146,33 @@ var active;
 var down = false;
 
 var occur_once = false;
-var order = 0;
-var sample1 = {"accessionyear":"1951","technique":null,"mediacount":0,"edition":null,"totalpageviews":636,"groupcount":1,"people":[{"birthplace":"Paris","name":"Georges Pierre Seurat","prefix":null,"personid":28633,"role":"Artist","displayorder":1,"culture":"French","displaydate":"1859 - 1891","deathplace":"Paris","displayname":"Georges Pierre Seurat"}],"objectnumber":"1951.62","colorcount":10,"lastupdate":"2014-10-02T04:42:16-0400","rank":142,"imagecount":3,"description":null,"dateoflastpageview":"2014-10-01","dateoffirstpageview":"2009-05-16","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251930_dynmc","colors":[{"percent":0.34326241134752,"spectrum":"#86c440","color":"#96964b","css3":"#cd853f","hue":"Green"},{"percent":0.27148936170213,"spectrum":"#2eb45d","color":"#324b32","css3":"#2f4f4f","hue":"Green"},{"percent":0.17475177304965,"spectrum":"#4ab851","color":"#4b6432","css3":"#556b2f","hue":"Green"},{"percent":0.067375886524823,"spectrum":"#8163ab","color":"#9696af","css3":"#a9a9a9","hue":"Blue"},{"percent":0.06645390070922,"spectrum":"#64bc46","color":"#647d32","css3":"#556b2f","hue":"Green"},{"percent":0.022198581560284,"spectrum":"#8c5fa8","color":"#afafaf","css3":"#a9a9a9","hue":"Grey"},{"percent":0.014893617021277,"spectrum":"#c25687","color":"#7d4b32","css3":"#8b4513","hue":"Brown"},{"percent":0.013829787234043,"spectrum":"#c25687","color":"#af967d","css3":"#bc8f8f","hue":"Brown"},{"percent":0.0092198581560284,"spectrum":"#e9715f","color":"#c8af7d","css3":"#d2b48c","hue":"Brown"},{"percent":0.0090070921985816,"spectrum":"#8c5fa8","color":"#c8c8c8","css3":"#c0c0c0","hue":"Grey"}],"dated":"1884-1885","contextualtextcount":0,"copyright":null,"period":null,"url":"http://harvardartmuseums.org/art/229049","provenance":"Georges Lecomte, Paris. [Reid Gallery, Glasgow], sold ; to [Alex Reid and Lefèvre,Ltd., London],  sold; to D. W. T. Cargill, Lanark, Scotland, (1927-1932).Bignou Gallery, New York. Stanley L. Barbee, Beverly Hills, CA, sold; [at his sale, Parke-Bernet, NY, April 20, 1944, no. 17]; to Maurice Wertheim, New York, 1944 - 1951), bequest; to Fogg Art Museum, 1951. \r\n\r\nNotes:\r\nReid Gallery and Lefèvre partnered in the 1920s. Alex Reid and Lefèvre,Ltd., was also known as The Lefevre Gallery.","images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251930_dynmc","primarydisplay":1,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251930"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251959_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251959"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:80668_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"80668"}],"publicationcount":28,"objectid":229049,"culture":"French","verificationleveldescription":"Best. Object is extensively researched, well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"painting"}],"department":"Department of Paintings, Sculpture & Decorative Arts","state":null,"markscount":2,"contact":"am_europeanamerican@harvard.edu","titlescount":1,"id":229049,"title":"Seated Figures, Study for \"A Sunday Afternoon on the Island of La Grande Jatte\"","verificationlevel":4,"division":"European and American Art","style":null,"commentary":null,"relatedcount":1,"datebegin":1884,"totaluniquepageviews":470,"dimensions":"16.2 x 25.5 cm (6 3/8 x 10 1/16 in.)\r\nframed: 38.1 x 47.9 x 8 cm (15 x 18 7/8 x 3 1/8 in.)","exhibitioncount":23,"dateend":1885,"creditline":"Harvard Art Museums/Fogg Museum, Bequest from the Collection of Maurice Wertheim, Class of 1906","imagepermissionlevel":0,"signed":"l.r.: Seurat","century":"19th century","medium":"Oil on panel","peoplecount":1,"accesslevel":1,"classification":"Paintings"};
-var sample2 = {"accessionyear":null,"technique":null,"mediacount":0,"edition":null,"totalpageviews":474,"groupcount":0,"people":[{"birthplace":"Nolde, Germany","name":"Emil Nolde","prefix":null,"personid":27860,"role":"Artist","displayorder":1,"culture":"German","displaydate":"1867 - 1956","deathplace":"Seebüll, Germany","displayname":"Emil Nolde"}],"objectnumber":"BR54.117","colorcount":10,"lastupdate":"2014-10-02T04:42:11-0400","rank":139951,"imagecount":2,"description":null,"dateoflastpageview":"2014-09-30","dateoffirstpageview":"2009-05-13","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:78656_dynmc","colors":[{"percent":0.42988179669031,"spectrum":"#d0577c","color":"#7d3219","css3":"#8b4513","hue":"Orange"},{"percent":0.11338061465721,"spectrum":"#c25687","color":"#7d4b32","css3":"#8b4513","hue":"Brown"},{"percent":0.096973995271868,"spectrum":"#2eb45d","color":"#323232","css3":"#2f4f4f","hue":"Grey"},{"percent":0.085768321513002,"spectrum":"#3db657","color":"#321919","css3":"#000000","hue":"Brown"},{"percent":0.070732860520095,"spectrum":"#b65590","color":"#966464","css3":"#808080","hue":"Violet"},{"percent":0.064160756501182,"spectrum":"#a6549c","color":"#7d4b64","css3":"#696969","hue":"Violet"},{"percent":0.040236406619385,"spectrum":"#c25687","color":"#af7d7d","css3":"#bc8f8f","hue":"Red"},{"percent":0.032813238770686,"spectrum":"#e46867","color":"#966432","css3":"#a0522d","hue":"Orange"},{"percent":0.026335697399527,"spectrum":"#c15689","color":"#c89696","css3":"#bc8f8f","hue":"Red"},{"percent":0.011536643026005,"spectrum":"#5e6db3","color":"#4b6464","css3":"#696969","hue":"Blue"}],"dated":"1913","contextualtextcount":0,"copyright":"© Nolde Stiftung Seebüll, Germany","period":null,"url":"http://harvardartmuseums.org/art/223804","provenance":"Städtisches Museum Moritzburg, Halle, 1924, confiscated; by the Nazi government, 1937. Private collection, Germany, sold; [Feigl Gallery], 1954, sold; to Busch-Reisinger Museum, 1954.","images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:78656_dynmc","primarydisplay":1,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"78656"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:13359_dynmc","primarydisplay":0,"publiccaption":null,"copyright":"President and Fellows of Harvard College","renditionnumber":"13359"}],"publicationcount":6,"objectid":223804,"culture":"German","verificationleveldescription":"Good. Object is well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"painting"}],"department":"Busch-Reisinger Museum","state":null,"markscount":0,"contact":"am_moderncontemporary@harvard.edu","titlescount":2,"id":223804,"title":"The Mulatto","verificationlevel":3,"division":"Modern and Contemporary Art","style":null,"commentary":null,"relatedcount":0,"datebegin":1913,"totaluniquepageviews":276,"dimensions":"77.5 x 73 cm (30 1/2 x 28 3/4 in.)\r\nframed: 91.4 x 87.2 x 3 cm (36 x 34 5/16 x 1 3/16 in.)","exhibitioncount":7,"dateend":1913,"creditline":"Harvard Art Museums/Busch-Reisinger Museum, G. David Thompson Fund","imagepermissionlevel":1,"signed":"signed on recto at l.l.: Nolde","century":"20th century","medium":"Oil on canvas","peoplecount":1,"accesslevel":1,"classification":"Paintings"};		
-var sample3 = {"accessionyear":"1951","technique":null,"mediacount":0,"edition":null,"totalpageviews":1030,"groupcount":0,"people":[{"birthplace":"Aix-en-Provence","name":"Paul Cézanne","prefix":null,"personid":31681,"role":"Artist","displayorder":1,"culture":"French","displaydate":"1839 - 1906","deathplace":"Aix-en-Provence","displayname":"Paul Cézanne"}],"objectnumber":"1951.46","colorcount":10,"lastupdate":"2014-10-05T04:15:42-0400","rank":78114,"imagecount":4,"description":null,"dateoflastpageview":"2014-10-04","dateoffirstpageview":"2009-05-14","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251910_dynmc","colors":[{"percent":0.58388888888889,"spectrum":"#3db657","color":"#323219","css3":"#2f4f4f","hue":"Brown"},{"percent":0.087444444444444,"spectrum":"#6cbd45","color":"#7d6432","css3":"#a0522d","hue":"Yellow"},{"percent":0.07,"spectrum":"#59ba4a","color":"#644b32","css3":"#556b2f","hue":"Brown"},{"percent":0.062666666666667,"spectrum":"#b55592","color":"#c8c8af","css3":"#c0c0c0","hue":"Green"},{"percent":0.052722222222222,"spectrum":"#8163ab","color":"#96af96","css3":"#8fbc8f","hue":"Green"},{"percent":0.048777777777778,"spectrum":"#7866ad","color":"#7d967d","css3":"#808080","hue":"Green"},{"percent":0.037944444444444,"spectrum":"#4fb94f","color":"#647d64","css3":"#696969","hue":"Green"},{"percent":0.023555555555556,"spectrum":"#5e6db3","color":"#4b6464","css3":"#696969","hue":"Blue"},{"percent":0.012888888888889,"spectrum":"#b65590","color":"#967d64","css3":"#808080","hue":"Brown"},{"percent":0.0094444444444444,"spectrum":"#9ecb3b","color":"#af9632","css3":"#cd853f","hue":"Yellow"}],"dated":"c. 1887-1888","contextualtextcount":0,"copyright":null,"period":null,"url":"http://harvardartmuseums.org/art/299841","provenance":"[Ambroise Vollard, Paris]. [Thannhauser, Munich]. [Paul Cassirer Gallery, Berlin].\r\nS. Fischer, Berlin, ( by 1918).\"R.P.A.\" (private collector), Paris, (1939).\r\n[Paul Rosenberg, Paris, (by 1939),sold];  to Maurice Wertheim, (1939 - 1951) bequest; to Fogg Art Museum, 1951.\r\n\r\nNotes:\r\nMeier-Graefe lists Fischer as owner in 1918. \r\n","images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251910_dynmc","publiccaption":null,"displayorder":1,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251910"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251916_dynmc","publiccaption":null,"displayorder":2,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251916"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:LEG349_dynmc","publiccaption":null,"displayorder":3,"copyright":"President and Fellows of Harvard College","renditionnumber":"LEG349"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:80500_dynmc","publiccaption":null,"displayorder":4,"copyright":"President and Fellows of Harvard College","renditionnumber":"80500"}],"publicationcount":43,"objectid":299841,"culture":"French","verificationleveldescription":"Best. Object is extensively researched, well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"painting"}],"department":"Department of Paintings, Sculpture & Decorative Arts","state":null,"markscount":4,"contact":"am_europeanamerican@harvard.edu","titlescount":1,"id":299841,"title":"Still Life with Commode","verificationlevel":4,"division":"European and American Art","style":null,"commentary":null,"relatedcount":2,"datebegin":1887,"totaluniquepageviews":648,"dimensions":"63.8 x 79.9 cm (25 1/8 x 31 7/16 in.)\r\nframed: 90.8 x 107 x 8.9 cm (35 3/4 x 42 1/8 x 3 1/2 in.)","exhibitioncount":26,"dateend":1888,"creditline":"Harvard Art Museums/Fogg Museum, Bequest from the Collection of Maurice Wertheim, Class of 1906","imagepermissionlevel":0,"signed":null,"century":"19th century","medium":"Oil on canvas","peoplecount":1,"accesslevel":1,"classification":"Paintings"};
-var sample4 = {"accessionyear":"1943","technique":"Inlaid","mediacount":0,"edition":null,"totalpageviews":30,"groupcount":0,"objectnumber":"1943.52.37.A","colorcount":0,"lastupdate":"2014-10-07T04:17:46-0400","rank":65345,"imagecount":6,"description":null,"dateoflastpageview":"2014-09-10","dateoffirstpageview":"2011-03-21","primaryimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251220_dynmc","dated":"475 BCE - 221 BCE","contextualtextcount":0,"copyright":null,"period":"Zhou dynasty, Warring States period, 475-221 BCE","placeterms":[{"placeid":2028303,"name":"East Asia"},{"placeid":2028317,"name":"China"},{"placeid":2035823,"name":"Henan province"}],"colors":[{"percent":0.58,"spectrum":"#3db657","color":"#c1c1c1","css3":"#2f4f4f","hue":"Brown"},{"percent":0.12,"spectrum":"#3db657","color":"#232127","css3":"#2f4f4f","hue":"Brown"},{"percent":0.15,"spectrum":"#3db657","color":"#605756","css3":"#2f4f4f","hue":"Brown"},{"percent":0.1,"spectrum":"#3db657","color":"#7C6A56","css3":"#2f4f4f","hue":"Brown"},{"percent":0.05,"spectrum":"#3db657","color":"#AE9B82","css3":"#2f4f4f","hue":"Brown"}],"url":"http://harvardartmuseums.org/art/204648","provenance":"Grenville L. Winthrop, New York (by 1943), bequest; to Fogg Art Museum, 1943.","publicationcount":0,"images":[{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251220_dynmc","publiccaption":null,"displayorder":1,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251220"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251219_dynmc","publiccaption":null,"displayorder":2,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251219"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251221_dynmc","publiccaption":null,"displayorder":3,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251221"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251206_dynmc","publiccaption":null,"displayorder":4,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251206"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:DDC251222_dynmc","publiccaption":null,"displayorder":5,"copyright":"President and Fellows of Harvard College","renditionnumber":"DDC251222"},{"baseimageurl":"http://nrs.harvard.edu/urn-3:HUAM:49758_dynmc","publiccaption":null,"displayorder":6,"copyright":"President and Fellows of Harvard College","renditionnumber":"49758"}],"objectid":204648,"culture":"Chinese","verificationleveldescription":"Good. Object is well described and information is vetted","standardreferencenumber":null,"worktypes":[{"worktype":"finial"}],"department":"Department of Asian Art","state":null,"markscount":0,"contact":"am_asianmediterranean@harvard.edu","titlescount":1,"id":204648,"title":"Finial in the Form of an Animal Head (One of a Pair)","verificationlevel":3,"division":"Asian and Mediterranean Art","style":null,"commentary":null,"relatedcount":0,"datebegin":-475,"totaluniquepageviews":20,"dimensions":"H. 3.5 x W. 5.4 x L. 7.6 cm (1 3/8 x 2 1/8 x 3 in.)","exhibitioncount":0,"dateend":-221,"creditline":"Harvard Art Museums/Arthur M. Sackler Museum, Bequest of Grenville L. Winthrop","imagepermissionlevel":0,"signed":null,"century":"5th-3rd century BCE","medium":"Cast bronze with gold and silver inlay","peoplecount":0,"accesslevel":1,"classification":"Ritual Implements"};
 
-addImage(sample1, order);
-order++;
-addImage(sample2, order);
-order++;
-addImage(sample3, order);
-order++;
-addImage(sample4, order);
+var tray = document.getElementById('tray');
+var ctx = tray.getContext('2d');
+var socket = io();
+socket.emit('get-items', {});
+
+socket.on('send-items', function(data)
+{
+	dbObjs = data;
+	addToTray(0);
+});
+
+socket.on('updated-db', function(data)
+{
+	dbObjs.push(data);
+	trayCount = 0;
+	addToTray(0);
+});
+
+
+function grabArt(id) {
+	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
+		addImage(art, order);
+		order++;
+	});	
+}
+
 
 $(document).mousedown(function(options) {
 	down = true;
@@ -167,7 +191,7 @@ $(document).mousedown(function(options) {
 			activeSet[prop].bringToFront();
 		}
 		hover_elements();
-	}
+	} else active = false;
 
 });
 
@@ -266,73 +290,113 @@ pzoom.renderAll();
 
 $(document).mousemove(function(e) {
 	if(active) {
-		if(pointer.r1id() && active.oCoords.br.x > pointer.c.width) {
-			activeSet[pointer.r1id()].setVisible(true);
-			activeSet[pointer.r1id()].setScaleX(active.getHeight() / activeSet[pointer.r1id()].height);
-			activeSet[pointer.r1id()].setScaleY(active.getHeight() / activeSet[pointer.r1id()].height);
-			activeSet[pointer.r1id()].setTop(active.getTop());
+		if(pointer.firstRightID() && active.oCoords.br.x > pointer.c.width) {
+			activeSet[pointer.firstRightID()].setVisible(true);
+			activeSet[pointer.firstRightID()].setScaleX(active.getHeight() / activeSet[pointer.firstRightID()].height);
+			activeSet[pointer.firstRightID()].setScaleY(active.getHeight() / activeSet[pointer.firstRightID()].height);
+			activeSet[pointer.firstRightID()].setTop(active.getTop());
 			
 			var dx = pointer.c.width - active.oCoords.bl.x;
-			activeSet[pointer.r1id()].setLeft(dx*-1);
-			pointer.r1c().renderAll();
+			activeSet[pointer.firstRightID()].setLeft(dx*-1);
+			pointer.FirstRightCanvas().renderAll();
 			
-			if(pointer.r2id() && active.oCoords.br.x > pointer.c.width*2) {
+			if(pointer.SecondRightID() && active.oCoords.br.x > pointer.c.width*2) {
 				var diff = pointer.c.width*2 - active.oCoords.bl.x;
 				console.log(diff);
-				activeSet[pointer.r2id()].setVisible(true);
-				activeSet[pointer.r2id()].setScaleX(active.getHeight() / activeSet[pointer.r2id()].height);
-				activeSet[pointer.r2id()].setScaleY(active.getHeight() / activeSet[pointer.r2id()].height);
-				activeSet[pointer.r2id()].setTop(active.getTop());
+				activeSet[pointer.SecondRightID()].setVisible(true);
+				activeSet[pointer.SecondRightID()].setScaleX(active.getHeight() / activeSet[pointer.SecondRightID()].height);
+				activeSet[pointer.SecondRightID()].setScaleY(active.getHeight() / activeSet[pointer.SecondRightID()].height);
+				activeSet[pointer.SecondRightID()].setTop(active.getTop());
 			
 				var dx = pointer.c.width - active.oCoords.bl.x;
-				activeSet[pointer.r2id()].setLeft(diff*-1);
-				pointer.r2c().renderAll();	
-			} else if(pointer.r2id()){
-				activeSet[pointer.r2id()].setVisible(false);
-				activeSet[pointer.r2id()].setTop(1000);
-				pointer.r2c().renderAll();		
+				activeSet[pointer.SecondRightID()].setLeft(diff*-1);
+				pointer.SecondRightCanvas().renderAll();	
+			
+			
+			
+				if(pointer.ThirdRightID() && active.oCoords.br.x > pointer.c.width*3) {
+						var diff = pointer.c.width*3 - active.oCoords.bl.x;
+						console.log(diff);
+						activeSet[pointer.ThirdRightID()].setVisible(true);
+						activeSet[pointer.ThirdRightID()].setScaleX(active.getHeight() / activeSet[pointer.ThirdRightID()].height);
+						activeSet[pointer.ThirdRightID()].setScaleY(active.getHeight() / activeSet[pointer.ThirdRightID()].height);
+						activeSet[pointer.ThirdRightID()].setTop(active.getTop());
+			
+						var dx = pointer.c.width - active.oCoords.bl.x;
+						activeSet[pointer.ThirdRightID()].setLeft(diff*-1);
+						pointer.ThirdRightCanvas().renderAll();		
+							
+				} else if(pointer.ThirdRightID()) {
+					activeSet[pointer.ThirdRightID()].setVisible(false);
+					activeSet[pointer.ThirdRightID()].setTop(1000);
+					pointer.ThirdRightCanvas().renderAll();				
+				}
+				
+			} else if(pointer.SecondRightID()){
+				activeSet[pointer.SecondRightID()].setVisible(false);
+				activeSet[pointer.SecondRightID()].setTop(1000);
+				pointer.SecondRightCanvas().renderAll();		
 			}
 				
 		} 
 		
-		if(pointer.l1id() && active.oCoords.bl.x < 0) {
-			activeSet[pointer.l1id()].setVisible(true);
-			activeSet[pointer.l1id()].setScaleX(active.getHeight() / activeSet[pointer.l1id()].height);
-			activeSet[pointer.l1id()].setScaleY(active.getHeight() / activeSet[pointer.l1id()].height);
-			activeSet[pointer.l1id()].setTop(active.getTop());
+		if(pointer.FirstLeftID() && active.oCoords.bl.x < 0) {
+			activeSet[pointer.FirstLeftID()].setVisible(true);
+			activeSet[pointer.FirstLeftID()].setScaleX(active.getHeight() / activeSet[pointer.FirstLeftID()].height);
+			activeSet[pointer.FirstLeftID()].setScaleY(active.getHeight() / activeSet[pointer.FirstLeftID()].height);
+			activeSet[pointer.FirstLeftID()].setTop(active.getTop());
 			
-			var dx = pointer.c.width + active.oCoords.bl.x;;
-			activeSet[pointer.l1id()].setLeft(dx);
-			pointer.l1c().renderAll();		
+			var dx = pointer.c.width + active.oCoords.bl.x;
+			activeSet[pointer.FirstLeftID()].setLeft(dx);
+			pointer.FirstLeftCanvas().renderAll();		
 			
-			if(pointer.l2id() && active.oCoords.bl.x < -1*pointer.c.width) {
+			if(pointer.SecondLeftID() && active.oCoords.bl.x < -1*pointer.c.width) {
 				var diff = pointer.c.width + active.oCoords.bl.x;
 				console.log(diff);
-				activeSet[pointer.l2id()].setVisible(true);
-				activeSet[pointer.l2id()].setScaleX(active.getHeight() / activeSet[pointer.l2id()].height);
-				activeSet[pointer.l2id()].setScaleY(active.getHeight() / activeSet[pointer.l2id()].height);
-				activeSet[pointer.l2id()].setTop(active.getTop());
+				activeSet[pointer.SecondLeftID()].setVisible(true);
+				activeSet[pointer.SecondLeftID()].setScaleX(active.getHeight() / activeSet[pointer.SecondLeftID()].height);
+				activeSet[pointer.SecondLeftID()].setScaleY(active.getHeight() / activeSet[pointer.SecondLeftID()].height);
+				activeSet[pointer.SecondLeftID()].setTop(active.getTop());
 			
-				activeSet[pointer.l2id()].setLeft(pointer.c.width + diff);
-				pointer.l2c().renderAll();	
-			} else if(pointer.l2id()){
-				activeSet[pointer.l2id()].setVisible(false);
-				activeSet[pointer.l2id()].setTop(1000);
-				pointer.l2c().renderAll();		
+				activeSet[pointer.SecondLeftID()].setLeft(pointer.c.width + diff);
+				pointer.SecondLeftCanvas().renderAll();	
+				
+				if(pointer.ThirdLeftID() && active.oCoords.bl.x < -2*pointer.c.width) {
+
+					var diff = pointer.c.width + active.oCoords.bl.x;
+					console.log(diff);
+					activeSet[pointer.ThirdLeftID()].setVisible(true);
+					activeSet[pointer.ThirdLeftID()].setScaleX(active.getHeight() / activeSet[pointer.ThirdLeftID()].height);
+					activeSet[pointer.ThirdLeftID()].setScaleY(active.getHeight() / activeSet[pointer.ThirdLeftID()].height);
+					activeSet[pointer.ThirdLeftID()].setTop(active.getTop());
+			
+					activeSet[pointer.ThirdLeftID()].setLeft(2*pointer.c.width + diff);
+					pointer.ThirdLeftCanvas().renderAll();	
+								
+				} else if(pointer.ThirdLeftID()) {
+					activeSet[pointer.ThirdLeftID()].setVisible(false);
+					activeSet[pointer.ThirdLeftID()].setTop(1000);
+					pointer.ThirdLeftCanvas().renderAll();				
+				}				
+				
+			} else if(pointer.SecondLeftID()){
+				activeSet[pointer.SecondLeftID()].setVisible(false);
+				activeSet[pointer.SecondLeftID()].setTop(1000);
+				pointer.SecondLeftCanvas().renderAll();		
 			}
 		}		
 
-		if(pointer.l1id() && active.oCoords.bl.x > 0) {
+		if(pointer.FirstLeftID() && active.oCoords.bl.x > 0) {
 		
-			activeSet[pointer.l1id()].setVisible(false);
-			activeSet[pointer.l1id()].setTop(1000);
-			pointer.l1c().renderAll();		
+			activeSet[pointer.FirstLeftID()].setVisible(false);
+			activeSet[pointer.FirstLeftID()].setTop(1000);
+			pointer.FirstLeftCanvas().renderAll();		
 		}	
 
-		if(pointer.r1id() && active.oCoords.br.x < pointer.c.width) {
-			activeSet[pointer.r1id()].setTop(1000);
-			activeSet[pointer.r1id()].setVisible(false);
-			pointer.r1c().renderAll();		
+		if(pointer.firstRightID() && active.oCoords.br.x < pointer.c.width) {
+			activeSet[pointer.firstRightID()].setTop(1000);
+			activeSet[pointer.firstRightID()].setVisible(false);
+			pointer.FirstRightCanvas().renderAll();		
 		}	
 			
 	}
@@ -363,6 +427,7 @@ function addImage(objData, index) {
 		var w = 200;
 		var h;
 		var obj = {};
+		
 		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
 		{
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
@@ -373,31 +438,74 @@ function addImage(objData, index) {
 
 			p1.add(oImg);
 			obj.p1 = oImg;
+			
+		});
+		
+		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
+		{
+			h = (oImg.getHeight() / oImg.getWidth()) * w;
+			oImg.setWidth(w);
+			oImg.setHeight(h);
+			oImg.set("orderid", index);
+			oImg.set("lockRotation",true);
+			oImg.setLeft(-w/2);
+			oImg.setTop(-1.5*h);
+			Pixelate(oImg, 25)
+			oImg.setVisible(false);
+			p2.add(oImg);
+			obj.p2 = oImg;
+	
 	
 			var group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
 			group.set("orderid", index);
 			group.set("lockRotation",true);
 			group.setVisible(false);
 			var hcount = 0;
-			$.each(objData.colors, function(i, color) {
-				var hx = h * color.percent;
-				var rect = new fabric.Rect({
-					left: -w/2,
-					top: hcount - h/2,
-					fill: color.color,
-					width: w,
-					height: hx
+			
+			if(objData.colors) {
+				$.each(objData.colors, function(i, color) {
+					var hx = h * color.percent;
+					var rect = new fabric.Rect({
+						left: -w/2,
+						top: hcount - h/2,
+						fill: color.color,
+						width: w,
+						height: hx
+					});
+						hcount += hx;
+						group.add(rect);
 				});
-					hcount += hx;
-					group.add(rect);
-			});
+			} else {
+					var rect = new fabric.Rect({
+						left: -w/2,
+						top: - h/2,
+						fill: "black",
+						width: w,
+						height: h
+					});
+					
+					group.add(rect);		
+			}
 		
 			p3.add(group);
 			obj.p3 = group;
 			
+			var p4group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
+			p4group.set("orderid", index);
+
+			for(var j=0; j < objData.images.length; j++) {			
+				addImageSync(objData.images[j].baseimageurl, j, w, h, objData.images.length, p4group);
+			}
+			p4group.count = objData.images.length - 1;
+			p4group.curr = p4group.count;
+			p4group.setVisible(false);
+			p4.add(p4group);
+			obj.p4 = p4group;
+			p4.renderAll()
+			
 		});
 		
-		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
+		/*fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
 		{
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
 
@@ -412,45 +520,38 @@ function addImage(objData, index) {
 			oImg.setVisible(false);
 			p5.add(oImg);
 			obj.p5 = oImg;
-
-		
-
-			var p4group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
-			p4group.set("orderid", index);
-
-			for(var j=0; j < objData.images.length; j++) {			
-				addImageSync(objData.images[j].baseimageurl, j, w, h, objData.images.length, p4group);
-			}
-			p4group.count = objData.images.length - 1;
-			p4group.curr = p4group.count;
-			p4group.setVisible(false);
-			p4.add(p4group);
-			obj.p4 = p4group;
-			p4.renderAll()
 				
-		});
-	
-	
-	fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
-		{
-			h = (oImg.getHeight() / oImg.getWidth()) * w;
+		});*/
 
-			oImg.setWidth(w);
-			oImg.setHeight(h);
-			oImg.set("orderid", index);
-			oImg.set("lockRotation",true);
-			oImg.setLeft(-w/2);
-			oImg.setTop(-1.5*h);
-			Pixelate(oImg, 25)
-			oImg.setVisible(false);
-			p2.add(oImg);
-			obj.p2 = oImg;
-
-		});				
-		
 		activeObjs.push(obj);	
 		
 }
+
+function addToTray(index) {
+		var h = 50;
+		var w;
+
+		var base_image = new Image();
+		base_image.src = "./art/" +dbObjs[index].objectid + ".jpg";
+		base_image.onload = function(){
+			var size = base_image.height;
+			var w = (base_image.width / base_image.height)*h;
+			console.log(w);
+			console.log(h);
+			ctx.drawImage(base_image, trayCount, 0, w, h);	
+			dbObjs[index].x1 = trayCount;			
+			trayCount += w;			
+			dbObjs[index].x2 = trayCount;
+			if(index < dbObjs.length - 1) addToTray(index+1);
+		}				
+}
+
+$("#tray").on("click", function(e) {
+	$.each(dbObjs, function(i,val) {
+		if(e.offsetX > val.x1 && e.offsetX < val.x2) grabArt(val.objectid);	
+	});
+});
+
 
 function addImageSync(url, index, w, h, lim, group) {
 	fabric.Image.fromURL(url, function(oImg2)
@@ -524,13 +625,13 @@ window.addEventListener("keydown", function(e) //window
 				active.setOpacity(active.opacity - .1 );
 				p1.renderAll();
 			}
-	} else if(pointer.c == p5) {
+	} /*else if(pointer.c == p5) {
 			if (e.keyCode == UP) {
 				RGBify(active, active.next);
 			} else if(e.keyCode == DOWN) {
 				RGBify(active, active.prev);
 			}		
-	} else if(pointer.c == p4) {
+	}*/ else if(pointer.c == p4) {
 			if (e.keyCode == UP) {
 				active.getObjects()[active.curr].setVisible(false);
 				var next = active.curr + 1;
@@ -554,8 +655,8 @@ function canvasPointer() {
 	this._index = 0;
 	this.cid = "p1";
 	this.c = p1;
-	var cids = ["p1","p2","p3","p4","p5",];
-	var canvases = [p1, p2, p3, p4, p5];
+	var cids = ["p1","p2","p3","p4"];
+	var canvases = [p1, p2, p3, p4];
 	this.activateNext = function() {
 		this._index++;
 		this.cid = cids[this._index];
@@ -566,37 +667,53 @@ function canvasPointer() {
 		this.cid = cids[this._index];
 		this.c = canvases[this._index];
 	};
-	this.r1id = function() {
+	this.firstRightID = function() {
 		if(this._index == 4) return false;
 		return cids[this._index+1];
 	};
-	this.r2id = function() {
+	this.SecondRightID = function() {
 		if(this._index == 3) return false;
 		return cids[this._index+2];
 	};
-	this.l1id = function() {
+	this.ThirdRightID = function() {
+		if(this._index > 3) return false;
+		return cids[this._index+3];
+	};
+	this.FirstLeftID = function() {
 		if(this._index == 0) return false;
 		return cids[this._index-1];
 	}	;
-	this.l2id = function() {
+	this.SecondLeftID = function() {
 		if(this._index == 1) return false;
 		return cids[this._index-2];
 	};
-	this.r1c = function() {
-		if(this._index == 4) return false;
+	this.ThirdLeftID = function() {
+		if(this._index < 3) return false;
+		return cids[this._index-3];
+	};
+	this.FirstRightCanvas = function() {
+		if(this._index > 3) return false;
 		return canvases[this._index+1];
 	};
-	this.r2c = function() {
-		if(this._index == 3) return false;
+	this.SecondRightCanvas = function() {
+		if(this._index > 2) return false;
 		return canvases[this._index+2];
 	};
-	this.l1c = function() {
-		if(this._index == 0) return false;
+	this.ThirdRightCanvas = function() {
+		if(this._index > 3) return false;
+		return canvases[this._index+3];
+	};
+	this.FirstLeftCanvas = function() {
+		if(this._index < 1) return false;
 		return canvases[this._index-1];
 	}	;
-	this.l2c = function() {
-		if(this._index == 1) return false;
+	this.SecondLeftCanvas = function() {
+		if(this._index < 2) return false;
 		return canvases[this._index-2];
+	};
+	this.ThirdLeftCanvas = function() {
+		if(this._index < 3) return false;
+		return canvases[this._index-3];
 	};
 	this.setCanvas = function(cid) {
 		var i = cids.indexOf(cid);
