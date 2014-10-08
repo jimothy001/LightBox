@@ -135,7 +135,7 @@
 		art.records = [];
 		var curr = false;
 		var host = window.location.host;
-		var socket = io(host);
+		var socket = io();
 		var images2 = [];
 		var sort = window.location.search.substr(1);
 		var grid = true;
@@ -145,6 +145,8 @@
 		var h;
 		var itemX = 0;
 	
+	
+
 		map.height = window.innerHeight - 15;
 		map.width = window.innerWidth - 15;
 		
@@ -166,10 +168,12 @@
 		$(document).on("click", function(e) {
 			console.log(e);
 			if($(e.target).hasClass("button")) {
-				console.log(curr);
+				var id = curr.objectid;
 				socket.emit('add-item', {
-					url: curr
+					objectid: id
 				});
+				closePreview();
+				
 			} else if($(e.target).attr("id") == "map") {
 					var x = Math.floor((e.offsetX) / h);
 					console.log(x);
@@ -177,7 +181,7 @@
 					var y = Math.floor((e.offsetY) / h);
 					curr = art.records[y*itemX+x];
 				
-					$("#preview .img-preview").attr("src", curr.primaryimageurl);
+					$("#preview .img-preview").attr("src", "./art/" + curr.objectid + ".jpg");
 					$("#title").html(curr.title);
 					$("#description").html(curr.description);
 					$("#date").html(curr.dated);
@@ -205,14 +209,8 @@
 				
 					});
 			} else {					
-				
-					$("#preview").animate({opacity: 0}, 500, function() {
-					$("#preview").removeClass("active");
-					$("#preview .img-preview").attr("src", "");
-					//$("#preview").empty();
-					$("#map").css("opacity", 1);
-					curr = false;
-				});
+					closePreview();
+
 			}
 		});
 		
@@ -220,6 +218,16 @@
 		socket.on('send-items', function(data) {
 			console.log(data);
 		});
+		
+		function closePreview() {
+			$("#preview").animate({opacity: 0}, 500, function() {
+				$("#preview").removeClass("active");
+				$("#preview .img-preview").attr("src", "");
+				//$("#preview").empty();
+				$("#map").css("opacity", 1);
+				curr = false;
+			});
+		}
 
 		function customSort(a,b) {
 			if ( a[sort] < b[sort] )
@@ -240,6 +248,7 @@
 				var next = count+100;
 				if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
 				else {
+				
 					art.records.sort(customSort);
 					populateMap();
 				}
@@ -266,7 +275,7 @@
 
 	function addImage(order, x, y) {
 		var base_image = new Image();
-		base_image.src = art.records[order].primaryimageurl;
+		base_image.src = "./art/" + art.records[order].objectid + ".jpg";
 		base_image.onload = function(){
 
 		
