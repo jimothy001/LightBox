@@ -30,6 +30,10 @@
 			margin: 25px 10px 0 10px;
 		}
 		
+		#tray-container {
+			clear: both;
+		}
+		
 		html,body {
 
 			margin: 0;
@@ -80,6 +84,12 @@
 			top: 10px;
 			z-index: 99999;
 		}
+		
+		.divider div.left {
+			border-right: none;
+
+		}
+		
 		.divider div:nth-child(1) {left: 325px;}
 		.divider div:nth-child(2) {left: 645px;}
 		.divider div:nth-child(3) {left: 965px;}
@@ -96,7 +106,7 @@
 <div></div>
 <div></div>
 <div></div>
-<div></div>
+<div class="left"></div>
 </div>
 
 	<div id="panels">
@@ -104,10 +114,11 @@
 		<canvas id="p2" class="panel" width="320" height="600"></canvas>
 		<canvas id="p3" class="panel" width="320" height="600"></canvas>
 		<canvas id="p4" class="panel" width="320" height="600"></canvas>
-	</dic>
+	</div>
 
+	<div id="tray-container">
 		<canvas id="tray" class="tray" width="1275" height="50"></canvas>
-		
+	</div>
 
 		<div class="panel_zoom">
 			<canvas id="pzoom" width="1275" height="600"></canvas>	
@@ -147,8 +158,7 @@ var down = false;
 
 var occur_once = false;
 
-var tray = document.getElementById('tray');
-var ctx = tray.getContext('2d');
+var tray = new fabric.Canvas("tray");
 var socket = io();
 socket.emit('get-items', {});
 
@@ -161,13 +171,14 @@ socket.on('send-items', function(data)
 socket.on('updated-db', function(data)
 {
 	dbObjs.push(data);
-	trayCount = 0;
-	addToTray(0);
+	//trayCount = 0;
+	addAndShift();
 });
 
 
 function grabArt(id) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
+		if(art.related) console.log(art.related);
 		addImage(art, order);
 		order++;
 	});	
@@ -181,16 +192,26 @@ $(document).mousedown(function(options) {
 	var id = $(options.target).prev().attr("id");
 
 	pointer.setCanvas(id);
-	pointer.c = pointer.c;
+	//pointer.c = pointer.c;
 	
 
 	if(pointer.c.getActiveObject()) {
-		active = pointer.c.getActiveObject();
-		activeSet = activeObjs[active.get("orderid")];
-		for(prop in activeSet) {
-			activeSet[prop].bringToFront();
+		if(active != pointer.c.getActiveObject()) {
+		
+			$.each(canvases, function(i,c) {
+				if(c.getActiveObject() && c != pointer.c) {
+					c.getActiveObject().active = false;
+					c.renderAll();
+				}
+			});
+				
+			active = pointer.c.getActiveObject();
+			activeSet = activeObjs[active.get("orderid")];
+			for(prop in activeSet) {
+				activeSet[prop].bringToFront();
+			}
+			hover_elements();
 		}
-		hover_elements();
 	} else active = false;
 
 });
@@ -206,15 +227,20 @@ function hover_elements(){
 	
 	$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y})
 		.bind( "click", function() {
+			if(!activeSet) return false;
 			var order = active.get("orderid");
-			$.each(canvases, function(i, c) {
-				c.forEachObject(function(o) {
-					console.log(o);
-					if(o.get("orderid") == order) {
-						o.remove();
+			for(prop in activeSet) {
+				if(activeSet[prop]._objects) {
+					while(activeSet[prop]._objects.length > 0) {
+						activeSet[prop].remove(activeSet[prop]._objects[0]);
 					}
-				});
-			});
+				} 
+				
+				activeSet[prop].canvas.remove(activeSet[prop]);
+				
+			}
+			activeSet = false;
+			active = false;
 			
 			$(".closebutton,.maxbutton").hide();
 		});
@@ -283,56 +309,67 @@ window.addEventListener("keydown", function(e){
 	activezoom.left = activezoom.left - (w - w_old)/2;
 	activezoom.top = activezoom.top - (h - h_old)/2;
 
-pzoom.renderAll();
+	pzoom.renderAll();
 	
 	});
 
 
 $(document).mousemove(function(e) {
-	if(active) {
+	if(active && activeSet) {
 		if(pointer.firstRightID() && active.oCoords.br.x > pointer.c.width) {
-			activeSet[pointer.firstRightID()].setVisible(true);
-			activeSet[pointer.firstRightID()].setScaleX(active.getHeight() / activeSet[pointer.firstRightID()].height);
-			activeSet[pointer.firstRightID()].setScaleY(active.getHeight() / activeSet[pointer.firstRightID()].height);
-			activeSet[pointer.firstRightID()].setTop(active.getTop());
+			var objModR = activeSet[pointer.firstRightID()];
+			objModR.setVisible(true);
+			objModR.canvas.setActiveObject(objModR);
+			
+			objModR.setScaleX(active.getHeight() / objModR.height);
+			objModR.setScaleY(active.getHeight() / objModR.height);
+			objModR.setTop(active.getTop());
 			
 			var dx = pointer.c.width - active.oCoords.bl.x;
-			activeSet[pointer.firstRightID()].setLeft(dx*-1);
+			objModR.setLeft(dx*-1);
 			pointer.FirstRightCanvas().renderAll();
+			objModR.setCoords();
 			
 			if(pointer.SecondRightID() && active.oCoords.br.x > pointer.c.width*2) {
+				var objModR2 = activeSet[pointer.SecondRightID()];			
 				var diff = pointer.c.width*2 - active.oCoords.bl.x;
-				console.log(diff);
-				activeSet[pointer.SecondRightID()].setVisible(true);
-				activeSet[pointer.SecondRightID()].setScaleX(active.getHeight() / activeSet[pointer.SecondRightID()].height);
-				activeSet[pointer.SecondRightID()].setScaleY(active.getHeight() / activeSet[pointer.SecondRightID()].height);
-				activeSet[pointer.SecondRightID()].setTop(active.getTop());
+				objModR2.setVisible(true);
+				objModR2.canvas.setActiveObject(objModR2);
+				
+				objModR2.setScaleX(active.getHeight() / objModR2.height);
+				objModR2.setScaleY(active.getHeight() / objModR2.height);
+				objModR2.setTop(active.getTop());
 			
 				var dx = pointer.c.width - active.oCoords.bl.x;
-				activeSet[pointer.SecondRightID()].setLeft(diff*-1);
+				objModR2.setLeft(diff*-1);
 				pointer.SecondRightCanvas().renderAll();	
-			
+				objModR2.setCoords();
 			
 			
 				if(pointer.ThirdRightID() && active.oCoords.br.x > pointer.c.width*3) {
+						var objModR3 = activeSet[pointer.ThirdRightID()];
 						var diff = pointer.c.width*3 - active.oCoords.bl.x;
-						console.log(diff);
-						activeSet[pointer.ThirdRightID()].setVisible(true);
-						activeSet[pointer.ThirdRightID()].setScaleX(active.getHeight() / activeSet[pointer.ThirdRightID()].height);
-						activeSet[pointer.ThirdRightID()].setScaleY(active.getHeight() / activeSet[pointer.ThirdRightID()].height);
-						activeSet[pointer.ThirdRightID()].setTop(active.getTop());
+						objModR3.canvas.setActiveObject(objModR3);
+
+						objModR3.setVisible(true);
+						objModR3.setScaleX(active.getHeight() / objModR3.height);
+						objModR3.setScaleY(active.getHeight() / objModR3.height);
+						objModR3.setTop(active.getTop());
 			
 						var dx = pointer.c.width - active.oCoords.bl.x;
-						activeSet[pointer.ThirdRightID()].setLeft(diff*-1);
+						objModR3.setLeft(diff*-1);
 						pointer.ThirdRightCanvas().renderAll();		
+						objModR3.setCoords();
 							
 				} else if(pointer.ThirdRightID()) {
+					activeSet[pointer.ThirdRightID()].active = false;
 					activeSet[pointer.ThirdRightID()].setVisible(false);
 					activeSet[pointer.ThirdRightID()].setTop(1000);
 					pointer.ThirdRightCanvas().renderAll();				
 				}
 				
 			} else if(pointer.SecondRightID()){
+				activeSet[pointer.SecondRightID()].active = false;		
 				activeSet[pointer.SecondRightID()].setVisible(false);
 				activeSet[pointer.SecondRightID()].setTop(1000);
 				pointer.SecondRightCanvas().renderAll();		
@@ -341,45 +378,56 @@ $(document).mousemove(function(e) {
 		} 
 		
 		if(pointer.FirstLeftID() && active.oCoords.bl.x < 0) {
-			activeSet[pointer.FirstLeftID()].setVisible(true);
-			activeSet[pointer.FirstLeftID()].setScaleX(active.getHeight() / activeSet[pointer.FirstLeftID()].height);
-			activeSet[pointer.FirstLeftID()].setScaleY(active.getHeight() / activeSet[pointer.FirstLeftID()].height);
-			activeSet[pointer.FirstLeftID()].setTop(active.getTop());
+			var objModL = activeSet[pointer.FirstLeftID()];
+			objModL.setVisible(true);
+			objModL.canvas.setActiveObject(objModL);
+			
+			objModL.setScaleX(active.getHeight() / objModL.height);
+			objModL.setScaleY(active.getHeight() / objModL.height);
+			objModL.setTop(active.getTop());
 			
 			var dx = pointer.c.width + active.oCoords.bl.x;
-			activeSet[pointer.FirstLeftID()].setLeft(dx);
-			pointer.FirstLeftCanvas().renderAll();		
+			objModL.setLeft(dx);
+			pointer.FirstLeftCanvas().renderAll();	
+			objModL.setCoords();	
 			
 			if(pointer.SecondLeftID() && active.oCoords.bl.x < -1*pointer.c.width) {
+				var objModL2 = activeSet[pointer.SecondLeftID()];
+				objModL2.canvas.setActiveObject(objModL2);
+				
 				var diff = pointer.c.width + active.oCoords.bl.x;
-				console.log(diff);
-				activeSet[pointer.SecondLeftID()].setVisible(true);
-				activeSet[pointer.SecondLeftID()].setScaleX(active.getHeight() / activeSet[pointer.SecondLeftID()].height);
-				activeSet[pointer.SecondLeftID()].setScaleY(active.getHeight() / activeSet[pointer.SecondLeftID()].height);
-				activeSet[pointer.SecondLeftID()].setTop(active.getTop());
+				objModL2.setVisible(true);
+				objModL2.setScaleX(active.getHeight() / objModL2.height);
+				objModL2.setScaleY(active.getHeight() / objModL2.height);
+				objModL2.setTop(active.getTop());
 			
-				activeSet[pointer.SecondLeftID()].setLeft(pointer.c.width + diff);
+				objModL2.setLeft(pointer.c.width + diff);
 				pointer.SecondLeftCanvas().renderAll();	
+				objModL2.setCoords();
 				
 				if(pointer.ThirdLeftID() && active.oCoords.bl.x < -2*pointer.c.width) {
-
+					var objModL3 = activeSet[pointer.ThirdLeftID()];
+					objModL3.canvas.setActiveObject(objModL3);
 					var diff = pointer.c.width + active.oCoords.bl.x;
-					console.log(diff);
-					activeSet[pointer.ThirdLeftID()].setVisible(true);
-					activeSet[pointer.ThirdLeftID()].setScaleX(active.getHeight() / activeSet[pointer.ThirdLeftID()].height);
-					activeSet[pointer.ThirdLeftID()].setScaleY(active.getHeight() / activeSet[pointer.ThirdLeftID()].height);
-					activeSet[pointer.ThirdLeftID()].setTop(active.getTop());
+
+					objModL3.setVisible(true);
+					objModL3.setScaleX(active.getHeight() / objModL3.height);
+					objModL3.setScaleY(active.getHeight() / objModL3.height);
+					objModL3.setTop(active.getTop());
 			
-					activeSet[pointer.ThirdLeftID()].setLeft(2*pointer.c.width + diff);
+					objModL3.setLeft(2*pointer.c.width + diff);
 					pointer.ThirdLeftCanvas().renderAll();	
+					objModL3.setCoords();
 								
 				} else if(pointer.ThirdLeftID()) {
+					activeSet[pointer.ThirdLeftID()].active = false;
 					activeSet[pointer.ThirdLeftID()].setVisible(false);
 					activeSet[pointer.ThirdLeftID()].setTop(1000);
 					pointer.ThirdLeftCanvas().renderAll();				
 				}				
 				
 			} else if(pointer.SecondLeftID()){
+				activeSet[pointer.SecondLeftID()].active = false;
 				activeSet[pointer.SecondLeftID()].setVisible(false);
 				activeSet[pointer.SecondLeftID()].setTop(1000);
 				pointer.SecondLeftCanvas().renderAll();		
@@ -387,13 +435,14 @@ $(document).mousemove(function(e) {
 		}		
 
 		if(pointer.FirstLeftID() && active.oCoords.bl.x > 0) {
-		
+			activeSet[pointer.FirstLeftID()].active = false;
 			activeSet[pointer.FirstLeftID()].setVisible(false);
 			activeSet[pointer.FirstLeftID()].setTop(1000);
 			pointer.FirstLeftCanvas().renderAll();		
 		}	
 
 		if(pointer.firstRightID() && active.oCoords.br.x < pointer.c.width) {
+			activeSet[pointer.firstRightID()].active = false;
 			activeSet[pointer.firstRightID()].setTop(1000);
 			activeSet[pointer.firstRightID()].setVisible(false);
 			pointer.FirstRightCanvas().renderAll();		
@@ -527,28 +576,76 @@ function addImage(objData, index) {
 		
 }
 
+
+function addAndShift() {
+		var h = 50;
+		var w;
+		fabric.Image.fromURL("./art/" +dbObjs[dbObjs.length-1].objectid + ".jpg", function(oImg)
+			{
+				w = (h/oImg.getHeight())*oImg.getWidth();			
+				
+				oImg.setWidth(w);
+				oImg.setHeight(h);		
+				oImg.set("lockRotation",true);
+				oImg.setTop(0);
+				oImg.setLeft(-1*w);
+				oImg.set("selectable", false);
+				oImg.set("order", dbObjs.length-1);
+				tray.add(oImg);
+				
+				$.each(tray.getObjects(), function(i, o) {
+					o.setLeft(o.getLeft()+w);
+					dbObjs[o.get("order")].x1 = o.getLeft();
+					dbObjs[o.get("order")].x2 = o.getLeft() + o.getWidth();
+				
+				
+				});
+				tray.renderAll()
+								
+		});
+
+
+}
+
 function addToTray(index) {
 		var h = 50;
 		var w;
-
-		var base_image = new Image();
-		base_image.src = "./art/" +dbObjs[index].objectid + ".jpg";
-		base_image.onload = function(){
-			var size = base_image.height;
-			var w = (base_image.width / base_image.height)*h;
-			console.log(w);
-			console.log(h);
-			ctx.drawImage(base_image, trayCount, 0, w, h);	
-			dbObjs[index].x1 = trayCount;			
-			trayCount += w;			
-			dbObjs[index].x2 = trayCount;
-			if(index < dbObjs.length - 1) addToTray(index+1);
-		}				
+		fabric.Image.fromURL("./art/" +dbObjs[index].objectid + ".jpg", function(oImg)
+			{
+				w = (h/oImg.getHeight())*oImg.getWidth();
+				oImg.setWidth(w);
+				oImg.setHeight(h);		
+				oImg.set("lockRotation",true);
+				oImg.setTop(0);
+				oImg.setLeft(-100);
+				dbObjs[index].x1 = trayCount;			
+				oImg.set("selectable", false);
+				oImg.set("order", index);
+				tray.add(oImg);
+				var dx = 100+trayCount;
+			
+				oImg.animate('left', '+='+dx, {
+					duration: 1000,
+					onChange: tray.renderAll.bind(tray),
+					onComplete: function() {
+						trayCount += w;			
+						dbObjs[index].x2 = trayCount;
+						if((index < dbObjs.length - 1) && trayCount < tray.getWidth()) addToTray(index+1);
+					},
+					easing: fabric.util.ease["easeOutExpo"]
+				});
+				
+		});
 }
 
-$("#tray").on("click", function(e) {
+	
+
+$("#tray-container").on("click", function(e) {
 	$.each(dbObjs, function(i,val) {
-		if(e.offsetX > val.x1 && e.offsetX < val.x2) grabArt(val.objectid);	
+		if(e.offsetX > val.x1 && e.offsetX < val.x2) {
+			console.log(val);
+			grabArt(val.objectid);	
+		}
 	});
 });
 
@@ -625,13 +722,7 @@ window.addEventListener("keydown", function(e) //window
 				active.setOpacity(active.opacity - .1 );
 				p1.renderAll();
 			}
-	} /*else if(pointer.c == p5) {
-			if (e.keyCode == UP) {
-				RGBify(active, active.next);
-			} else if(e.keyCode == DOWN) {
-				RGBify(active, active.prev);
-			}		
-	}*/ else if(pointer.c == p4) {
+	} else if(pointer.c == p4) {
 			if (e.keyCode == UP) {
 				active.getObjects()[active.curr].setVisible(false);
 				var next = active.curr + 1;

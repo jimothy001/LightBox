@@ -137,7 +137,7 @@ io.on('connection', function (socket) {
 	socket.on('get-items', function(data) {
 
 		console.log("GET ITEMS");
-		Art.find().sort('-created').limit(10).exec(function(err, results) {
+		Art.find().sort('-created').limit(30).exec(function(err, results) {
 			if(err) return res.send(err);
 			console.log(results);
 			io.emit('send-items', results);
