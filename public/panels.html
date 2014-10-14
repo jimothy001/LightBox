@@ -35,11 +35,12 @@
 		}
 		
 		html,body {
-
+			font-size: 12px;
+			font-family: arial;
 			margin: 0;
 			padding: 0;
 		}
-		.closebutton, .maxbutton, .minbutton{
+		.closebutton, .maxbutton, .metabutton, .minbutton{
 			position: absolute;
 			z-index: 999;
 			display: none;
@@ -48,9 +49,8 @@
 		    height: 40px;
 		    border: 3px solid #fff;
 		    color: white;
-		    z-index: 999;
 		}
-		.closebutton:hover, .maxbutton:hover, .minbutton:hover{
+		.closebutton:hover, .metabutton:hover, .maxbutton:hover, .minbutton:hover{
 			cursor: pointer;
 		}
 		.closebutton{
@@ -59,8 +59,23 @@
 		.maxbutton{
 		    background: url('img/icon_max.png');
 		}
+		.metabutton{
+		    background: url('img/icon_meta.png');
+		}
 		.minbutton{
 		    background: url('img/icon_min.png');
+		}
+		.metainfo{
+			position: absolute;
+			z-index: 999;
+			/*background: white;*/
+			background: url('img/backtranslucent.png');
+			display: none;
+			width: 40px;
+		    height: 40px;
+		}
+		.metainfo div{
+			margin: 5px;
 		}
 		.panel{
 			margin: 10px;
@@ -100,7 +115,9 @@
 	<body>
 		<div class="closebutton"></div>
 		<div class="maxbutton"></div>
+		<div class="metabutton"></div>
 		<div class="minbutton"></div>
+		<div class="metainfo"></div>
 
 <div class='divider'>
 <div></div>
@@ -127,6 +144,7 @@
 
 		<script type="text/javascript" src="sandbox_channels.js"></script>
 		<script src="/socket.io/socket.io.js"></script> 
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
 var p1 = new fabric.Canvas("p1");
@@ -146,6 +164,7 @@ var PLUS = 187;
 var MINUS = 189;
 // end keycodes
 
+var image_metadata = [];
 var activeObjs = [];
 var dbObjs = [];
 var activeSet = null;
@@ -153,6 +172,8 @@ var trayCount = 0;
 
 var activezoom;
 var active;
+
+var curr = false;
 
 var down = false;
 
@@ -175,14 +196,47 @@ socket.on('updated-db', function(data)
 	addAndShift();
 });
 
-
 function grabArt(id) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
 		if(art.related) console.log(art.related);
 		addImage(art, order);
+		metaImage(art, order);
 		order++;
 	});	
 }
+
+
+
+
+
+function metaImage(objData, index) {
+		//check for duplicates
+		var dup_object = false;
+		for(var i in image_metadata) {
+			if(image_metadata[i].objectid == objData.objectid){
+			console.log(image_metadata[i]);
+			dup_object = true;
+			}					
+		}
+		if(!dup_object){
+		image_metadata.push({
+		objectid: objData.objectid,
+		accessionyear: objData.accessionyear,
+		century: objData.century,
+		culture: objData.culture,
+		dated: objData.dated,
+		department: objData.department,
+		description: objData.description,
+		division: objData.division,
+		dimensions: objData.dimensions
+		});
+		}else{
+			console.log('object exists already');
+		}
+		//console.log(objData);
+		//console.log(image_metadata);
+};
+
 
 
 $(document).mousedown(function(options) {
@@ -222,7 +276,7 @@ function hover_elements(){
 	var extra = pointer.getIndex() * pointer.c.getWidth();
 
 	
-	var rightcorner_x = extra+active.left+active.getWidth()-50;
+	var rightcorner_x = extra+active.left+active.getWidth()-45;
 	var rightcorner_y = active.top+20;
 	
 	$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y})
@@ -242,10 +296,10 @@ function hover_elements(){
 			activeSet = false;
 			active = false;
 			
-			$(".closebutton,.maxbutton").hide();
+			$(".closebutton,.maxbutton,.metabutton").hide();
 		});
 
-	$(".maxbutton").css({'left':rightcorner_x,'top':rightcorner_y+60})
+	$(".maxbutton").css({'left':rightcorner_x-55,'top':rightcorner_y})
 		.bind( "click", function() {
 				if(!occur_once){
 					$(".panel_zoom").show();
@@ -265,7 +319,7 @@ function hover_elements(){
 
 					});
 
-				$(".closebutton,.maxbutton").remove();
+				$(".closebutton,.maxbutton,.metabutton").remove();
 				$(".minbutton").css({'left':pzoom.width-50,'top':20}).show()
 				.bind( "click", function() {
 					////REMOVE LARGE DUPLICATE IMAGE
@@ -275,13 +329,55 @@ function hover_elements(){
 					$(".panel_zoom").hide();
 
 					///BRING BACK AND SHOW CLOSE/MAX BUTTONS
-					$("body").append('<div class="closebutton"></div><div class="maxbutton"></div>');
+					$("body").append('<div class="closebutton"></div><div class="maxbutton"></div><div class="metabutton"></div>');
 					$(".minbutton").hide();
 				});
 				}occur_once = true;
 			});
 
-	$(".closebutton,.maxbutton").show();
+
+	$(".metabutton").css({'left':extra+active.left+20,'top':rightcorner_y})
+			.bind( "click", function() {
+				$(".metainfo").css({'left':extra+active.left+14,'top':active.top+14,'width':active.getWidth()-6,'height':active.getHeight()-6});
+				if(!occur_once){
+					//console.log(active);
+
+					if(!active._originalElement.src){
+						console.log('color heirarchy');
+					}else{
+						var image_src = active._originalElement.src;
+						//console.log(image_src);
+						var image_name = image_src.substring(image_src.lastIndexOf("/")+1);
+						var n = image_name.indexOf('.');
+						var image_id = image_name.substring(0, n != -1 ? n : image_name.length);
+						//console.log(image_id);
+						var meta_info;
+						/// MATCH OBJECT ID WITH OBJECT ID IN ARRAY, GET METADATA INFO
+						for(var i in image_metadata) {
+						    if(image_metadata[i].objectid == image_id){
+						    	//console.log(image_metadata[i]);
+						    	meta_info = "<div>";
+						    	meta_info += "<span><b>id:</b> "+image_metadata[i].objectid+"</span>"+"</br>";
+						    	meta_info += "<span><b>date:</b> "+image_metadata[i].dated+"</span>"+"</br>";
+						    	meta_info += "<span><b>century:</b> "+image_metadata[i].century+"</span>"+"</br>";
+						    	meta_info += "<span><b>culture:</b> "+image_metadata[i].culture+"</span>"+"</br>";
+						    	meta_info += "<span><b>accessioned:</b> "+image_metadata[i].accessionyear+"</span>"+"</br>";
+						    	meta_info += "<span><b>description:</b> "+image_metadata[i].description+"</span>"+"</br>";
+						    	meta_info += "</div>";
+						    }
+						}					
+						$(".metainfo").show().html(meta_info);
+						$(".closebutton,.metabutton,.maxbutton").hide();
+						//ON CLICK ANYWHERE, HIDE METADATA
+						$(window).mousedown(function() {
+							$(".metainfo").hide();
+							$(".closebutton,.metabutton,.maxbutton").show();
+						});
+
+					}
+				}occur_once = true;
+			});
+	$(".closebutton,.metabutton,.maxbutton").show();
 	
 }
 
@@ -291,13 +387,13 @@ window.addEventListener("keydown", function(e){
 	var w_old = activezoom.getWidth();
 	var h_old = activezoom.getHeight();
 	if (e.keyCode == PLUS) {
-		console.log('zoomin');
+		//console.log('zoomin');
 		activezoom.scaleX += 0.05;
 		activezoom.scaleY += 0.05;
 	}
 	if (e.keyCode == MINUS) {
 		if(activezoom.getWidth()-(activezoom.getWidth()*0.05) > pzoom.width){
-		console.log(activezoom.getWidth()-(activezoom.getWidth()*0.05)+ ' <= ' +pzoom.width+' can zoom out');
+		//console.log(activezoom.getWidth()-(activezoom.getWidth()*0.05)+ ' <= ' +pzoom.width+' can zoom out');
 		activezoom.scaleX -= 0.05;
 		activezoom.scaleY -= 0.05;
 		}
@@ -312,6 +408,39 @@ window.addEventListener("keydown", function(e){
 	pzoom.renderAll();
 	
 	});
+
+
+/*
+///TESTING MOUSEOVER OBJECT ACTIVATION
+  pointer.c.on('mouse:over', function(options) {
+	
+//pointer.setCanvas(id);
+
+	var activate = pointer.c.setActiveObject(options.target);
+//active = pointer.c.getActiveObject();
+   	console.log(activate);
+    console.log('mouse_over_record');
+
+hovertest(activate);
+
+  });
+
+
+function hovertest(active){
+
+
+	var rightcorner_x = active.left+active.getWidth()-50;
+	var rightcorner_y = active.top+20;
+	
+	$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y});
+
+	$(".maxbutton").css({'left':rightcorner_x,'top':rightcorner_y+60});
+
+	$(".closebutton,.maxbutton").show();
+}
+
+*/
+
 
 
 $(document).mousemove(function(e) {
@@ -460,12 +589,12 @@ function refreshCoords() {
 }
 
 $(document).mouseup(function(options) {
-	console.log("up");
+	//console.log("mouse_up");
 	down = false;
 	$.each(canvases, function(i, c) {
 		c.calcOffset();
 	});
-		refreshCoords();
+	refreshCoords();
 
 	hover_elements();
 });
@@ -643,7 +772,7 @@ function addToTray(index) {
 $("#tray-container").on("click", function(e) {
 	$.each(dbObjs, function(i,val) {
 		if(e.offsetX > val.x1 && e.offsetX < val.x2) {
-			console.log(val);
+			console.log(val.objectid);
 			grabArt(val.objectid);	
 		}
 	});
