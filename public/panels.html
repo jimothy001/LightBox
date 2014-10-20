@@ -704,8 +704,9 @@ function addImage(objData, index) {
 			var l1,l2 = 0;
 			var max = w/h * 40+10;
 			
-			l1 = Math.floor(Math.random()*(mdstring.length - 1500))+1500;
+			l1 = Math.floor(Math.random()*(mdstring.length - 1500));
 			l2 = l1+1500;
+			console.log(mdstring.length);
 			console.log(l1);
 			
 			//full metadata character count:
