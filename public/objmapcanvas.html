@@ -238,17 +238,26 @@
 		
 		}
 		
+		//1023 objects have placeterms
+		//982 w/previous exhibitions
+		
+		var placecount = 0;
+		var places = [];
 		function getMoreArt(count) {
 			$.get("http://api.harvardartmuseums.org/object?gallery=any&apikey=f5473230-3f68-11e4-89b4-73adcea7266b&size=100&from="+count, function(data) {
-				console.log(data.info.totalrecords);
 				$.each(data.records, function(j, record) {
+					/*if(record.images && record.images.length > 1) {
+						placecount++;
+						console.log(record.images.length);
+					}*/
 					if(record.primaryimageurl) art.records.push(record);
-					else console.log("no art");
+
 				});
 				var next = count+100;
 				if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
 				else {
-				
+					//console.log("w/surrogates: "+placecount);
+					sort = "medium";
 					art.records.sort(customSort);
 					populateMap();
 				}
@@ -272,6 +281,20 @@
 						
 		
 		}
+
+		$(document).keydown(function(e) {
+			var newSort;
+			if(e.keyCode == 49) newSort = "medium";
+			else if(e.keyCode == 50) newSort = "datebegin";
+			else if(e.keyCode == 51) newSort = "division";
+			else if(e.keyCode == 52) newSort = "exhibitioncount";
+			
+			if(newSort != sort) {
+				sort = newSort;
+				art.records.sort(customSort);
+				populateMap();
+			}
+		});
 
 	function addImage(order, x, y) {
 		var base_image = new Image();
