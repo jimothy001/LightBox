@@ -456,41 +456,42 @@ $(document).mousemove(function(e) {
 			pointer.c.calcOffset();
 		}
 		refreshCoords();
-		console.log(e.target);
 		var c;
 		if(!$(e.target).hasClass("upper-canvas")) {
 			return false;
 		} else 	{
-			console.log("moving1");
 			c = e.target.parentElement.children[0];
-			pointer.setCanvas(c.id);
+			if(c.id != pointer.cid) {
+				console.log("new canvas");
+				pointer.setCanvas(c.id);
+				console.log(pointer.c);
+				if(activeSet) active = activeSet[c.id]
+				//found = true;
+
+			}
 			$.each(pointer.c.getObjects(), function(i, obj) {
 				if(e.offsetX > obj.oCoords.bl.x && e.offsetX < obj.oCoords.br.x) {
 					if(e.offsetY < obj.oCoords.bl.y && e.offsetY > obj.oCoords.tl.y) {
 						if(obj != active) {
-							console.log(obj);
 							pointer.c.setActiveObject(obj);
 							active = obj;
 							activeSet = activeObjs[active.get("orderid")];
 							active.setCoords();
 							pointer.c.calcOffset();
 							//pointer.c.renderAll();
+							console.log("new object");
+							console.log(obj);
 							found = true;
 
 						} else found = true;
 					}
 				}
 			});
-				
-			console.log("moving2");
-			console.log(found);
-			console.log(active);
-			console.log(activeSet);
-			console.log(pointer.cid);
+			console.log(active.oCoords.br.x);	
+
 	
 			if(found && active && activeSet) {
-						console.log("moving3");
-
+				console.log("found");
 				for(prop in activeSet) {
 					activeSet[prop].bringToFront();
 				}
@@ -502,139 +503,139 @@ $(document).mousemove(function(e) {
 
 
 
-			if(pointer.firstRightID() && active.oCoords.br.x > pointer.c.width) {
-				var objModR = activeSet[pointer.firstRightID()];
-				objModR.setVisible(true);
-				objModR.canvas.setActiveObject(objModR);
+				if(pointer.firstRightID() && active.oCoords.br.x > pointer.c.width) {
+					var objModR = activeSet[pointer.firstRightID()];
+					objModR.setVisible(true);
+					objModR.canvas.setActiveObject(objModR);
 			
-				objModR.setScaleX(active.getHeight() / objModR.height);
-				objModR.setScaleY(active.getHeight() / objModR.height);
-				objModR.setTop(active.getTop());
-			
-				var dx = pointer.c.width - active.oCoords.bl.x;
-				objModR.setLeft(dx*-1);
-				//	pointer.FirstRightCanvas().renderAll();
-				objModR.setCoords();
-			
-				if(pointer.SecondRightID() && active.oCoords.br.x > pointer.c.width*2) {
-					var objModR2 = activeSet[pointer.SecondRightID()];			
-					var diff = pointer.c.width*2 - active.oCoords.bl.x;
-					objModR2.setVisible(true);
-					objModR2.canvas.setActiveObject(objModR2);
-				
-					objModR2.setScaleX(active.getHeight() / objModR2.height);
-					objModR2.setScaleY(active.getHeight() / objModR2.height);
-					objModR2.setTop(active.getTop());
+					objModR.setScaleX(active.getHeight() / objModR.height);
+					objModR.setScaleY(active.getHeight() / objModR.height);
+					objModR.setTop(active.getTop());
 			
 					var dx = pointer.c.width - active.oCoords.bl.x;
-					objModR2.setLeft(diff*-1);
-					//	pointer.SecondRightCanvas().renderAll();	
-					objModR2.setCoords();
+					objModR.setLeft(dx*-1);
+					//	pointer.FirstRightCanvas().renderAll();
+					objModR.setCoords();
+			
+					if(pointer.SecondRightID() && active.oCoords.br.x > pointer.c.width*2) {
+						var objModR2 = activeSet[pointer.SecondRightID()];			
+						var diff = pointer.c.width*2 - active.oCoords.bl.x;
+						objModR2.setVisible(true);
+						objModR2.canvas.setActiveObject(objModR2);
+				
+						objModR2.setScaleX(active.getHeight() / objModR2.height);
+						objModR2.setScaleY(active.getHeight() / objModR2.height);
+						objModR2.setTop(active.getTop());
+			
+						var dx = pointer.c.width - active.oCoords.bl.x;
+						objModR2.setLeft(diff*-1);
+						//	pointer.SecondRightCanvas().renderAll();	
+						objModR2.setCoords();
 			
 			
-					if(pointer.ThirdRightID() && active.oCoords.br.x > pointer.c.width*3) {
-							var objModR3 = activeSet[pointer.ThirdRightID()];
-							var diff = pointer.c.width*3 - active.oCoords.bl.x;
-							objModR3.canvas.setActiveObject(objModR3);
+						if(pointer.ThirdRightID() && active.oCoords.br.x > pointer.c.width*3) {
+								var objModR3 = activeSet[pointer.ThirdRightID()];
+								var diff = pointer.c.width*3 - active.oCoords.bl.x;
+								objModR3.canvas.setActiveObject(objModR3);
 
-							objModR3.setVisible(true);
-							objModR3.setScaleX(active.getHeight() / objModR3.height);
-							objModR3.setScaleY(active.getHeight() / objModR3.height);
-							objModR3.setTop(active.getTop());
+								objModR3.setVisible(true);
+								objModR3.setScaleX(active.getHeight() / objModR3.height);
+								objModR3.setScaleY(active.getHeight() / objModR3.height);
+								objModR3.setTop(active.getTop());
 			
-							var dx = pointer.c.width - active.oCoords.bl.x;
-							objModR3.setLeft(diff*-1);
-						//	pointer.ThirdRightCanvas().renderAll();		
-							objModR3.setCoords();
+								var dx = pointer.c.width - active.oCoords.bl.x;
+								objModR3.setLeft(diff*-1);
+							//	pointer.ThirdRightCanvas().renderAll();		
+								objModR3.setCoords();
 							
-					} else if(pointer.ThirdRightID()) {
-						activeSet[pointer.ThirdRightID()].active = false;
-						activeSet[pointer.ThirdRightID()].setVisible(false);
-						activeSet[pointer.ThirdRightID()].setTop(1000);
-				//		pointer.ThirdRightCanvas().renderAll();				
+						} else if(pointer.ThirdRightID()) {
+							activeSet[pointer.ThirdRightID()].active = false;
+							activeSet[pointer.ThirdRightID()].setVisible(false);
+							activeSet[pointer.ThirdRightID()].setTop(1000);
+					//		pointer.ThirdRightCanvas().renderAll();				
+						}
+				
+					} else if(pointer.SecondRightID()){
+						activeSet[pointer.SecondRightID()].active = false;		
+						activeSet[pointer.SecondRightID()].setVisible(false);
+						activeSet[pointer.SecondRightID()].setTop(1000);
+					//	pointer.SecondRightCanvas().renderAll();		
 					}
 				
-				} else if(pointer.SecondRightID()){
-					activeSet[pointer.SecondRightID()].active = false;		
-					activeSet[pointer.SecondRightID()].setVisible(false);
-					activeSet[pointer.SecondRightID()].setTop(1000);
-				//	pointer.SecondRightCanvas().renderAll();		
-				}
-				
-			} 
+				} 
 		
-			if(pointer.FirstLeftID() && active.oCoords.bl.x < 0) {
-				var objModL = activeSet[pointer.FirstLeftID()];
-				objModL.setVisible(true);
-				objModL.canvas.setActiveObject(objModL);
+				if(pointer.FirstLeftID() && active.oCoords.bl.x < 0) {
+					var objModL = activeSet[pointer.FirstLeftID()];
+					objModL.setVisible(true);
+					objModL.canvas.setActiveObject(objModL);
 			
-				objModL.setScaleX(active.getHeight() / objModL.height);
-				objModL.setScaleY(active.getHeight() / objModL.height);
-				objModL.setTop(active.getTop());
+					objModL.setScaleX(active.getHeight() / objModL.height);
+					objModL.setScaleY(active.getHeight() / objModL.height);
+					objModL.setTop(active.getTop());
 			
-				var dx = pointer.c.width + active.oCoords.bl.x;
-				objModL.setLeft(dx);
-		//		pointer.FirstLeftCanvas().renderAll();	
-				objModL.setCoords();	
+					var dx = pointer.c.width + active.oCoords.bl.x;
+					objModL.setLeft(dx);
+			//		pointer.FirstLeftCanvas().renderAll();	
+					objModL.setCoords();	
 			
-				if(pointer.SecondLeftID() && active.oCoords.bl.x < -1*pointer.c.width) {
-					var objModL2 = activeSet[pointer.SecondLeftID()];
-					objModL2.canvas.setActiveObject(objModL2);
+					if(pointer.SecondLeftID() && active.oCoords.bl.x < -1*pointer.c.width) {
+						var objModL2 = activeSet[pointer.SecondLeftID()];
+						objModL2.canvas.setActiveObject(objModL2);
 				
-					var diff = pointer.c.width + active.oCoords.bl.x;
-					objModL2.setVisible(true);
-					objModL2.setScaleX(active.getHeight() / objModL2.height);
-					objModL2.setScaleY(active.getHeight() / objModL2.height);
-					objModL2.setTop(active.getTop());
-			
-					objModL2.setLeft(pointer.c.width + diff);
-				//	pointer.SecondLeftCanvas().renderAll();	
-					objModL2.setCoords();
-				
-					if(pointer.ThirdLeftID() && active.oCoords.bl.x < -2*pointer.c.width) {
-						var objModL3 = activeSet[pointer.ThirdLeftID()];
-						objModL3.canvas.setActiveObject(objModL3);
 						var diff = pointer.c.width + active.oCoords.bl.x;
-
-						objModL3.setVisible(true);
-						objModL3.setScaleX(active.getHeight() / objModL3.height);
-						objModL3.setScaleY(active.getHeight() / objModL3.height);
-						objModL3.setTop(active.getTop());
+						objModL2.setVisible(true);
+						objModL2.setScaleX(active.getHeight() / objModL2.height);
+						objModL2.setScaleY(active.getHeight() / objModL2.height);
+						objModL2.setTop(active.getTop());
 			
-						objModL3.setLeft(2*pointer.c.width + diff);
-					//	pointer.ThirdLeftCanvas().renderAll();	
-						objModL3.setCoords();
-								
-					} else if(pointer.ThirdLeftID()) {
-						activeSet[pointer.ThirdLeftID()].active = false;
-						activeSet[pointer.ThirdLeftID()].setVisible(false);
-						activeSet[pointer.ThirdLeftID()].setTop(1000);
-						pointer.ThirdLeftCanvas().renderAll();				
-					}				
+						objModL2.setLeft(pointer.c.width + diff);
+					//	pointer.SecondLeftCanvas().renderAll();	
+						objModL2.setCoords();
 				
-				} else if(pointer.SecondLeftID()){
-					activeSet[pointer.SecondLeftID()].active = false;
-					activeSet[pointer.SecondLeftID()].setVisible(false);
-					activeSet[pointer.SecondLeftID()].setTop(1000);
-					pointer.SecondLeftCanvas().renderAll();		
-				}
-			}		
+						if(pointer.ThirdLeftID() && active.oCoords.bl.x < -2*pointer.c.width) {
+							var objModL3 = activeSet[pointer.ThirdLeftID()];
+							objModL3.canvas.setActiveObject(objModL3);
+							var diff = pointer.c.width + active.oCoords.bl.x;
 
-			if(pointer.FirstLeftID() && active.oCoords.bl.x > 0) {
-				activeSet[pointer.FirstLeftID()].active = false;
-				activeSet[pointer.FirstLeftID()].setVisible(false);
-				activeSet[pointer.FirstLeftID()].setTop(1000);
-				pointer.FirstLeftCanvas().renderAll();		
-			}	
-
-			if(pointer.firstRightID() && active.oCoords.br.x < pointer.c.width) {
-				activeSet[pointer.firstRightID()].active = false;
-				activeSet[pointer.firstRightID()].setTop(1000);
-				activeSet[pointer.firstRightID()].setVisible(false);
-				pointer.FirstRightCanvas().renderAll();		
-			}	
+							objModL3.setVisible(true);
+							objModL3.setScaleX(active.getHeight() / objModL3.height);
+							objModL3.setScaleY(active.getHeight() / objModL3.height);
+							objModL3.setTop(active.getTop());
 			
-		}
+							objModL3.setLeft(2*pointer.c.width + diff);
+						//	pointer.ThirdLeftCanvas().renderAll();	
+							objModL3.setCoords();
+								
+						} else if(pointer.ThirdLeftID()) {
+							activeSet[pointer.ThirdLeftID()].active = false;
+							activeSet[pointer.ThirdLeftID()].setVisible(false);
+							activeSet[pointer.ThirdLeftID()].setTop(1000);
+							pointer.ThirdLeftCanvas().renderAll();				
+						}				
+				
+					} else if(pointer.SecondLeftID()){
+						activeSet[pointer.SecondLeftID()].active = false;
+						activeSet[pointer.SecondLeftID()].setVisible(false);
+						activeSet[pointer.SecondLeftID()].setTop(1000);
+						pointer.SecondLeftCanvas().renderAll();		
+					}
+				}		
+
+				if(pointer.FirstLeftID() && active.oCoords.bl.x > 0) {
+					activeSet[pointer.FirstLeftID()].active = false;
+					activeSet[pointer.FirstLeftID()].setVisible(false);
+					activeSet[pointer.FirstLeftID()].setTop(1000);
+					pointer.FirstLeftCanvas().renderAll();		
+				}	
+
+				if(pointer.firstRightID() && active.oCoords.br.x < pointer.c.width) {
+					activeSet[pointer.firstRightID()].active = false;
+					activeSet[pointer.firstRightID()].setTop(1000);
+					activeSet[pointer.firstRightID()].setVisible(false);
+					pointer.FirstRightCanvas().renderAll();		
+				}	
+			
+			}
 			if(active) active.setCoords();
 			pointer.c.calcOffset();
 	}
