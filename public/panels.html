@@ -9,12 +9,13 @@
 	<style>
 		#sandbox 
 		{
-			width: 100%;
-			height:90%;
+			width: 3100px;
+			height:900px;
 			background-color: white;
 			position: relative;
 			float: left;
 			display: block;
+			border: 1px solid black;
 		}
 		
 		
@@ -77,9 +78,10 @@
 			margin: 5px;
 		}
 		.panel{
-			margin: 10px;
 			border: 1px solid #ccc;
 		}
+		
+		
 		.panel_zoom{
 			margin: 10px;
 			position: absolute;
@@ -89,8 +91,8 @@
 			border: 1px solid #ccc;
 		}
 		.divider div{
-			height: 602px;
-			width: 10px;
+			height: 800px;
+			width: 75px;
 			border-left: 1px solid #ccc;
 			border-right: 1px solid #ccc;
 			background: white;
@@ -104,10 +106,10 @@
 
 		}
 		
-		.divider div:nth-child(1) {left: 325px;}
-		.divider div:nth-child(2) {left: 645px;}
-		.divider div:nth-child(3) {left: 965px;}
-		.divider div:nth-child(4) {left: 1285px;}
+		.divider div:nth-child(1) {left: 700px;}
+		.divider div:nth-child(2) {left: 1475px; width: 50px;}
+		.divider div:nth-child(3) {left: 2225px;}
+		.divider div:nth-child(4) {left: 3000px;}
 	</style>
 	</head>
 	
@@ -127,18 +129,18 @@
 
 	<div id="panels">
 		<!-- <div id="metadata"></div> -->
-		<canvas id="p1" class="panel" width="320" height="600"></canvas>
-		<canvas id="p2" class="panel" width="320" height="600"></canvas>
-		<canvas id="p3" class="panel" width="320" height="600"></canvas>
-		<canvas id="p4" class="panel" width="320" height="600"></canvas>
+		<canvas id="p1" class="panel a" width="700" height="800"></canvas>
+		<canvas id="p2" class="panel b" width="700" height="800"></canvas>
+		<canvas id="p3" class="panel a" width="700" height="800"></canvas>
+		<canvas id="p4" class="panel" width="700" height="800"></canvas>
 	</div>
 
 	<div id="tray-container">
-		<canvas id="tray" class="tray" width="1275" height="50"></canvas>
+		<canvas id="tray" class="tray" width="3000" height="50"></canvas>
 	</div>
 
 		<div class="panel_zoom">
-			<canvas id="pzoom" width="1275" height="600"></canvas>	
+			<canvas id="pzoom" width="3000" height="800"></canvas>	
 		</div>
 		
 
@@ -147,13 +149,23 @@
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
+
+
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
 var p3 = new fabric.Canvas("p3");
 var p4 = new fabric.Canvas("p4");
 
+
 var pointer = new canvasPointer();
 var canvases = [p1, p2, p3, p4];
+
+$.each(canvases, function(i, c) {
+	var x = 75;
+	if(i==1) x = 50;
+	if(i==3) x=0;
+	$(c.wrapperEl).css("margin-right", x);
+});
 
 var order = 0;
 
@@ -276,10 +288,10 @@ $(document).mousedown(function(options) {
 
 function hover_elements(){
 	if(!active) return false;
-	var extra = pointer.getIndex() * pointer.c.getWidth();
+	var extra = pointer.getExtra();
 
 	
-	var rightcorner_x = extra+active.left+active.getWidth()-45;
+	var rightcorner_x = extra+active.left+active.getWidth()-65;
 	var rightcorner_y = active.top+20;
 	
 	$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y})
@@ -304,7 +316,7 @@ function hover_elements(){
 
 	$(".maxbutton").css({'left':rightcorner_x-55,'top':rightcorner_y})
 		.bind( "click", function() {
-				if(!occur_once){
+				//if(!occur_once){
 					$(".panel_zoom").show();
 					console.log(activeSet["p1"]._originalElement.src);
 					var zoom_mult = pzoom.width;
@@ -327,7 +339,8 @@ function hover_elements(){
 				.bind( "click", function() {
 					////REMOVE LARGE DUPLICATE IMAGE
 					if(pzoom.getActiveObject()){
-					pzoom.getActiveObject().remove();
+					//	pzoom.remove(pzoom.getActiveObject());
+						pzoom.clear();
 					}
 					$(".panel_zoom").hide();
 
@@ -335,14 +348,14 @@ function hover_elements(){
 					$("body").append('<div class="closebutton"></div><div class="maxbutton"></div><div class="metabutton"></div>');
 					$(".minbutton").hide();
 				});
-				}occur_once = true;
+				//}occur_once = true;
 			});
 
 
 	$(".metabutton").css({'left':extra+active.left+20,'top':rightcorner_y})
 			.bind( "click", function() {
 				$(".metainfo").css({'left':extra+active.left+14,'top':active.top+14,'width':active.getWidth()-6,'height':active.getHeight()-6});
-				if(!occur_once){
+				//if(!occur_once){
 			
 					
 					var image_id = active.get("objid");
@@ -372,7 +385,7 @@ function hover_elements(){
 					});
 
 					
-				}occur_once = true;
+				//}occur_once = true;
 			});
 	$(".closebutton,.metabutton,.maxbutton").show();
 	
@@ -407,32 +420,6 @@ window.addEventListener("keydown", function(e){
 	});
 
 
-/*
-$.each(canvases, function(i, c) {
-  c.on('mouse:over', function(options) {
-		pointer.setCanvas(c.lowerCanvasEl.id);
-		console.log("hover");
-
-		//deactive other objects
-		$.each(canvases, function(i,c2) {
-			if(c2.getActiveObject() && c2 != c) {
-				c2.getActiveObject().active = false;
-				c2.renderAll();
-			}
-		});
-
-		c.setActiveObject(options.target);
-		active = options.target;
-		activeSet = activeObjs[active.get("orderid")];
-		for(prop in activeSet) {
-			activeSet[prop].bringToFront();
-		}
-	
-		hover_elements();
-		refreshCoords();
-  });
-});
-*/
 function hovertest(active){
 
 
@@ -664,7 +651,7 @@ $(document).mouseup(function(options) {
 });
 
 
-
+var imgCount = 0;
 function addImage(objData, index) {
 		var w = 200;
 		var h;
@@ -703,7 +690,9 @@ function addImage(objData, index) {
 		//	mdstring = mdstring.replace(/['"]/g,'');
 			var newstring = "";
 			var l1,l2 = 0;
-			var max = w/h * 40+10;
+			var max = Math.floor(w/3.2);
+			var lcount = Math.floor(h/5);
+			console.log(max);
 			
 			l1 = Math.floor(Math.random()*(mdstring.length - 1500));
 			l2 = l1+1500;
@@ -712,14 +701,15 @@ function addImage(objData, index) {
 			
 			//full metadata character count:
 			//max = Math.floor(Math.sqrt((mdstring.length*1.4*w)/h));
+			var count = 0;
+			while(count<lcount) {
 			
-			while(l1<l2) {
-				
 				var chunk = mdstring.substr(l1, max);
 				newstring += chunk;
 				newstring += "\n";
 			
 				l1 += max;
+				count++;
 			
 			}
 			
@@ -735,49 +725,13 @@ function addImage(objData, index) {
 			text.setVisible(false);
 			p3.add(text);
 			obj.p3 = text;
-	/*
-			var group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
-			group.set("orderid", index);
-			group.set("objid", objData.id);
-			group.set("lockRotation",true);
-			group.setVisible(false);
-			var hcount = 0;
-			
-			if(objData.colors) {
-				$.each(objData.colors, function(i, color) {
-					var hx = h * color.percent;
-					var rect = new fabric.Rect({
-						left: -w/2,
-						top: hcount - h/2,
-						fill: color.color,
-						width: w,
-						height: hx
-					});
-						hcount += hx;
-						group.add(rect);
-				});
-			} else {
-					var rect = new fabric.Rect({
-						left: -w/2,
-						top: - h/2,
-						fill: "black",
-						width: w,
-						height: h
-					});
-					
-					group.add(rect);		
-			}
-		
-			p3.add(group);
-			obj.p3 = group;
-			*/
 			
 			var p4group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
 			p4group.set("orderid", index);
 			p4group.set("objid", objData.id);
-
+			imgCount = 0;
 			for(var j=0; j < objData.images.length; j++) {			
-				addImageSync(objData.images[j].baseimageurl, j, w, h, objData.images.length, p4group);
+				addImageSync(objData.images[j].baseimageurl, w, h, objData.images.length, p4group);
 			}
 			p4group.count = objData.images.length - 1;
 			p4group.curr = p4group.count;
@@ -844,7 +798,7 @@ function addToTray(index) {
 					duration: 1000,
 					onChange: tray.renderAll.bind(tray),
 					onComplete: function() {
-						trayCount += w;			
+						trayCount += (w+5);			
 						dbObjs[index].x2 = trayCount;
 						if((index < dbObjs.length - 1) && trayCount < tray.getWidth()) addToTray(index+1);
 					},
@@ -866,7 +820,7 @@ $("#tray-container").on("click", function(e) {
 });
 
 
-function addImageSync(url, index, w, h, lim, group) {
+function addImageSync(url, w, h, lim, group) {
 	fabric.Image.fromURL(url, function(oImg2)
 		{
 			var h2 = (oImg2.getHeight() / oImg2.getWidth()) * w;
@@ -880,9 +834,14 @@ function addImageSync(url, index, w, h, lim, group) {
 			oImg2.set("lockRotation",true);
 			oImg2.setLeft(-w2/2);
 			oImg2.setTop(-h2/2);
-			if(index == lim-1) oImg2.setVisible(true);	
-			else 	oImg2.setVisible(false);
+			if(imgCount == lim-1) {
+				console.log(lim);
+				console.log(imgCount);
+				oImg2.setVisible(true);	
+			}
+			else oImg2.setVisible(false);
 			group.add(oImg2);
+			imgCount++;
 
 		});		
 }
@@ -964,6 +923,23 @@ function canvasPointer() {
 	this.c = p1;
 	var cids = ["p1","p2","p3","p4"];
 	var canvases = [p1, p2, p3, p4];
+	
+	this.getExtra = function() {
+		switch(this._index) {
+			case 0:
+				return 0;
+				break;
+			case 1:
+				return 775;
+				break;
+			case 2:
+				return 1525;
+				break;
+			case 3:
+				return 2300;
+				break;
+		}
+	};
 	this.activateNext = function() {
 		this._index++;
 		this.cid = cids[this._index];
