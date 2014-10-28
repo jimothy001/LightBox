@@ -39,6 +39,7 @@
 			margin: 0;
 			padding: 0;
 		}
+		
 		.closebutton, .maxbutton, .metabutton, .minbutton{
 			position: absolute;
 			z-index: 999;
@@ -253,7 +254,7 @@ $(document).mousedown(function(options) {
 	down = true;
 	refreshCoords();
 });
-/*
+
 $(document).mousedown(function(options) {
 	down = true;
 
@@ -265,7 +266,11 @@ $(document).mousedown(function(options) {
 	
 
 	if(pointer.c.getActiveObject()) {
-		if(active != pointer.c.getActiveObject()) {
+		active = pointer.c.getActiveObject();
+
+		activeSet = activeObjs[active.get("orderid")];
+
+		//if(active != pointer.c.getActiveObject()) {
 		
 			$.each(canvases, function(i,c) {
 				if(c.getActiveObject() && c != pointer.c) {
@@ -274,17 +279,15 @@ $(document).mousedown(function(options) {
 				}
 			});
 				
-			active = pointer.c.getActiveObject();
-			activeSet = activeObjs[active.get("orderid")];
 			for(prop in activeSet) {
 				activeSet[prop].bringToFront();
 			}
 			hover_elements();
-		}
+		//}
 	} else active = false;
 
 });
-*/
+
 
 function hover_elements(){
 	if(!active) return false;
@@ -436,6 +439,7 @@ function hovertest(active){
 
 
 $(document).mousemove(function(e) {
+		if(!active) return false;
 		var found = false;
 
 		if(active) {
@@ -456,7 +460,7 @@ $(document).mousemove(function(e) {
 				//found = true;
 
 			}
-			$.each(pointer.c.getObjects(), function(i, obj) {
+			/*$.each(pointer.c.getObjects(), function(i, obj) {
 				if(e.offsetX > obj.oCoords.bl.x && e.offsetX < obj.oCoords.br.x) {
 					if(e.offsetY < obj.oCoords.bl.y && e.offsetY > obj.oCoords.tl.y) {
 						if(obj != active) {
@@ -470,15 +474,17 @@ $(document).mousemove(function(e) {
 							console.log(obj);
 							found = true;
 
-						} else found = true;
+						} else active = false;
 					}
 				}
-			});
+			});*/
 			console.log(active.oCoords.br.x);	
 
 	
-			if(found && active && activeSet) {
-				console.log("found");
+			if(active && activeSet) {
+				if(!found) {
+					console.log("stop");
+				} else console.log("found");
 				for(prop in activeSet) {
 					activeSet[prop].bringToFront();
 				}
@@ -653,7 +659,7 @@ $(document).mouseup(function(options) {
 
 var imgCount = 0;
 function addImage(objData, index) {
-		var w = 200;
+		var w = 500;
 		var h;
 		var obj = {};
 		
@@ -694,8 +700,10 @@ function addImage(objData, index) {
 			var lcount = Math.floor(h/5);
 			console.log(max);
 			
-			l1 = Math.floor(Math.random()*(mdstring.length - 1500));
-			l2 = l1+1500;
+			var buff = lcount*max;
+			
+			l1 = Math.floor(Math.random()*(mdstring.length - buff));
+			l2 = l1+buff;
 			console.log(mdstring.length);
 			console.log(l1);
 			
