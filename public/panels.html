@@ -176,6 +176,10 @@ var zoom = false;
 //keycodes
 var PLUS = 187;
 var MINUS = 189;
+var LEFT = 37;
+var UP = 38;
+var RIGHT = 39;
+var DOWN = 40;
 // end keycodes
 
 var image_metadata = [];
@@ -222,7 +226,9 @@ function grabArt(id) {
 
 
 
-
+/*
+	add object's metadata to global var
+*/
 function metaImage(objData, index) {
 		//check for duplicates
 		var dup_object = false;
@@ -237,14 +243,14 @@ function metaImage(objData, index) {
 		}else{
 			console.log('object exists already');
 		}
-		//console.log(objData);
-		//console.log(image_metadata);
+
 };
 
+/*
 $(document).mousedown(function(options) {
 	down = true;
 	refreshCoords();
-});
+});*/
 
 $(document).mousedown(function(options) {
 	down = true;
@@ -253,30 +259,28 @@ $(document).mousedown(function(options) {
 	var id = $(options.target).prev().attr("id");
 
 	pointer.setCanvas(id);
-	//pointer.c = pointer.c;
-	
 
 	if(pointer.c.getActiveObject()) {
 		active = pointer.c.getActiveObject();
 
 		activeSet = activeObjs[active.get("orderid")];
-
-		//if(active != pointer.c.getActiveObject()) {
 		
-			$.each(canvases, function(i,c) {
-				if(c.getActiveObject() && c != pointer.c) {
-					c.getActiveObject().active = false;
-					c.renderAll();
-				}
-			});
-				
-			for(prop in activeSet) {
-				activeSet[prop].bringToFront();
+		$.each(canvases, function(i,c) {
+			if(c.getActiveObject() && c != pointer.c) {
+				c.getActiveObject().active = false;
+				c.renderAll();
 			}
-			hover_elements();
-		//}
-	} else active = false;
-
+		});
+			
+		for(prop in activeSet) {
+			activeSet[prop].bringToFront();
+		}
+		hover_elements();
+		
+	} else {
+		active = false;
+		activeSet = false;
+	}
 });
 
 
@@ -454,6 +458,23 @@ window.addEventListener("keydown", function(e){
    	var elem_zoom;
     if ($(".panel_zoom").css('display') == 'none'){
        elem_zoom = active;
+       	if (e.keyCode == UP) {
+					console.log('zoomin');
+					elem_zoom.scaleX += 0.05;
+					elem_zoom.scaleY += 0.05;
+				} else if (e.keyCode == DOWN) {
+					console.log("zoom out");
+					elem_zoom.scaleX -= 0.05;
+					elem_zoom.scaleY -= 0.05;				
+				}
+				
+				pointer.renderAll()
+				active.setCoords();
+				onMove();
+				pointer.renderAll()
+				hover_elements();
+       
+       
     }else{
 	///IF MAX/ZOOM WINDOW OPEN, ZOOM MAX WINDOW
 		elem_zoom = activezoom;
@@ -462,18 +483,20 @@ window.addEventListener("keydown", function(e){
 	///get old dimensions
 	var w_old = elem_zoom.getWidth();
 	var h_old = elem_zoom.getHeight();
-	if (e.keyCode == PLUS) {
+	if (e.keyCode == UP) {
 		//console.log('zoomin');
 		elem_zoom.scaleX += 0.05;
 		elem_zoom.scaleY += 0.05;
 	}
-	if (e.keyCode == MINUS) {
+	
+	if (e.keyCode == DOWN) {
 		if(elem_zoom.getWidth()-(elem_zoom.getWidth()*0.05) > pzoom.width){
 		console.log(elem_zoom.getWidth()-(elem_zoom.getWidth()*0.05)+ ' <= ' +pzoom.width+' can zoom out');
 		elem_zoom.scaleX -= 0.05;
 		elem_zoom.scaleY -= 0.05;
 		}
 	}
+
 	//get new dimensions
 	var w = elem_zoom.getWidth();
 	var h = elem_zoom.getHeight();
@@ -487,22 +510,9 @@ window.addEventListener("keydown", function(e){
 
 
 
-function hovertest(active){
 
-
-	var rightcorner_x = active.left+active.getWidth()-50;
-	var rightcorner_y = active.top+20;
-	
-	$(".closebutton").css({'left':rightcorner_x,'top':rightcorner_y});
-
-	$(".maxbutton").css({'left':rightcorner_x,'top':rightcorner_y+60});
-
-	$(".closebutton,.maxbutton").show();
-}
 
 var prev = 0;
-
-
 
 $(document).mousemove(function(e) {
 		if(!active) return false;
@@ -769,7 +779,8 @@ function addImage(objData, index) {
 			oImg.set("orderid", index);
 			oImg.set("objid", objData.id);
 			oImg.set("lockRotation",true);
-
+			oImg.set("lockScalingX",true);
+			oImg.set("lockScalingY",true);
 			oImg.on("scaling", function() {
 				console.log("move");
 				onMove();
@@ -788,6 +799,8 @@ function addImage(objData, index) {
 			oImg.set("orderid", index);
 			oImg.set("objid", objData.id);
 			oImg.set("lockRotation",true);
+			oImg.set("lockScalingX",true);
+			oImg.set("lockScalingY",true);
 			oImg.setLeft(-w/2);
 			oImg.setTop(-1.5*h);
 			Pixelate(oImg, 25)
@@ -802,6 +815,8 @@ function addImage(objData, index) {
 			var text = new fabric.Text(newstring, {left: -w/2, top: -1.5*h, width: w, height: h*3});
 			text.set("orderid", index);
 			text.set("lockRotation",true);
+			text.set("lockScalingX",true);
+			text.set("lockScalingY",true);
 			text.set("objid", objData.id);
 			text.setFontSize(10);
 			text.setFontWeight(100);
@@ -816,6 +831,9 @@ function addImage(objData, index) {
 			var p4group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
 			p4group.set("orderid", index);
 			p4group.set("objid", objData.id);
+			p4group.set("lockRotation",true);
+			p4group.set("lockScalingX",true);
+			p4group.set("lockScalingY",true);
 			imgCount = 0;
 			for(var j=0; j < objData.images.length; j++) {			
 				addImageSync(objData.images[j].baseimageurl, w, h, objData.images.length, p4group);
@@ -993,31 +1011,28 @@ function Pixelate(obj, num) {
 	obj.applyFilters(p2.renderAll.bind(p2));
 }
 
-var LEFT = 37;
-var UP = 38;
-var RIGHT = 39;
-var DOWN = 40;
+
 
 window.addEventListener("keydown", function(e) //window
 {
 	if(zoom) return false;
 	//e = e || window.event;
 	if(pointer.c == p2) {
-			if (e.keyCode == UP && active.filters[0].blocksize > 5) Pixelate(active, active.filters[0].blocksize - 5);
-			else if (e.keyCode == DOWN && active.filters[0].blocksize < 80) {
+			if (e.keyCode == RIGHT && active.filters[0].blocksize > 5) Pixelate(active, active.filters[0].blocksize - 5);
+			else if (e.keyCode == LEFT && active.filters[0].blocksize < 80) {
 				Pixelate(active, active.filters[0].blocksize +5);
 				return false;
 			}
 	} else if(pointer.c == p1) {
-			if (e.keyCode == UP && active.opacity < 1) {
+			if (e.keyCode == RIGHT && active.opacity < 1) {
 				active.setOpacity(active.opacity + .1 );
 				p1.renderAll();
-			} else if(e.keyCode == DOWN && active.opacity > .2) {
+			} else if(e.keyCode == LEFT && active.opacity > .2) {
 				active.setOpacity(active.opacity - .1 );
 				p1.renderAll();
 			}
 	} else if(pointer.c == p3) {
-		if (e.keyCode == UP || e.keyCode == DOWN) {
+		if (e.keyCode == RIGHT || e.keyCode == LEFT) {
 			for(var i in image_metadata) {
 				if(image_metadata[i].objectid == active.get("objid")){
 					var newstring = getMetaData(image_metadata[i], active.get("max"), active.get("lcount"));
@@ -1030,14 +1045,14 @@ window.addEventListener("keydown", function(e) //window
 		}
 	
 	} else if(pointer.c == p4) {
-			if (e.keyCode == UP) {
+			if (e.keyCode == LEFT) {
 				active.getObjects()[active.curr].setVisible(false);
 				var next = active.curr + 1;
 				if (next > active.count) next = 0;
 				active.getObjects()[next].setVisible(true);
 				active.curr = next;
 				p4.renderAll();
-			} else if(e.keyCode == DOWN) {
+			} else if(e.keyCode == RIGHT) {
 				active.getObjects()[active.curr].setVisible(false);
 				var prev = active.curr - 1;
 				if (prev < 0) prev = active.count;
@@ -1139,6 +1154,12 @@ function canvasPointer() {
 	};
 	this.getIndex = function() {
 		return this._index;
+	}
+	
+	this.renderAll = function() {
+		$.each(canvases, function(i, c) {
+			c.renderAll();
+		});
 	}
 }
 
