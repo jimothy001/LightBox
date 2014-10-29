@@ -700,10 +700,11 @@ function addImage(objData, index) {
 			oImg.set("objid", objData.id);
 			oImg.set("lockRotation",true);
 
-			oImg.on("object:scaling", function() {
+			oImg.on("scaling", function() {
 				console.log("move");
 				onMove();
 			});
+			
 			p1.add(oImg);
 			obj.p1 = oImg;
 			
