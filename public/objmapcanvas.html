@@ -13,8 +13,8 @@
 		
 		
 		#map {
-				width: 100%;
-				height:100%;
+				width: 1920px;
+				height: 1080px;
 				position: absolute;
 				top: 0px;
 				left: 0px;
@@ -100,8 +100,83 @@
 			clear:both;
 		}
 		
-		canvas {
+		.metadata .p1 {
+			/*content: "{";*/
+			position: fixed;
+			/*width: 30%;
+			height: 30%;*/
+			top: 10%;
+			left: 16.665%;
+			font-size: 2000%;
+		}
+
+		/*.metadata .p1:before {
 			
+			position: fixed;
+			content: "{";
+			font-size: 1000%;
+		}*/
+
+		.metadata .p2 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 10%;
+			left: 38.33%;
+		}
+
+		.metadata .p2next {
+			position: relative;
+			top: 10%;
+		}
+
+		.metadata .p3 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 10%;
+			left: 68.33%;
+		}
+
+		.metadata .p4 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 43.33%;
+			left: 5%;
+		}
+
+		.metadata .p5 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 43.33%;
+			left: 68.33%;
+		}
+
+		.metadata .p6 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 73.33%;
+			left: 5%;
+		}
+
+		.metadata .p7 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 73.33%;
+			left: 38.33%;
+		}
+
+		.metadata .p8 {
+			position: fixed;
+			/*width: 30%;
+			height: 30%;*/
+			top: 73.33%;
+			right: 16.665%;
+			font-size: 2000%;
 		}
 	
 	</style>
@@ -115,10 +190,12 @@
 			<img class ='img-preview'>
 			<div class='button'>Add to tray</div>
 			<div class='metadata'>
-			<span class="p" id='sort'></span>
-			<span class="p">Description:  <span id="description"></span></span>
-			<span class="p">Title: <span id="title"></span></span>
-			<span class="p">Dated: <span id="date"></span></span>
+			<span class="p6" id='sort'></span>
+			<span class="p1">{ <span id="_bracket"></span></span>
+			<span class="p2">Title: <span id="title"></span></p>	
+			<span class="p2next">Dated: <span id="date"></span></span>
+			<span class="p3">Description:  <span id="description"></span></span>
+			<span class="p8">}, <span id="bracket_"></span></span>
 			
 		</div></div>
 		
@@ -175,7 +252,7 @@
 				closePreview();
 				
 			} else if($(e.target).attr("id") == "map") {
-					var x = Math.floor((e.offsetX) / h);
+					var x = Math.floor((e.offsetX) / w);
 					console.log(x);
 					console.log(y);
 					var y = Math.floor((e.offsetY) / h);
@@ -192,19 +269,48 @@
 					$("#sort").html(sort+": "+curr[sort]); 
 					var $text = $("#preview .metadata");
 
+					var _text = [
+					$("#_bracket .metadata .p1"),
+					$("#title .metadata .p2"),
+					$("#date .metadata .p2"),
+					$("#description .metadata .p3"),
+					$(".metadata .p5"),
+					$(".metadata .p6"),
+					$(".metadata .p7"),
+					$("#bracket_ .metadata .p8")];
+
+					for(var i in _text)
+					{
+						//console.log(_text[i]);
+						_text[i].hide();
+					}
+
 					$text.hide();
 				
 					$(".img-preview").on("mouseover", function() {
 						var $img = $("#preview .img-preview");
-						$text.css("margin-left", $img.css("margin-left"));
+					/*	$text.css("margin-left", $img.css("margin-left"));
 						$text.css("margin-top", $img.css("margin-top"));
 						$text.height($img.height());
-						$text.width($img.width());
+						$text.width($img.width());*/
 						$text.show();
+						
+						for(var i in _text)
+							{
+								//console.log('!');
+								_text[i].show();
+							}
 					});
+					
+					
 					$(".img-preview").on("mouseout", function() {
 						$text.hide();
-					});			
+							for(var i in _text)
+						{
+							_text[i].hide();
+						}
+					});
+								
 					$("#preview").animate({opacity: 1}, 500, function() {
 				
 					});
@@ -263,12 +369,13 @@
 				}
 			});	
 		}
-		
+		var w = 40;
 		function populateMap() {
-			h = Math.sqrt((window.innerWidth - 20)*(window.innerHeight-20) / art.records.length);
-			itemX = Math.floor(map.width / h);
+			h = 36;
+			
+			itemX = 48;
 			for(i=0; i < art.records.length; i++) {
-				var x = (i % itemX)*h;
+				var x = (i % itemX)*w;
 				var y = Math.floor(i/itemX)*h;
 				addImage(i, x, y);	
 			}
@@ -302,9 +409,14 @@
 		base_image.onload = function(){
 
 		
-			var size = base_image.height;
+			var sizeh = base_image.height;
+			var sizew = (base_image.height/h)*w;
+			if(sizew > base_image.width) {
+				sizew = base_image.width;
+				sizeh = (base_image.width/w)*h;
+			} 
 			if(base_image.height > base_image.width) size = base_image.width;
-			ctx.drawImage(base_image, 0, 0, size, size, x, y, h, h);		
+			ctx.drawImage(base_image, 0, 0, sizew, sizeh, x, y, w, h);		
 			
 			
 		}				
