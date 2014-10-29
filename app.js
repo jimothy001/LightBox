@@ -6,6 +6,7 @@ var serveStatic = require('serve-static');
 var finalhandler = require('finalhandler');
 var errorhandler = require('errorhandler');
 var mongoose = require('mongoose');
+var im = require('imagemagick');
 
 
 var app=express();
@@ -96,6 +97,7 @@ var Art = mongoose.model('Art', {
 
 
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +122,8 @@ io.on('connection', function (socket) {
 		//SaveEdit("UserLeft", {"id":socket.user.id, "ci":socket.user.ci, "s_id":socket.id});	//notify all other users that this socket's user left
 		console.log("disconnected!");
 	});
+	
+
 
 
 	socket.on('add-item', function(data) {
