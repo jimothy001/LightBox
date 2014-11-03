@@ -209,11 +209,14 @@
 				closePreview();
 				
 			} else if($(e.target).attr("id") == "map") {
-					var x = Math.floor((e.offsetX) / w);
-					console.log(x);
-					console.log(y);
-					var y = Math.floor((e.offsetY) / h);
-					curr = art.records[y*itemX+x];
+					$.each(art.records, function(i, val) {
+						if(e.offsetX > val.x1 && e.offsetX < val.x1+w) {
+							if(e.offsetY > val.y1 && e.offsetY < val.y1+h) {
+								console.log(val);
+								curr = val;
+							}
+						}
+					});
 				
 
 					$(".metadata, .metadata_back").show();
@@ -533,7 +536,8 @@
 		var base_image = new Image();
 		base_image.src = "./art/" + art.records[order].objectid + ".jpg";
 		base_image.onload = function(){
-			
+			art.records[order].x1 = x;
+			art.records[order].y1 = y;
 			var sizeh = base_image.height;
 			var sizew = (base_image.height/h)*w;
 			if(sizew > base_image.width) {
