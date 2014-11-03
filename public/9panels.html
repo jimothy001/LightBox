@@ -237,6 +237,7 @@ socket.on('send-items', function(data)
 socket.on('updated-db', function(data)
 {
 	dbObjs.push(data);
+	grabArt(data.objectid);
 	//trayCount = 0;
 	//addAndShift();
 });
