@@ -6,12 +6,10 @@
 		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 		<script type="text/javascript" src="lib/fabric.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+		<link href='css/objmap.css' rel='stylesheet' type='text/css'>
+	
 	<style>
-<<<<<<< HEAD
 		.block 
-=======
-		#sandbox 
->>>>>>> c3ea32794629d5ddd0f68e15b5bb91f2bcb1917a
 		{
 			width: 1920px;
 			height:1080px;
@@ -130,7 +128,23 @@
 
 	
 	<div id="objmap" class="block">
-	
+		<!--	<div id="highlight"></div> -->
+			<div class="metadata_back"></div>
+			<div class='metadata' style="display:none">
+			<!--<span class="p6" id='sort'></span>-->
+				<div class="p1">{</div>
+				<div class="p2"><div class='phldr'>2</div></div>	
+				<!--<span class="p2next">Dated: <span id="date"></span></span>-->
+				<div class="p3"><div class='phldr'>3</div></div>
+				<div class="p4"><div class='phldr'>4</div></div>
+				<div class="p5"><div class='phldr' id="preview"><div class='img-preview'>test</div></div></div>
+				<div class="p6"><div class='phldr'>6</div></div>
+				<div class="p7"><div class='phldr'>7</div></div>
+				<div class="p8"><div class='phldr'>8</div></div>
+				<div class="p9">},</div>
+			</div>
+
+			<canvas id="map"></canvas>	
 	
 	
 	</div>
@@ -161,7 +175,6 @@
 	
 	
 
-		<script type="text/javascript" src="objmap.js"></script>
 
 		<script src="/socket.io/socket.io.js"></script> 
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
@@ -231,7 +244,7 @@ socket.on('updated-db', function(data)
 function grabArt(id) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
 		if(art.related) console.log(art.related);
-		addImage(art, order);
+		addImageToPanel(art, order);
 		metaImage(art, order);
 		order++;
 	});	
@@ -715,7 +728,7 @@ $(document).mouseup(function(options) {
 
 
 var imgCount = 0;
-function addImage(objData, index) {
+function addImageToPanel(objData, index) {
 		var w = 500;
 		var h;
 		var obj = {};
@@ -1006,6 +1019,7 @@ function canvasPointer() {
 
 </script>
 
+		<script type="text/javascript" src="objmap.js"></script>
 
 
 	</body>
