@@ -14,23 +14,13 @@
 	
 	
 
-		map.height = window.innerHeight;
-		map.width = window.innerWidth;
+		map.height = 1080;
+		map.width = 1920;
 		
 		getMoreArt(0);
 		
 		$("#preview").css("opacity", 0);
-	/*	
-		$(document).on("mousemove", function(e) {
-			var x = Math.floor((e.clientX) / h) * h;
-			var y = Math.floor((e.clientY) / h) * h;
-			console.log(x);
-			console.log(y);
-			$("#highlight").css("top",y);
-			$("#highlight").css("left",x);
-			
-		});
-		*/
+
 		
 		$(document).on("click", function(e) {
 			console.log(e);
@@ -42,9 +32,19 @@
 				closePreview();
 				
 			} else if($(e.target).attr("id") == "map") {
+				$.each(art.records, function(i, val) {
+					if(e.offsetX > val.x1 && e.offsetX < val.x1+w) {
+						if(e.offsetY > val.y1 && e.offsetY < val.y1+h) {
+							console.log(val);
+					
+						}
+					}
+				
+				});
+			
+			/*
 					var x = Math.floor((e.offsetX) / w);
-					console.log(x);
-					console.log(y);
+
 					var y = Math.floor((e.offsetY) / h);
 					curr = art.records[y*itemX+x];
 				
@@ -256,7 +256,7 @@ console.log(max_w+' x '+max_h);
 
 					$("#preview").animate({opacity: 1}, 500, function() {
 				
-					});
+					});*/
 			} else {					
 					closePreview();
 					$(".metadata, .metadata_back").hide();
@@ -313,22 +313,23 @@ console.log(max_w+' x '+max_h);
 				}
 			});	
 		}
-		var w = 35.556;
+		var w = 37.64;
 		function populateMap() {
 			h = 32.727;
 			
-			itemX = 54;
+			itemX = 51;
 			/*for(i=0; i < art.records.length; i++) {
 				var x = (i % itemX)*w;
 				var y = Math.floor(i/itemX)*h;
 				addImage(i, x, y);	
 			}*/
 			var index = 0;
-			for(var j=0; j < 34; j++) {
-				for(var i=0; i < 55; i++) {
+			for(var j=0; j < 33; j++) {
+				for(var i=0; i < 52; i++) {
 					var x = i*w;
 					var y = j*h;
-					addImage(index, x, y);	
+					var ind = index;
+					addImage(ind, x, y);	
 					index++;
 			
 				}
@@ -360,7 +361,9 @@ console.log(max_w+' x '+max_h);
 		var base_image = new Image();
 		base_image.src = "./art/" + art.records[order].objectid + ".jpg";
 		base_image.onload = function(){
-			
+			art.records[order].x1 = x;
+			art.records[order].y1 = y;
+						
 			var sizeh = base_image.height;
 			var sizew = (base_image.height/h)*w;
 			if(sizew > base_image.width) {
