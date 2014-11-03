@@ -176,7 +176,6 @@
 		
 		var map = document.getElementById('map');
 		var ctx = map.getContext('2d');
-		var h;
 		var itemX = 0;
 	
 	
@@ -199,6 +198,11 @@
 		});
 		*/
 		
+		$(document).on("mousemove", function(e) {
+			console.log("x: "+e.offsetX+"& y: "+e.offsetY);
+			
+		
+		});
 		$(document).on("click", function(e) {
 			console.log(e);
 			if($(e.target).hasClass("button")) {
