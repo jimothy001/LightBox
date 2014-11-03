@@ -36,7 +36,9 @@
 					if(e.offsetX > val.x1 && e.offsetX < val.x1+w) {
 						if(e.offsetY > val.y1 && e.offsetY < val.y1+h) {
 							console.log(val);
-					
+							socket.emit('add-item', {
+								objectid: val.objectid
+							});
 						}
 					}
 				
