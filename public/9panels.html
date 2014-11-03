@@ -6,7 +6,6 @@
 		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 		<script type="text/javascript" src="lib/fabric.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
-		<link href='css/objmap.css' rel='stylesheet' type='text/css'>
 	
 	<style>
 	
@@ -130,31 +129,6 @@
 	
 	<body>
 	
-		<div id="toggle"><img src="./img/9.png" style="display:none"><img src="./img/3.png"></div>
-
-	
-	<div id="objmap" class="block">
-		<!--	<div id="highlight"></div> -->
-			<div class="metadata_back"></div>
-			<div class='metadata' style="display:none">
-			<!--<span class="p6" id='sort'></span>-->
-				<div class="p1">{</div>
-				<div class="p2"><div class='phldr'>2</div></div>	
-				<!--<span class="p2next">Dated: <span id="date"></span></span>-->
-				<div class="p3"><div class='phldr'>3</div></div>
-				<div class="p4"><div class='phldr'>4</div></div>
-				<div class="p5"><div class='phldr' id="preview"><div class='img-preview'>test</div></div></div>
-				<div class="p6"><div class='phldr'>6</div></div>
-				<div class="p7"><div class='phldr'>7</div></div>
-				<div class="p8"><div class='phldr'>8</div></div>
-				<div class="p9">},</div>
-			</div>
-
-			<canvas id="map"></canvas>	
-	
-	
-	</div>
-	
 	
 	<div id="sandbox" class = "block">
 
@@ -186,22 +160,7 @@
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
-var up = true;
-$("#toggle").on("click", function() {
-	switchActive();
-	
-});
 
-function switchActive() {
-
-	var id = "objmap";
-	$("#toggle").children().toggle();
-	if(up) {
-		id = "sandbox";
-	} 
-	location.hash = "#"+id;
-	up = !up;
-}
 
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
@@ -872,7 +831,6 @@ function addImageSync(url, w, h, lim, group, t, pixelate, canvas) {
 			if(t == 0) {
 				console.log(oImg2);
 				oImg2.setVisible(true);	
-				if(up) switchActive();
 			}
 			else oImg2.setVisible(false);
 			if(pixelate) Pixelate(oImg2, 25)
@@ -1038,8 +996,6 @@ function canvasPointer() {
 }
 
 </script>
-
-		<script type="text/javascript" src="objmap.js"></script>
 
 
 	</body>
