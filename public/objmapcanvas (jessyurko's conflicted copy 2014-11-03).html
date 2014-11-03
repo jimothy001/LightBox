@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+		<title>SANDBOX</title>
+			
+
+	<style>
+	
+		body {
+			background-color: #222;
+		}
+		
+		
+		#map {
+				width: 5760px;
+				height: 3240px;
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				float: left;
+				display: block;
+		}
+		
+		.image {
+			width: 27px;
+			height: 27px;
+			position: relative;
+			float: left;
+			background-size: cover;
+		}
+		
+		#highlight {
+			z-index:1000;
+			-moz-box-shadow: 0 0 8px 3px #ffffff;
+			-webkit-box-shadow: 0 0 8px 3px #ffffff;
+			box-shadow: 0 0 8px 3px #ffffff;
+			display: block;
+			position: absolute;
+		}
+		
+		#preview {
+			position:absolute;
+			margin-left: 20%;
+			margin-right: 20%;		
+			width:5px;
+			height: 5px;
+		}
+		
+		#preview.active {
+			margin-top: 2%;
+			width: 60%;
+			height: 90%;
+		}
+		
+		#preview img {
+			max-width: 100%;
+			max-height: 100%;
+			display: block;
+			margin: auto;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			webkit-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			-moz-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5)
+		}
+		
+		.button {
+			color: white;
+			font-family: sans-serif;
+			margin: auto;
+			position: absolute;
+			background-color: #222;
+			display: block;
+			padding: 5px;		
+			position: absolute;
+			left: 0px;
+		}
+		
+		.button:hover {
+			text-decoration: underline;
+			cursor: pointer;			
+		}
+		
+		.metadata {
+			position: absolute;
+			background-color: black;
+			opacity: .6;
+			color: white;
+			font-family: sans-serif;
+		}
+		
+		.metadata .p {
+			margin: 20px;
+			float: left;
+			padding: 3px;
+			clear:both;
+		}
+		
+		.metadata .p1 {
+			/*content: "{";*/
+			position: fixed;
+			/*width: 30%;
+			height: 30%;*/
+			top: 10%;
+			left: 16.665%;
+			font-size: 2000%;
+		}
+
+		/*.metadata .p1:before {
+			
+			position: fixed;
+			content: "{";
+			font-size: 1000%;
+		}*/
+
+		.metadata .p2 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 10%;
+			left: 38.33%;
+		}
+
+		.metadata .p2next {
+			position: relative;
+			top: 10%;
+		}
+
+		.metadata .p3 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 10%;
+			left: 68.33%;
+		}
+
+		.metadata .p4 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 43.33%;
+			left: 5%;
+		}
+
+		.metadata .p5 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 43.33%;
+			left: 68.33%;
+		}
+
+		.metadata .p6 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 73.33%;
+			left: 5%;
+		}
+
+		.metadata .p7 {
+			position: fixed;
+			width: 30%;
+			height: 30%;
+			top: 73.33%;
+			left: 38.33%;
+		}
+
+		.metadata .p8 {
+			position: fixed;
+			/*width: 30%;
+			height: 30%;*/
+			top: 73.33%;
+			right: 16.665%;
+			font-size: 2000%;
+		}
+	
+	</style>
+	</head>
+	
+	<body>
+		<!--	<div id="highlight"></div> -->
+
+		<canvas id="map"></canvas>
+		<div id="preview">
+			<img class ='img-preview'>
+			<div class='button'>Add to tray</div>
+			<div class='metadata'>
+			<span class="p6" id='sort'></span>
+			<span class="p1">{ <span id="_bracket"></span></span>
+			<span class="p2">Title: <span id="title"></span></p>	
+			<span class="p2next">Dated: <span id="date"></span></span>
+			<span class="p3">Description:  <span id="description"></span></span>
+			<span class="p8">}, <span id="bracket_"></span></span>
+			
+		</div></div>
+		
+		
+	<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
+	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
+	
+
+	
+	<script>
+		var i = 0;
+		var art = {};
+		art.records = [];
+		var curr = false;
+		var host = window.location.host;
+		var socket = io();
+		var images2 = [];
+		var sort = window.location.search.substr(1);
+		var grid = true;
+		
+		var map = document.getElementById('map');
+		var ctx = map.getContext('2d');
+		var h;
+		var itemX = 0;
+	
+	
+
+		map.height = window.innerHeight - 15;
+		map.width = window.innerWidth - 15;
+		
+		getMoreArt(0);
+		
+		$("#preview").css("opacity", 0);
+	/*	
+		$(document).on("mousemove", function(e) {
+			var x = Math.floor((e.clientX) / h) * h;
+			var y = Math.floor((e.clientY) / h) * h;
+			console.log(x);
+			console.log(y);
+			$("#highlight").css("top",y);
+			$("#highlight").css("left",x);
+			
+		});
+		*/
+		
+		$(document).on("click", function(e) {
+			console.log(e);
+			if($(e.target).hasClass("button")) {
+				var id = curr.objectid;
+				socket.emit('add-item', {
+					objectid: id
+				});
+				closePreview();
+				
+			} else if($(e.target).attr("id") == "map") {
+					var x = Math.floor((e.offsetX) / w);
+					console.log(x);
+					console.log(y);
+					var y = Math.floor((e.offsetY) / h);
+					curr = art.records[y*itemX+x];
+				
+					$("#preview .img-preview").attr("src", "./art/" + curr.objectid + ".jpg");
+					$("#title").html(curr.title);
+					$("#description").html(curr.description);
+					$("#date").html(curr.dated);
+			
+				
+					$("#map").css("opacity", .1);
+					$("#preview").addClass("active");
+					$("#sort").html(sort+": "+curr[sort]); 
+					var $text = $("#preview .metadata");
+
+					var _text = [
+					$("#_bracket .metadata .p1"),
+					$("#title .metadata .p2"),
+					$("#date .metadata .p2"),
+					$("#description .metadata .p3"),
+					$(".metadata .p5"),
+					$(".metadata .p6"),
+					$(".metadata .p7"),
+					$("#bracket_ .metadata .p8")];
+
+					for(var i in _text)
+					{
+						//console.log(_text[i]);
+						_text[i].hide();
+					}
+
+					$text.hide();
+				
+					$(".img-preview").on("mouseover", function() {
+						var $img = $("#preview .img-preview");
+					/*	$text.css("margin-left", $img.css("margin-left"));
+						$text.css("margin-top", $img.css("margin-top"));
+						$text.height($img.height());
+						$text.width($img.width());*/
+						$text.show();
+						
+						for(var i in _text)
+							{
+								//console.log('!');
+								_text[i].show();
+							}
+					});
+					
+					
+					$(".img-preview").on("mouseout", function() {
+						$text.hide();
+							for(var i in _text)
+						{
+							_text[i].hide();
+						}
+					});
+								
+					$("#preview").animate({opacity: 1}, 500, function() {
+				
+					});
+			} else {					
+					closePreview();
+
+			}
+		});
+		
+	
+		socket.on('send-items', function(data) {
+			console.log(data);
+		});
+		
+		function closePreview() {
+			$("#preview").animate({opacity: 0}, 500, function() {
+				$("#preview").removeClass("active");
+				$("#preview .img-preview").attr("src", "");
+				//$("#preview").empty();
+				$("#map").css("opacity", 1);
+				curr = false;
+			});
+		}
+
+		function customSort(a,b) {
+			if ( a[sort] < b[sort] )
+					return -1;
+			if ( a[sort] > b[sort] )
+					return 1;
+			return 0;
+		
+		}
+		
+		//1023 objects have placeterms
+		//982 w/previous exhibitions
+		
+		var placecount = 0;
+		var places = [];
+		function getMoreArt(count) {
+			$.get("http://api.harvardartmuseums.org/object?gallery=any&apikey=f5473230-3f68-11e4-89b4-73adcea7266b&size=100&from="+count, function(data) {
+				$.each(data.records, function(j, record) {
+					/*if(record.images && record.images.length > 1) {
+						placecount++;
+						console.log(record.images.length);
+					}*/
+					if(record.primaryimageurl) art.records.push(record);
+
+				});
+				var next = count+100;
+				if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
+				else {
+					//console.log("w/surrogates: "+placecount);
+					sort = "medium";
+					art.records.sort(customSort);
+					populateMap();
+				}
+			});	
+		}
+		var w = 120;
+		function populateMap() {
+			h = 108;
+			
+			itemX = 48;
+			for(i=0; i < art.records.length; i++) {
+				var x = (i % itemX)*w;
+				var y = Math.floor(i/itemX)*h;
+				addImage(i, x, y);	
+			}
+			
+			/*
+			$("#highlight").width(h);
+			$("#highlight").height(h);
+			$("#highlight").css("z-index", 1000);
+			*/
+						
+		
+		}
+
+		$(document).keydown(function(e) {
+			var newSort;
+			if(e.keyCode == 49) newSort = "medium";
+			else if(e.keyCode == 50) newSort = "datebegin";
+			else if(e.keyCode == 51) newSort = "division";
+			else if(e.keyCode == 52) newSort = "exhibitioncount";
+			
+			if(newSort != sort) {
+				sort = newSort;
+				art.records.sort(customSort);
+				populateMap();
+			}
+		});
+
+	function addImage(order, x, y) {
+		var base_image = new Image();
+		base_image.src = "./art/" + art.records[order].objectid + ".jpg";
+		base_image.onload = function(){
+
+		
+			var sizeh = base_image.height;
+			var sizew = (base_image.height/h)*w;
+			if(sizew > base_image.width) {
+				sizew = base_image.width;
+				sizeh = (base_image.width/w)*h;
+			} 
+			if(base_image.height > base_image.width) size = base_image.width;
+			ctx.drawImage(base_image, 0, 0, sizew, sizeh, x, y, w, h);		
+			
+			
+		}				
+	}
+
+	
+	</script>
+	</body>
+</html>
