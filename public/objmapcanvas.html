@@ -503,12 +503,16 @@
 			h = 36;
 			
 			itemX = 48;
-			for(i=0; i < art.records.length; i++) {
-				var x = (i % itemX)*w;
-				var y = Math.floor(i/itemX)*h;
-				addImage(i, x, y);	
+			var index=0;
+			for(var j=0; j < 34; j++) {
+				for(var i=0; i < 49; i++) {
+					var x = i*w;
+					var y = j*h;
+					var t = index;
+					addImage(t, x, y);	
+					index++;
+				}
 			}
-			
 			/*
 			$("#highlight").width(h);
 			$("#highlight").height(h);
