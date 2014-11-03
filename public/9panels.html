@@ -130,7 +130,7 @@
 	
 	<body>
 	
-		<div id="toggle"><img src="./img/9.png"><img src="./img/3.png" style="display:none"></div>
+		<div id="toggle"><img src="./img/9.png" style="display:none"><img src="./img/3.png"></div>
 
 	
 	<div id="objmap" class="block">
@@ -188,6 +188,12 @@
 <script>
 var up = true;
 $("#toggle").on("click", function() {
+	switchActive();
+	
+});
+
+function switchActive() {
+
 	var id = "objmap";
 	$("#toggle").children().toggle();
 	if(up) {
@@ -195,8 +201,7 @@ $("#toggle").on("click", function() {
 	} 
 	location.hash = "#"+id;
 	up = !up;
-	
-});
+}
 
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
@@ -867,6 +872,7 @@ function addImageSync(url, w, h, lim, group, t, pixelate, canvas) {
 			if(t == 0) {
 				console.log(oImg2);
 				oImg2.setVisible(true);	
+				if(up) switchActive();
 			}
 			else oImg2.setVisible(false);
 			if(pixelate) Pixelate(oImg2, 25)
