@@ -6,16 +6,24 @@
 		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 		<script type="text/javascript" src="lib/fabric.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+		<link href='css/objmap.css' rel='stylesheet' type='text/css'>
+	
 	<style>
-		#sandbox 
+	
+		body {
+			overflow: hidden;
+		}
+		
+		.block 
 		{
-			width: 3100px;
-			height:900px;
+			width: 1920px;
+			height:1080px;
 			background-color: white;
 			position: relative;
 			float: left;
 			display: block;
 			border: 1px solid black;
+			margin-bottom: 500px;
 		}
 		
 		
@@ -23,16 +31,7 @@
 			float:left;
 			position: 'relative'
 		}
-		
-		#tray {
-			clear: both;
-			margin: 25px 10px 0 10px;
-		}
-		
-		#tray-container {
-			clear: both;
-		}
-		
+	
 		html,body {
 			font-size: 12px;
 			font-family: arial;
@@ -84,7 +83,6 @@
 		
 		
 		.panel_zoom{
-			margin: 10px;
 			position: absolute;
 			top: 0;
 			left: 0;
@@ -111,62 +109,109 @@
 		.divider div:nth-child(2) {left: 1475px; width: 50px;}
 		.divider div:nth-child(3) {left: 2225px;}
 		.divider div:nth-child(4) {left: 3000px;}
+		
+		#toggle {
+			position: fixed;
+			width: 100px;
+			right: 65px;
+			top: 10px;
+			z-index: 5000;
+			cursor: pointer;
+		}
+		
+		#toggle img {
+			width: 100%;
+		}
+		
+		
+		
 	</style>
 	</head>
 	
 	<body>
+	
+		<div id="toggle"><img src="./img/9.png" style="display:none"><img src="./img/3.png"></div>
+
+	
+	<div id="objmap" class="block">
+		<!--	<div id="highlight"></div> -->
+			<div class="metadata_back"></div>
+			<div class='metadata' style="display:none">
+			<!--<span class="p6" id='sort'></span>-->
+				<div class="p1">{</div>
+				<div class="p2"><div class='phldr'>2</div></div>	
+				<!--<span class="p2next">Dated: <span id="date"></span></span>-->
+				<div class="p3"><div class='phldr'>3</div></div>
+				<div class="p4"><div class='phldr'>4</div></div>
+				<div class="p5"><div class='phldr' id="preview"><div class='img-preview'>test</div></div></div>
+				<div class="p6"><div class='phldr'>6</div></div>
+				<div class="p7"><div class='phldr'>7</div></div>
+				<div class="p8"><div class='phldr'>8</div></div>
+				<div class="p9">},</div>
+			</div>
+
+			<canvas id="map"></canvas>	
+	
+	
+	</div>
+	
+	
+	<div id="sandbox" class = "block">
+
 		<div class="closebutton"></div>
 		<div class="maxbutton"></div>
 		<div class="metabutton"></div>
 		<div class="minbutton"></div>
 		<div class="metainfo"></div>
 
-<div class='divider'>
-<div></div>
-<div></div>
-<div></div>
-<div class="left"></div>
-</div>
 
 	<div id="panels">
 		<!-- <div id="metadata"></div> -->
-		<canvas id="p1" class="panel a" width="700" height="800"></canvas>
-		<canvas id="p2" class="panel b" width="700" height="800"></canvas>
-		<canvas id="p3" class="panel a" width="700" height="800"></canvas>
-		<canvas id="p4" class="panel" width="700" height="800"></canvas>
+		<canvas id="p1" class="panel a" width="640" height="1080"></canvas>
+		<canvas id="p2" class="panel b" width="640" height="1080"></canvas>
+		<canvas id="p3" class="panel a" width="640" height="1080"></canvas>
 	</div>
 
-	<div id="tray-container">
-		<canvas id="tray" class="tray" width="3000" height="50"></canvas>
-	</div>
 
 		<div class="panel_zoom">
-			<canvas id="pzoom" width="3000" height="800"></canvas>	
+			<canvas id="pzoom" width="1920" height="1080"></canvas>	
 		</div>
-		
 
-		<script type="text/javascript" src="sandbox_channels.js"></script>
+	</div>
+	
+	
+
+
 		<script src="/socket.io/socket.io.js"></script> 
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
+var up = true;
+$("#toggle").on("click", function() {
+	switchActive();
+	
+});
 
+function switchActive() {
+
+	var id = "objmap";
+	$("#toggle").children().toggle();
+	if(up) {
+		id = "sandbox";
+	} 
+	location.hash = "#"+id;
+	up = !up;
+}
 
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
 var p3 = new fabric.Canvas("p3");
-var p4 = new fabric.Canvas("p4");
 
 
 var pointer = new canvasPointer();
-var canvases = [p1, p2, p3, p4];
+var canvases = [p1, p2, p3];
 
-$.each(canvases, function(i, c) {
-	var x = 75;
-	if(i==1) x = 50;
-	if(i==3) x=0;
-	$(c.wrapperEl).css("margin-right", x);
-});
+
 
 var order = 0;
 
@@ -203,21 +248,22 @@ socket.emit('get-items', {});
 
 socket.on('send-items', function(data)
 {
-	dbObjs = data;
-	addToTray(0);
+	//dbObjs = data;
+	//grabArt(dbObjs[dbObjs.length-5].objectid);
 });
 
 socket.on('updated-db', function(data)
 {
 	dbObjs.push(data);
+	grabArt(data.objectid);
 	//trayCount = 0;
-	addAndShift();
+	//addAndShift();
 });
 
 function grabArt(id) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
 		if(art.related) console.log(art.related);
-		addImage(art, order);
+		addImageToPanel(art, order);
 		metaImage(art, order);
 		order++;
 	});	
@@ -246,11 +292,7 @@ function metaImage(objData, index) {
 
 };
 
-/*
-$(document).mousedown(function(options) {
-	down = true;
-	refreshCoords();
-});*/
+
 
 $(document).mousedown(function(options) {
 	down = true;
@@ -319,9 +361,9 @@ function hover_elements(){
 					///SHOW LARGE ZOOM DIV
 					$(".panel_zoom").show();
 					zoom = true;
-					console.log(activeSet["p1"]._originalElement.src);
+					console.log(activeSet["p1"].getObjects()[activeSet["p1"].curr]._originalElement.src);
 					var zoom_mult = pzoom.width;
-					fabric.Image.fromURL(activeSet["p1"]._originalElement.src, function(img) {
+					fabric.Image.fromURL(activeSet["p1"].getObjects()[activeSet["p1"].curr]._originalElement.src, function(img) {
 						img.set({
 						//scaleX: zoom_mult,
 						//scaleY: (canvas.height*zoom_mult)/F.height,
@@ -395,36 +437,6 @@ function hover_elements(){
 	
 }
 
-/*
-///ON PLUS OR MINUS KEY, ZOOM IN OR OUT
-window.addEventListener("keydown", function(e){
-	///get old dimensions
-	if(!zoom) return false;
-	var w_old = activezoom.getWidth();
-	var h_old = activezoom.getHeight();
-	if (e.keyCode == PLUS) {
-		//console.log('zoomin');
-		activezoom.scaleX += 0.05;
-		activezoom.scaleY += 0.05;
-	}
-	if (e.keyCode == MINUS) {
-		if(activezoom.getWidth()-(activezoom.getWidth()*0.05) > pzoom.width){
-		//console.log(activezoom.getWidth()-(activezoom.getWidth()*0.05)+ ' <= ' +pzoom.width+' can zoom out');
-		activezoom.scaleX -= 0.05;
-		activezoom.scaleY -= 0.05;
-		}
-	}
-	//get new dimensions
-	var w = activezoom.getWidth();
-	var h = activezoom.getHeight();
-	//center image frame
-	activezoom.left = activezoom.left - (w - w_old)/2;
-	activezoom.top = activezoom.top - (h - h_old)/2;
-
-	pzoom.renderAll();
-	
-});
-*/
 
 
 ////MAX WINDOW PANNING BOUNDARIES
@@ -540,37 +552,6 @@ $(document).mousemove(function(e) {
 					}
 				}
 			
-			//return false;
-			
-			/*if(c.id != pointer.cid) {
-				console.log("new canvas");
-				pointer.setCanvas(c.id);
-				console.log(pointer.c);
-				if(activeSet) active = activeSet[c.id]
-				else console.log("no active");
-				found = true;
-
-			}*/
-			
-		/*	$.each(pointer.c.getObjects(), function(i, obj) {
-				if(e.offsetX > obj.oCoords.bl.x && e.offsetX < obj.oCoords.br.x) {
-					if(e.offsetY < obj.oCoords.bl.y && e.offsetY > obj.oCoords.tl.y) {
-						
-						if(obj != active) {
-							pointer.c.setActiveObject(obj);
-							active = obj;
-							activeSet = activeObjs[active.get("orderid")];
-							active.setCoords();
-							pointer.c.calcOffset();
-							//pointer.c.renderAll();
-							console.log("new object");
-							console.log(obj);
-							found = true;
-
-						} 
-					}
-				}
-			});*/
 		
 			if(!found) return false;
 
@@ -766,34 +747,18 @@ $(document).mouseup(function(options) {
 
 
 var imgCount = 0;
-function addImage(objData, index) {
+function addImageToPanel(objData, index) {
 		var w = 500;
 		var h;
 		var obj = {};
 		
+	
 		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
 		{
 			h = (oImg.getHeight() / oImg.getWidth()) * w;
-			oImg.setWidth(w);
-			oImg.setHeight(h);
-			oImg.set("orderid", index);
-			oImg.set("objid", objData.id);
-			oImg.set("lockRotation",true);
-			oImg.set("lockScalingX",true);
-			oImg.set("lockScalingY",true);
-			oImg.on("scaling", function() {
-				console.log("move");
-				onMove();
-			});
 			
-			p1.add(oImg);
-			obj.p1 = oImg;
 			
-		});
-		
-		fabric.Image.fromURL("./art/"+objData.id+".jpg", function(oImg)
-		{
-			h = (oImg.getHeight() / oImg.getWidth()) * w;
+			
 			oImg.setWidth(w);
 			oImg.setHeight(h);
 			oImg.set("orderid", index);
@@ -807,6 +772,7 @@ function addImage(objData, index) {
 			oImg.setVisible(false);
 			p2.add(oImg);
 			obj.p2 = oImg;
+			
 			var max = Math.floor(w/6.4);
 			var lcount = Math.floor(h/12);
 			var newstring = getMetaData(objData, max, lcount);
@@ -828,100 +794,33 @@ function addImage(objData, index) {
 			p3.add(text);
 			obj.p3 = text;
 			
-			var p4group = new fabric.Group([], {left: 0, top: 0, width: w, height: h});
-			p4group.set("orderid", index);
-			p4group.set("objid", objData.id);
-			p4group.set("lockRotation",true);
-			p4group.set("lockScalingX",true);
-			p4group.set("lockScalingY",true);
+			var p1group = new fabric.Group([], {left: 10, top: 10, width: w, height: h});
+			p1group.set("orderid", index);
+			p1group.set("objid", objData.id);
+			p1group.set("lockRotation",true);
+			p1group.set("lockScalingX",true);
+			p1group.set("lockScalingY",true);
 			imgCount = 0;
-			for(var j=0; j < objData.images.length; j++) {			
-				addImageSync(objData.images[j].baseimageurl, w, h, objData.images.length, p4group);
+			for(var j=0; j < objData.images.length; j++) {
+				var t = j;		
+				var max = false;	
+				if(t == objData.images.length -1) max = true;
+				addImageSync(objData.images[j].baseimageurl, w, h, max, p1group, t, false, p1);
 			}
-			p4group.count = objData.images.length - 1;
-			p4group.curr = p4group.count;
-			p4group.setVisible(false);
-			p4.add(p4group);
-			obj.p4 = p4group;
-			p4.renderAll()
+						
+			p1group.count = objData.images.length - 1;
+			p1group.curr = 0;
+			p1.add(p1group);
+			obj.p1 = p1group;
+			p1.renderAll()
 			
 		});
 		activeObjs.push(obj);	
 		
 }
 
-
-function addAndShift() {
-		var h = 50;
-		var w;
-		fabric.Image.fromURL("./art/" +dbObjs[dbObjs.length-1].objectid + ".jpg", function(oImg)
-			{
-				w = (h/oImg.getHeight())*oImg.getWidth();			
-				
-				oImg.setWidth(w);
-				oImg.setHeight(h);		
-				oImg.set("lockRotation",true);
-				oImg.setTop(0);
-				oImg.setLeft(-1*w);
-				oImg.set("selectable", false);
-				oImg.set("order", dbObjs.length-1);
-				tray.add(oImg);
-				
-				$.each(tray.getObjects(), function(i, o) {
-					o.setLeft(o.getLeft()+w);
-					dbObjs[o.get("order")].x1 = o.getLeft();
-					dbObjs[o.get("order")].x2 = o.getLeft() + o.getWidth();
-				
-				
-				});
-				tray.renderAll()
-								
-		});
-
-
-}
-
-function addToTray(index) {
-		var h = 50;
-		var w;
-		fabric.Image.fromURL("./art/" +dbObjs[index].objectid + ".jpg", function(oImg)
-			{
-				w = (h/oImg.getHeight())*oImg.getWidth();
-				oImg.setWidth(w);
-				oImg.setHeight(h);		
-				oImg.set("lockRotation",true);
-				oImg.setTop(0);
-				oImg.setLeft(-100);
-				dbObjs[index].x1 = trayCount;			
-				oImg.set("selectable", false);
-				oImg.set("order", index);
-				tray.add(oImg);
-				var dx = 100+trayCount;
-			
-				oImg.animate('left', '+='+dx, {
-					duration: 1000,
-					onChange: tray.renderAll.bind(tray),
-					onComplete: function() {
-						trayCount += (w+5);			
-						dbObjs[index].x2 = trayCount;
-						if((index < dbObjs.length - 1) && trayCount < tray.getWidth()) addToTray(index+1);
-					},
-					easing: fabric.util.ease["easeOutExpo"]
-				});
-				
-		});
-}
-
 	
 
-$("#tray-container").on("click", function(e) {
-	$.each(dbObjs, function(i,val) {
-		if(e.offsetX > val.x1 && e.offsetX < val.x2) {
-			console.log(val.objectid);
-			grabArt(val.objectid);	
-		}
-	});
-});
 
 function getMetaData(objData, max, lcount) {
 	var mdstring = JSON.stringify(objData);
@@ -956,7 +855,7 @@ function getMetaData(objData, max, lcount) {
 }
 
 
-function addImageSync(url, w, h, lim, group) {
+function addImageSync(url, w, h, lim, group, t, pixelate, canvas) {
 	fabric.Image.fromURL(url, function(oImg2)
 		{
 			var h2 = (oImg2.getHeight() / oImg2.getWidth()) * w;
@@ -970,38 +869,21 @@ function addImageSync(url, w, h, lim, group) {
 			oImg2.set("lockRotation",true);
 			oImg2.setLeft(-w2/2);
 			oImg2.setTop(-h2/2);
-			if(imgCount == lim-1) {
-				console.log(lim);
-				console.log(imgCount);
+			if(t == 0) {
+				console.log(oImg2);
 				oImg2.setVisible(true);	
+				if(up) switchActive();
 			}
 			else oImg2.setVisible(false);
+			if(pixelate) Pixelate(oImg2, 25)
 			group.add(oImg2);
 			imgCount++;
+			console.log(imgCount);
+			if(lim) canvas.renderAll();
 
 		});		
 }
 
-function RGBify(obj, num) {
-	switch(num) {
-		case 0:
-			obj.filters = [new fabric.Image.filters.Redify()];
-			obj.next = 1;
-			obj.prev = 2;
-			break;
-		case 1:
-			obj.filters = [new fabric.Image.filters.Greenify()];
-			obj.next = 2;
-			obj.prev = 0;
-			break;
-		case 2:
-			obj.filters = [new fabric.Image.filters.Blueify()];
-			obj.next = 0;
-			obj.prev = 1;
-			break;
-	}
-	obj.applyFilters(p5.renderAll.bind(p5));
-}
 
 function Pixelate(obj, num) {
 	obj.filters = [new fabric.Image.filters.Pixelate({
@@ -1023,14 +905,6 @@ window.addEventListener("keydown", function(e) //window
 				Pixelate(active, active.filters[0].blocksize +5);
 				return false;
 			}
-	} else if(pointer.c == p1) {
-			if (e.keyCode == RIGHT && active.opacity < 1) {
-				active.setOpacity(active.opacity + .1 );
-				p1.renderAll();
-			} else if(e.keyCode == LEFT && active.opacity > .2) {
-				active.setOpacity(active.opacity - .1 );
-				p1.renderAll();
-			}
 	} else if(pointer.c == p3) {
 		if (e.keyCode == RIGHT || e.keyCode == LEFT) {
 			for(var i in image_metadata) {
@@ -1044,21 +918,21 @@ window.addEventListener("keydown", function(e) //window
 		
 		}
 	
-	} else if(pointer.c == p4) {
+	} else if(pointer.c == p1) {
 			if (e.keyCode == LEFT) {
 				active.getObjects()[active.curr].setVisible(false);
 				var next = active.curr + 1;
 				if (next > active.count) next = 0;
 				active.getObjects()[next].setVisible(true);
 				active.curr = next;
-				p4.renderAll();
+				p1.renderAll();
 			} else if(e.keyCode == RIGHT) {
 				active.getObjects()[active.curr].setVisible(false);
 				var prev = active.curr - 1;
 				if (prev < 0) prev = active.count;
 				active.getObjects()[prev].setVisible(true);
 				active.curr = prev;
-				p4.renderAll();
+				p1.renderAll();
 			}		
 	}
 	
@@ -1068,8 +942,8 @@ function canvasPointer() {
 	this._index = 0;
 	this.cid = "p1";
 	this.c = p1;
-	var cids = ["p1","p2","p3","p4"];
-	var canvases = [p1, p2, p3, p4];
+	var cids = ["p1","p2","p3"];
+	var canvases = [p1, p2, p3];
 	
 	this.getExtra = function() {
 		switch(this._index) {
@@ -1077,10 +951,10 @@ function canvasPointer() {
 				return 0;
 				break;
 			case 1:
-				return 775;
+				return 640;
 				break;
 			case 2:
-				return 1525;
+				return 1280;
 				break;
 			case 3:
 				return 2300;
@@ -1165,6 +1039,7 @@ function canvasPointer() {
 
 </script>
 
+		<script type="text/javascript" src="objmap.js"></script>
 
 
 	</body>
