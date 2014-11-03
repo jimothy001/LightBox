@@ -6,12 +6,14 @@
 		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 		<script type="text/javascript" src="lib/fabric.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+	
 	<style>
-<<<<<<< HEAD
+	
+		body {
+			overflow: hidden;
+		}
+		
 		.block 
-=======
-		#sandbox 
->>>>>>> c3ea32794629d5ddd0f68e15b5bb91f2bcb1917a
 		{
 			width: 1920px;
 			height:1080px;
@@ -20,6 +22,7 @@
 			float: left;
 			display: block;
 			border: 1px solid black;
+			margin-bottom: 500px;
 		}
 		
 		
@@ -126,15 +129,6 @@
 	
 	<body>
 	
-		<div id="toggle"><img src="./img/9.png"><img src="./img/3.png" style="display:none"></div>
-
-	
-	<div id="objmap" class="block">
-	
-	
-	
-	</div>
-	
 	
 	<div id="sandbox" class = "block">
 
@@ -161,16 +155,12 @@
 	
 	
 
-		<script type="text/javascript" src="objmap.js"></script>
 
 		<script src="/socket.io/socket.io.js"></script> 
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
 
-$("#toggle").on("click", function() {
-	$("#toggle").children().toggle();
-});
 
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
@@ -217,13 +207,14 @@ socket.emit('get-items', {});
 
 socket.on('send-items', function(data)
 {
-	dbObjs = data;
-	grabArt(dbObjs[dbObjs.length-5].objectid);
+	//dbObjs = data;
+	//grabArt(dbObjs[dbObjs.length-5].objectid);
 });
 
 socket.on('updated-db', function(data)
 {
 	dbObjs.push(data);
+	grabArt(data.objectid);
 	//trayCount = 0;
 	//addAndShift();
 });
@@ -231,7 +222,7 @@ socket.on('updated-db', function(data)
 function grabArt(id) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
 		if(art.related) console.log(art.related);
-		addImage(art, order);
+		addImageToPanel(art, order);
 		metaImage(art, order);
 		order++;
 	});	
@@ -715,7 +706,7 @@ $(document).mouseup(function(options) {
 
 
 var imgCount = 0;
-function addImage(objData, index) {
+function addImageToPanel(objData, index) {
 		var w = 500;
 		var h;
 		var obj = {};
@@ -1005,7 +996,6 @@ function canvasPointer() {
 }
 
 </script>
-
 
 
 	</body>
