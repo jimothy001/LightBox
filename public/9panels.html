@@ -9,6 +9,11 @@
 		<link href='css/objmap.css' rel='stylesheet' type='text/css'>
 	
 	<style>
+	
+		body {
+			overflow: hidden;
+		}
+		
 		.block 
 		{
 			width: 1920px;
@@ -18,6 +23,7 @@
 			float: left;
 			display: block;
 			border: 1px solid black;
+			margin-bottom: 500px;
 		}
 		
 		
@@ -180,9 +186,16 @@
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
-
+var up = true;
 $("#toggle").on("click", function() {
+	var id = "objmap";
 	$("#toggle").children().toggle();
+	if(up) {
+		id = "sandbox";
+	} 
+	location.hash = "#"+id;
+	up = !up;
+	
 });
 
 var p1 = new fabric.Canvas("p1");
@@ -230,8 +243,8 @@ socket.emit('get-items', {});
 
 socket.on('send-items', function(data)
 {
-	dbObjs = data;
-	grabArt(dbObjs[dbObjs.length-5].objectid);
+	//dbObjs = data;
+	//grabArt(dbObjs[dbObjs.length-5].objectid);
 });
 
 socket.on('updated-db', function(data)
