@@ -15,8 +15,8 @@
 		
 		.block 
 		{
-			width: 1920px;
-			height:1080px;
+			width: 100%;
+			height:100%;
 			background-color: white;
 			position: relative;
 			float: left;
@@ -88,26 +88,7 @@
 			display: none;
 			border: 1px solid #ccc;
 		}
-		.divider div{
-			height: 800px;
-			width: 75px;
-			border-left: 1px solid #ccc;
-			border-right: 1px solid #ccc;
-			background: white;
-			position: absolute;
-			top: 10px;
-			z-index: 99999;
-		}
-		
-		.divider div.left {
-			border-right: none;
 
-		}
-		
-		.divider div:nth-child(1) {left: 700px;}
-		.divider div:nth-child(2) {left: 1475px; width: 50px;}
-		.divider div:nth-child(3) {left: 2225px;}
-		.divider div:nth-child(4) {left: 3000px;}
 		
 		#toggle {
 			position: fixed;
@@ -141,9 +122,9 @@
 
 	<div id="panels">
 		<!-- <div id="metadata"></div> -->
-		<canvas id="p1" class="panel a" width="640" height="1080"></canvas>
-		<canvas id="p2" class="panel b" width="640" height="1080"></canvas>
-		<canvas id="p3" class="panel a" width="640" height="1080"></canvas>
+		<canvas id="p1" class="panel a"></canvas>
+		<canvas id="p2" class="panel b"></canvas>
+		<canvas id="p3" class="panel a"></canvas>
 	</div>
 
 
@@ -161,6 +142,12 @@
 
 <script>
 
+var cwidth = window.innerWidth / 3;
+
+$.each($("canvas"), function(i, c) {
+	c.width = cwidth;
+	c.height = window.innerHeight;	
+});
 
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
@@ -169,6 +156,7 @@ var p3 = new fabric.Canvas("p3");
 
 var pointer = new canvasPointer();
 var canvases = [p1, p2, p3];
+
 
 
 
@@ -207,8 +195,11 @@ socket.emit('get-items', {});
 
 socket.on('send-items', function(data)
 {
-	//dbObjs = data;
-	//grabArt(dbObjs[dbObjs.length-5].objectid);
+	dbObjs = data;
+	grabArt(dbObjs[dbObjs.length-1].objectid);
+	grabArt(dbObjs[dbObjs.length-2].objectid);
+	grabArt(dbObjs[dbObjs.length-3].objectid);
+
 });
 
 socket.on('updated-db', function(data)
@@ -228,7 +219,12 @@ function grabArt(id) {
 	});	
 }
 
+function is_touch_device() {
+  return 'ontouchstart' in window // works on most browsers 
+      || 'onmsgesturechange' in window; // works on ie10
+};
 
+var isTouch = is_touch_device();
 
 
 /*
@@ -723,8 +719,10 @@ function addImageToPanel(objData, index) {
 			oImg.set("orderid", index);
 			oImg.set("objid", objData.id);
 			oImg.set("lockRotation",true);
-			oImg.set("lockScalingX",true);
-			oImg.set("lockScalingY",true);
+			if(!isTouch) {
+				oImg.set("lockScalingX",true);
+				oImg.set("lockScalingY",true);
+			}
 			oImg.setLeft(-w/2);
 			oImg.setTop(-1.5*h);
 			Pixelate(oImg, 25)
@@ -740,8 +738,10 @@ function addImageToPanel(objData, index) {
 			var text = new fabric.Text(newstring, {left: -w/2, top: -1.5*h, width: w, height: h*3});
 			text.set("orderid", index);
 			text.set("lockRotation",true);
-			text.set("lockScalingX",true);
-			text.set("lockScalingY",true);
+			if(!isTouch) {
+				text.set("lockScalingX",true);
+				text.set("lockScalingY",true);
+			}
 			text.set("objid", objData.id);
 			text.setFontSize(10);
 			text.setFontWeight(100);
@@ -757,8 +757,10 @@ function addImageToPanel(objData, index) {
 			p1group.set("orderid", index);
 			p1group.set("objid", objData.id);
 			p1group.set("lockRotation",true);
-			p1group.set("lockScalingX",true);
-			p1group.set("lockScalingY",true);
+			if(!isTouch) {
+				p1group.set("lockScalingX",true);
+				p1group.set("lockScalingY",true);
+			}
 			imgCount = 0;
 			for(var j=0; j < objData.images.length; j++) {
 				var t = j;		
@@ -909,13 +911,10 @@ function canvasPointer() {
 				return 0;
 				break;
 			case 1:
-				return 640;
+				return cwidth;
 				break;
 			case 2:
-				return 1280;
-				break;
-			case 3:
-				return 2300;
+				return (cwidth*2);
 				break;
 		}
 	};
