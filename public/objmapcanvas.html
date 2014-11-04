@@ -124,6 +124,12 @@
 			text-align: center;
 			font-family: 'Inconsolata',sans-serif;
 		}
+		
+		.searchfield {
+			font-style: oblique;
+			font-weight: 800;
+			cursor: pointer;
+		}
 
 
 	
@@ -159,7 +165,6 @@
 		-->
 	<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
 	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
 	
 
 	
@@ -186,17 +191,6 @@
 		getMoreArt(0);
 		
 		$("#preview").css("opacity", 0);
-	/*	
-		$(document).on("mousemove", function(e) {
-			var x = Math.floor((e.clientX) / h) * h;
-			var y = Math.floor((e.clientY) / h) * h;
-			console.log(x);
-			console.log(y);
-			$("#highlight").css("top",y);
-			$("#highlight").css("left",x);
-			
-		});
-		*/
 		
 		$(document).on("mousemove", function(e) {
 			console.log("x: "+e.offsetX+"& y: "+e.offsetY);
@@ -205,7 +199,11 @@
 		});
 		$(document).on("click", function(e) {
 			console.log(e);
-			if($(e.target).hasClass("button")) {
+			
+			if(e.which == 2) {
+				location.reload();
+			
+			} else if($(e.target).hasClass("button")) {
 				var id = curr.objectid;
 				socket.emit('add-item', {
 					objectid: id
@@ -227,7 +225,11 @@
 
 
 					$(".metadata, .metadata_back").on("click", function(e) {
-						$(".metadata, .metadata_back").hide();
+						if($(e.target).hasClass("searchfield")) {
+							sort = $(e.target).html();
+							art.records.sort(customSort);
+							populateMap();
+						} else $(".metadata, .metadata_back").hide();
 					});
 
 					//$("#preview .img-preview").attr("src", "./art/" + curr.objectid + ".jpg");
@@ -255,7 +257,7 @@
 						}
 							people += '</div>' + '],</br>';
 					};						
-					if(curr.dated){dated = 'dated: "' + curr.dated;};
+					if(curr.dated){dated = '<span class="searchfield">dated</span>: "' + curr.dated;};
 
 /*
 
@@ -287,24 +289,24 @@
 
 					///p3
 					if(curr.division){division = 'division: "' + curr.division + '",</br>';};
-					if(curr.signed){signed = 'signed: "' + curr.signed + '",</br>';};
-					if(curr.century){century = 'century: "' + curr.century + '",</br>';};
-					if(curr.classification){classification = 'classification: "' + curr.classification + '",</br>';};
+					if(curr.signed){signed = '<span class="searchfield">signed</span>: "' + curr.signed + '",</br>';};
+					if(curr.century){century = '<span class="searchfield">century</span>: "' + curr.century + '",</br>';};
+					if(curr.classification){classification = '<span class="searchfield">classification</span>: "' + curr.classification + '",</br>';};
 					if(curr.description){description = 'description: "' + curr.description;};
 
 					///p4
-					if(curr.department){department = 'department: "' + curr.department + '",</br>';};
+					if(curr.department){department = '<span class="searchfield">department</span>: "' + curr.department + '",</br>';};
 					if(curr.objectnumber){division = 'objectnumber: "' + curr.objectnumber + '",</br>';};
 					if(curr.contact){contact = 'contact: "' + curr.contact + '",</br>';};
-					if(curr.exhibitioncount){exhibitioncount = 'exhibitioncount: "' + curr.exhibitioncount + '",</br>';};
+					if(curr.exhibitioncount){exhibitioncount = '<span class="searchfield">exhibitioncount</span>: "' + curr.exhibitioncount + '",</br>';};
 					if(curr.creditline){creditline = 'creditline: "' + curr.creditline + '",</br>';};
 					if(curr.copyright){copyright = 'copyright: "' + curr.copyright + '",</br>';};
 
 					///p6
-					if(curr.colorcount){colorcount = 'colorcount: "' + curr.colorcount + '",</br>';};
-					if(curr.worktype){worktype = 'worktype: "' + curr.worktype + '",</br>';};
+					if(curr.colorcount){colorcount = '<span class="searchfield">colorcount</span>: "' + curr.colorcount + '",</br>';};
+					if(curr.worktype){worktype = '<span class="searchfield">worktype</span>: "' + curr.worktype + '",</br>';};
 					if(curr.dimensions){dimensions = 'dimensions: "' + curr.dimensions + '",</br>';};
-					if(curr.medium){medium = 'medium: "' + curr.medium + '",</br>';};
+					if(curr.medium){medium = '<span class="searchfield">medium</span>: "' + curr.medium + '",</br>';};
 					if(curr.colors){
 							colors = 'colors:</br>' + '<div class="tabspace">';
 						for (i = 0; i < curr.colors.length; i++) { 
@@ -316,8 +318,8 @@
 					///p7
 					if(curr.url){url = 'url: "' + curr.url + '",</br>';};
 					if(curr.primaryimageurl){primaryimageurl = 'primaryimageurl: "' + curr.primaryimageurl + '",</br>';};
-					if(curr.totalpageviews){totalpageviews = 'totalpageviews: "' + curr.totalpageviews + '",</br>';};
-					if(curr.totaluniquepageviews){totaluniquepageviews = 'totaluniquepageviews: "' + curr.totaluniquepageviews + '",</br>';};
+					if(curr.totalpageviews){totalpageviews = '<span class="searchfield">totalpageviews</span>: "' + curr.totalpageviews + '",</br>';};
+					if(curr.totaluniquepageviews){totaluniquepageviews = '<span class="searchfield">totaluniquepageviews</span>: "' + curr.totaluniquepageviews + '",</br>';};
 					if(curr.lastupdate){lastupdate = 'lastupdate: "' + curr.lastupdate + '",</br>';};
 					if(curr.dateoffirstpageview){dateoffirstpageview = 'dateoffirstpageview: "' + curr.dateoffirstpageview + '",</br>';};
 					if(curr.dateoflastpageview){dateoflastpageview = 'dateoflastpageview: "' + curr.dateoflastpageview + '",</br>';};
@@ -335,16 +337,16 @@
 
 					///p8
 					if(curr.id){id = 'id: "' + curr.id + '",</br>';};
-					if(curr.verificationlevel){verificationlevel = 'verificationlevel: "' + curr.verificationlevel + '",</br>';};
+					if(curr.verificationlevel){verificationlevel = '<span class="searchfield">verificationlevel</span>: "' + curr.verificationlevel + '",</br>';};
 					if(curr.imagepermissionlevel){imagepermissionlevel = 'imagepermissionlevel: "' + curr.imagepermissionlevel + '",</br>';};
 					if(curr.accesslevel){accesslevel = 'accesslevel: "' + curr.accesslevel + '",</br>';};
 					if(curr.mediacount){mediacount = 'mediacount: "' + curr.mediacount + '",</br>';};
 					if(curr.groupcount){groupcount = 'groupcount: "' + curr.groupcount + '",</br>';};
-					if(curr.markscount){markscount = 'markscount: "' + curr.markscount + '",</br>';};
+					if(curr.markscount){markscount = '<span class="searchfield">markscount</span>: "' + curr.markscount + '",</br>';};
 					if(curr.relatedcount){relatedcount = 'relatedcount: "' + curr.relatedcount + '",</br>';};
-					if(curr.imagecount){imagecount = 'imagecount: "' + curr.imagecount + '",</br>';};
-					if(curr.peoplecount){peoplecount = 'peoplecount: "' + curr.peoplecount + '",</br>';};
-					if(curr.titlescount){titlescount = 'titlescount: "' + curr.titlescount + '",</br>';};
+					if(curr.imagecount){imagecount = '<span class="searchfield">imagecount</span>: "' + curr.imagecount + '",</br>';};
+					if(curr.peoplecount){peoplecount = '<span class="searchfield">peoplecount</span>: "' + curr.peoplecount + '",</br>';};
+					if(curr.titlescount){titlescount = '<span class="searchfield">titlescount</span>: "' + curr.titlescount + '",</br>';};
 					if(curr.datebegin){datebegin = 'datebegin: "' + curr.datebegin + '",</br>';};
 					if(curr.dateend){dateend = 'dateend: "' + curr.dateend + '",</br>';};
 					if(curr.contextualtextcount){contextualtextcount = 'contextualtextcount: "' + curr.contextualtextcount + '",</br>';};
@@ -446,10 +448,11 @@
 					$("#preview").animate({opacity: 1}, 500, function() {
 				
 					});
-			} else {					
-					closePreview();
-					$(".metadata, .metadata_back").hide();
-
+			} else {			
+					if(!$(e.target).hasClass("searchfield")) {	
+					//	closePreview();
+						//$(".metadata, .metadata_back").hide();
+					}
 			}
 		});
 		
@@ -477,6 +480,8 @@
 		
 		}
 		
+	
+		
 		//1023 objects have placeterms
 		//982 w/previous exhibitions
 		
@@ -493,6 +498,7 @@
 
 				});
 				var next = count+100;
+			//	if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
 				if(data.info.pages > data.info.page) window.setTimeout(getMoreArt(next), 500);
 				else {
 					//console.log("w/surrogates: "+placecount);
@@ -510,6 +516,7 @@
 			var index=0;
 			for(var j=0; j < 31; j++) {
 				for(var i=0; i < 49; i++) {
+					if(index  == art.records.length) return false;
 					var x = i*w;
 					var y = j*h;
 					var t = index;
@@ -542,6 +549,8 @@
 
 	function addImage(order, x, y) {
 		var base_image = new Image();
+		console.log(art.records[order]);
+		console.log(order);
 		base_image.src = "./art/" + art.records[order].objectid + ".jpg";
 		base_image.onload = function(){
 			art.records[order].x1 = x;
