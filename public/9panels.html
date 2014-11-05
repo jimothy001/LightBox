@@ -3,8 +3,8 @@
 	<head>
 
 		<title>SANDBOX</title>
-		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
-		<script type="text/javascript" src="lib/fabric.js"></script>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" ></script>  
+		<script type="text/javascript" src="lib/fabric.min.js"></script>
 		<link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
 	
 	<style>
@@ -43,10 +43,10 @@
 			z-index: 999;
 			display: none;
 			border-radius: 50%;
-		    width: 40px;
-		    height: 40px;
-		    border: 3px solid #fff;
-		    color: white;
+			width: 40px;
+			height: 40px;
+			border: 3px solid #fff;
+			color: white;
 		}
 		.closebutton:hover, .metabutton:hover, .maxbutton:hover, .minbutton:hover{
 			cursor: pointer;
@@ -76,9 +76,6 @@
 		.metainfo div{
 			margin: 5px;
 		}
-		.panel{
-			border: 1px solid #ccc;
-		}
 		
 		
 		.panel_zoom{
@@ -86,21 +83,29 @@
 			top: 0;
 			left: 0;
 			display: none;
-			border: 1px solid #ccc;
 		}
 
 		
 		#toggle {
 			position: fixed;
-			width: 100px;
+			width: 4%;
 			right: 65px;
 			top: 10px;
 			z-index: 5000;
 			cursor: pointer;
 		}
 		
-		#toggle img {
-			width: 100%;
+		div.sq {
+			display:block;
+			float: left;
+			position: relative;
+			width: 28%;
+			height: 28%;
+			margin: 2px;
+		}
+		
+		#toggle:hover {
+			opacity: .7;
 		}
 		
 		
@@ -110,6 +115,9 @@
 	
 	<body>
 	
+	<div id="toggle">
+		<a href="9map.html"><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div></a>
+	</div>
 	
 	<div id="sandbox" class = "block">
 
@@ -117,7 +125,6 @@
 		<div class="maxbutton"></div>
 		<div class="metabutton"></div>
 		<div class="minbutton"></div>
-		<div class="metainfo"></div>
 
 
 	<div id="panels">
@@ -129,7 +136,7 @@
 
 
 		<div class="panel_zoom">
-			<canvas id="pzoom" width="1920" height="1080"></canvas>	
+			<canvas id="pzoom"></canvas>	
 		</div>
 
 	</div>
@@ -138,11 +145,30 @@
 
 
 		<script src="/socket.io/socket.io.js"></script> 
-		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 
 <script>
 
 var cwidth = window.innerWidth / 3;
+
+$("#toggle").height($("#toggle").width()*.5625);
+
+var day = dayofyear(new Date()) +1;
+var gotArt = false;
+
+function dayofyear(d) {   // d is a Date object
+	var yn = d.getFullYear();
+	var mn = d.getMonth();
+	var dn = d.getDate();
+	var d1 = new Date(yn,0,1,12,0,0); // noon on Jan. 1
+	var d2 = new Date(yn,mn,dn,12,0,0); // noon on input date
+	var ddiff = Math.round((d2-d1)/864e5);
+	return ddiff+1; 
+}
+		
+$.get("http://api.harvardartmuseums.org/spectrum/"+day+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(d) {
+	$(".sq").css("background-color", d.color);
+});
+
 
 $.each($("canvas"), function(i, c) {
 	c.width = cwidth;
@@ -152,6 +178,7 @@ $.each($("canvas"), function(i, c) {
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
 var p3 = new fabric.Canvas("p3");
+
 
 
 var pointer = new canvasPointer();
@@ -164,6 +191,10 @@ var order = 0;
 
 var pzoom = new fabric.Canvas("pzoom");
 var zoom = false;
+
+pzoom.setWidth(window.innerWidth);
+pzoom.setHeight(window.innerHeight);
+
 
 //keycodes
 var PLUS = 187;
@@ -195,25 +226,26 @@ socket.emit('get-items', {});
 
 socket.on('send-items', function(data)
 {
+	if(gotArt) return false;
 	dbObjs = data;
-	grabArt(dbObjs[dbObjs.length-1].objectid);
-	grabArt(dbObjs[dbObjs.length-2].objectid);
-	grabArt(dbObjs[dbObjs.length-3].objectid);
-
+	grabArt(dbObjs[2].objectid, true);
+	grabArt(dbObjs[1].objectid);
+	grabArt(dbObjs[0].objectid);
+	gotArt = true;
 });
 
 socket.on('updated-db', function(data)
 {
 	dbObjs.push(data);
-	grabArt(data.objectid);
+	grabArt(data.objectid, true);
+	p1.renderAll();
 	//trayCount = 0;
 	//addAndShift();
 });
 
-function grabArt(id) {
+function grabArt(id, front) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
-		if(art.related) console.log(art.related);
-		addImageToPanel(art, order);
+		addImageToPanel(art, order, front);
 		metaImage(art, order);
 		order++;
 	});	
@@ -314,18 +346,17 @@ function hover_elements(){
 
 				if(!occur_once){
 					///SHOW LARGE ZOOM DIV
+					occur_once = true;
 					$(".panel_zoom").show();
 					zoom = true;
 					console.log(activeSet["p1"].getObjects()[activeSet["p1"].curr]._originalElement.src);
 					var zoom_mult = pzoom.width;
 					fabric.Image.fromURL(activeSet["p1"].getObjects()[activeSet["p1"].curr]._originalElement.src, function(img) {
 						img.set({
-						//scaleX: zoom_mult,
-						//scaleY: (canvas.height*zoom_mult)/F.height,
-						width: zoom_mult,
-						height: active.height * (zoom_mult/active.width),
-						left: (zoom_mult-pzoom.width)/(-2),
-						top: ((active.height * (zoom_mult/active.width))-pzoom.height)/(-2)
+							width: zoom_mult,
+							height: active.height * (zoom_mult/active.width),
+							left: (zoom_mult-pzoom.width)/(-2),
+							top: ((active.height * (zoom_mult/active.width))-pzoom.height)/(-2)
 						});			
 						pzoom.add(img).setActiveObject(img);
 						activezoom = pzoom.getActiveObject();
@@ -349,45 +380,11 @@ function hover_elements(){
 					$("body").append('<div class="closebutton"></div><div class="maxbutton"></div><div class="metabutton"></div>');
 					$(".minbutton").hide();
 				});
-				//}occur_once = true;
+				//}
 			}
+			occur_once = true;
 		});
 
-	$(".metabutton").css({'left':extra+active.left+20,'top':rightcorner_y})
-			.bind( "click", function() {
-				$(".metainfo").css({'left':extra+active.left+14,'top':active.top+14,'width':active.getWidth()-6,'height':active.getHeight()-6});
-				//if(!occur_once){
-			
-					
-					var image_id = active.get("objid");
-					//console.log(image_id);
-					var meta_info;
-					/// MATCH OBJECT ID WITH OBJECT ID IN ARRAY, GET METADATA INFO
-					for(var i in image_metadata) {
-							if(image_metadata[i].objectid == image_id){
-								//console.log(image_metadata[i]);
-								meta_info = "<div>";
-								meta_info += "<span><b>id:</b> "+image_metadata[i].objectid+"</span>"+"</br>";
-								meta_info += "<span><b>date:</b> "+image_metadata[i].dated+"</span>"+"</br>";
-								meta_info += "<span><b>century:</b> "+image_metadata[i].century+"</span>"+"</br>";
-								meta_info += "<span><b>culture:</b> "+image_metadata[i].culture+"</span>"+"</br>";
-								meta_info += "<span><b>accessioned:</b> "+image_metadata[i].accessionyear+"</span>"+"</br>";
-								meta_info += "<span><b>description:</b> "+image_metadata[i].description+"</span>"+"</br>";
-								meta_info += "</div>";
-							}
-					}					
-					$(".metainfo").show().html(meta_info);
-					$(".closebutton,.metabutton,.maxbutton").hide();
-					//ON CLICK ANYWHERE, HIDE METADATA
-					$(window).mousedown(function() {
-						$(".metainfo").hide();
-						$(".closebutton,.metabutton,.maxbutton").show();
-						occur_once = false;
-					});
-
-					
-				//}occur_once = true;
-			});
 	$(".closebutton,.metabutton,.maxbutton").show();
 	
 }
@@ -442,7 +439,7 @@ window.addEventListener("keydown", function(e){
 				hover_elements();
        
        
-    }else{
+    } else {
 	///IF MAX/ZOOM WINDOW OPEN, ZOOM MAX WINDOW
 		elem_zoom = activezoom;
 	}
@@ -495,9 +492,11 @@ $(document).mousemove(function(e) {
 			return false;
 		} else 	{
 			c = e.target.parentElement.children[0];
+				var eX = e.offsetX || e.originalEvent.layerX;
+				var eY = e.offsetY || e.originalEvent.layerY;
 			
-				if(e.offsetX > activeSet[c.id].oCoords.bl.x && e.offsetX < activeSet[c.id].oCoords.br.x) {
-					if(e.offsetY < activeSet[c.id].oCoords.bl.y && e.offsetY > activeSet[c.id].oCoords.tl.y) {
+				if(eX > activeSet[c.id].oCoords.bl.x && eX < activeSet[c.id].oCoords.br.x) {
+					if(eY < activeSet[c.id].oCoords.bl.y && eY > activeSet[c.id].oCoords.tl.y) {
 						
 						if(activeSet[c.id].visible) {
 							active = activeSet[c.id];
@@ -509,9 +508,6 @@ $(document).mousemove(function(e) {
 			
 		
 			if(!found) return false;
-
-			console.log(active.oCoords.br.x);	
-
 	
 			if(active && activeSet) {
 				
@@ -527,8 +523,7 @@ $(document).mousemove(function(e) {
 				console.log(active.oCoords.br.x);
 				if(active.oCoords.br.x == prev) {
 					console.log("same");
-					console.log(pointer.cid);
-					console.log(active);
+
 				}
 				prev = active.oCoords.br.x;
 				if(active.oCoords.tl.y > 800) {
@@ -702,7 +697,7 @@ $(document).mouseup(function(options) {
 
 
 var imgCount = 0;
-function addImageToPanel(objData, index) {
+function addImageToPanel(objData, index, front) {
 		var w = 500;
 		var h;
 		var obj = {};
@@ -719,10 +714,9 @@ function addImageToPanel(objData, index) {
 			oImg.set("orderid", index);
 			oImg.set("objid", objData.id);
 			oImg.set("lockRotation",true);
-			if(!isTouch) {
-				oImg.set("lockScalingX",true);
-				oImg.set("lockScalingY",true);
-			}
+			oImg.set("lockScalingX",true);
+			oImg.set("lockScalingY",true);
+			
 			oImg.setLeft(-w/2);
 			oImg.setTop(-1.5*h);
 			Pixelate(oImg, 25)
@@ -738,10 +732,9 @@ function addImageToPanel(objData, index) {
 			var text = new fabric.Text(newstring, {left: -w/2, top: -1.5*h, width: w, height: h*3});
 			text.set("orderid", index);
 			text.set("lockRotation",true);
-			if(!isTouch) {
-				text.set("lockScalingX",true);
-				text.set("lockScalingY",true);
-			}
+			text.set("lockScalingX",true);
+			text.set("lockScalingY",true);
+			
 			text.set("objid", objData.id);
 			text.setFontSize(10);
 			text.setFontWeight(100);
@@ -757,10 +750,9 @@ function addImageToPanel(objData, index) {
 			p1group.set("orderid", index);
 			p1group.set("objid", objData.id);
 			p1group.set("lockRotation",true);
-			if(!isTouch) {
-				p1group.set("lockScalingX",true);
-				p1group.set("lockScalingY",true);
-			}
+			p1group.set("lockScalingX",true);
+			p1group.set("lockScalingY",true);
+			
 			imgCount = 0;
 			for(var j=0; j < objData.images.length; j++) {
 				var t = j;		
@@ -774,6 +766,7 @@ function addImageToPanel(objData, index) {
 			p1.add(p1group);
 			obj.p1 = p1group;
 			p1.renderAll()
+			if(front) p1group.bringToFront();
 			
 		});
 		activeObjs.push(obj);	
@@ -790,12 +783,9 @@ function getMetaData(objData, max, lcount) {
 
 	
 	var buff = lcount*max;
-	console.log(buff);
-	console.log(mdstring.length);
 	
 	l1 = Math.floor(Math.random()*(mdstring.length - buff));
 	l2 = l1+buff;
-	console.log(l1);
 	
 	//full metadata character count:
 	//max = Math.floor(Math.sqrt((mdstring.length*1.4*w)/h));
@@ -803,7 +793,6 @@ function getMetaData(objData, max, lcount) {
 	while(count<lcount) {
 	
 		var chunk = mdstring.substr(l1, max);
-		console.log(chunk.length);
 		newstring += chunk;
 		newstring += "\n";
 	
