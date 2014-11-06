@@ -99,6 +99,10 @@
 			position: relative;
 			
 		}
+		
+		.p5 {
+			cursor: pointer;
+		}	
 
 		.metadata .phldr {
 			position:absolute;
@@ -129,36 +133,51 @@
 			background-color: white;
 		}
 
+		
+		#toggletext {
+			position: absolute;
+			font-size: 50px;
+			font-family: inconsolata;
+			margin-left: 4%;
+			margin-top: 5%;
+			margin-right: 10%;
+			font-weight: 100;
+			color: white;
+		}
+		
 		#toggle {
 			position: fixed;
-			width: 4%;
+			width: 300px;
+			height: 177px;
 			right: 65px;
-			top: 10px;
+			bottom: 20px;
 			z-index: 5000;
 			cursor: pointer;
+			opacity: .7;
 		}
 		
 		div.sq {
 			display:block;
 			float: left;
 			position: relative;
-			width: 28%;
+			width: 96px;
 			height: 100%;
 			margin: 2px;
+			background-color: gray;
 		}
-		
-		#toggle:hover {
-			opacity: .7;
-		}
+
 	
 	</style>
 	</head>
 	
 	<body>
 	
+
 		<div id="toggle">
-			<a href="9panels.html"><div class="sq"></div><div class="sq"></div><div class="sq"></div></a>
+			<div class="sq"></div><div class="sq"></div><div class="sq"></div>
+			<div id="toggletext" style="display:none">> to sandbox</div>
 		</div>
+		
 		
 		<div id="highlight"></div>
 		<div class="metadata_back"></div>
@@ -170,8 +189,9 @@
 			<div class="p3"><div class='phldr'>3</div></div>
 			<div class="p4"><div class='phldr'>4</div></div>
 			<div class="p5"><div class='phldr' id="preview">
-				<div class='img-preview'></div>
-				<div class='button'>Add to tray</div>
+				<div class='img-preview'>
+				</div>
+					<div class='button'>Add to tray</div>
 			</div></div>
 			<div class="p6"><div class='phldr'>6</div></div>
 			<div class="p7"><div class='phldr'>7</div></div>
@@ -205,46 +225,63 @@
 		var map = document.getElementById('map');
 		var ctx = map.getContext('2d');
 		var itemX = 0;
+
+
+
+$(document).ready(function() {
+
+	map.height = window.innerHeight;
+	map.width = window.innerWidth;
+	$("#toggle").height($("#toggle").width()*.5625);
+
+	getMoreArt(0);
+	$("#preview").css("opacity", 0);
+
+});
+
+
+$("#toggle").on("mouseover", function() {
+	$("#toggletext").show();
+	$("#toggle .sq").css("background-color", color);
+});
+
+$("#toggle").on("mouseout", function() {
+	$("#toggletext").hide();
+	$("#toggle .sq").css("background-color", "gray");
+});
+
+$("#toggle").on("click", function() {
+	window.location.href = window.location.origin+"/9panels.html";
+});
 	
-	$(document).ready(function() {
 
-		map.height = window.innerHeight;
-		map.width = window.innerWidth;
-		$("#toggle").height($("#toggle").width()*.5625);
+$(".metadata, .metadata_back").on("click", function(e) {
+	if($(e.target).hasClass("searchfield")) {
+		sort = $(e.target).html();
+		art.records.sort(customSort);
+		populateMap();
+	} else {
+		$(".metadata, .metadata_back").hide();
+		$("#highlight").show();
+	}
+});
 
-		getMoreArt(0);
-	});
-		
-		$("#preview").css("opacity", 0);
-		
-			$(".metadata, .metadata_back").on("click", function(e) {
-						if($(e.target).hasClass("searchfield")) {
-							sort = $(e.target).html();
-							art.records.sort(customSort);
-							populateMap();
-						} else {
-							$(".metadata, .metadata_back").hide();
-							$("#highlight").show();
-						}
-					});
-		
-		$("#map").on("mousemove", function(e) {
-			var eX = e.offsetX || e.clientX;
-			var eY = e.offsetY || e.clientY;
+$("#map").on("mousemove", function(e) {
+	var eX = e.offsetX || e.clientX;
+	var eY = e.offsetY || e.clientY;
 
-			eX -= w/2;
-			eY -= h/2;
-			
-			var eX2 = Math.round(eX / w)*w;
-			var eY2 = Math.round(eY / h)*h;
-			
-			$("#highlight").css("top", eY2);
-			$("#highlight").css("left", eX2);
-		
-		});
+	eX -= w/2;
+	eY -= h/2;
+	
+	var eX2 = Math.round(eX / w)*w;
+	var eY2 = Math.round(eY / h)*h;
+	
+	$("#highlight").css("top", eY2);
+	$("#highlight").css("left", eX2);
+
+});
 		
 $(document).on("click", function(e) {
-
 	if(e.which == 2) {
 		location.reload();
 
@@ -255,7 +292,6 @@ $(document).on("click", function(e) {
 		});
 		$(".metadata, .metadata_back").hide();
 		$("#highlight").show();
-	
 	} else if($(e.target).attr("id") == "map" || $(e.target).attr("id") == "highlight") {
 			$.each(art.records, function(i, val) {
 				var eX = e.clientX;
@@ -277,7 +313,6 @@ $(document).on("click", function(e) {
 
 		
 			var img_src= "./art/" + curr.objectid + ".jpg";
-			$("#preview .img-preview").html("<img src='"+img_src+"'>");
 
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='';
@@ -295,7 +330,11 @@ $(document).on("click", function(e) {
 			$(".p7 .phldr").children().remove();
 			$(".p8 .phldr").children().remove();
 			$(".p9").children().remove();
-									
+			$("#preview img").remove();
+
+			$("#preview .img-preview").append("<img id='artimg' src='"+img_src+"'>");
+			
+												
 			///p2
 			if(curr.title){title = '<span class="searchfield">title</span>: "' + curr.title + '",</br>';};
 		
@@ -499,8 +538,6 @@ function dayofyear(d) {   // d is a Date object
 		
 $.get("http://api.harvardartmuseums.org/spectrum/"+day+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(d) {
 	color = d.color;
-		$(".sq").css("background-color", d.color);
-
 });
 		
 var w = window.innerWidth / 48;

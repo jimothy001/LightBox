@@ -1,6 +1,6 @@
 import urllib2
 i = 0
-with open("urls.txt", "r") as f:
+with open("urls2.txt", "r") as f:
     for item in f:
     	line = item.split()
     	resp = urllib2.urlopen(line[0])
