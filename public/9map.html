@@ -27,9 +27,6 @@
 		
 		#highlight {
 			z-index:1000;
-			-moz-box-shadow: 0 0 8px 3px #ffffff;
-			-webkit-box-shadow: 0 0 8px 3px #ffffff;
-			box-shadow: 0 0 8px 3px #ffffff;
 			display: block;
 			position: absolute;
 		}
@@ -368,13 +365,19 @@ $(document).on("click", function(e) {
 
 			///p6
 			if(curr.colorcount){colorcount = '<span class="searchfield">colorcount</span>: "' + curr.colorcount + '",</br>';};
-			if(curr.worktype){worktype = '<span class="searchfield">worktype</span>: "' + curr.worktype + '",</br>';};
+			if(curr.worktypes){
+				worktype = 'worktype:</br>[</br>' + '<div class="tabspace">';
+				for(i=0; i<curr.worktypes.length; i++) {
+					worktype+=JSON.stringify(curr.worktypes[i])+',</br>';
+				}
+				worktype += '</div>' + '],<br />';
+			};
 			if(curr.dimensions){dimensions = 'dimensions: "' + curr.dimensions + '",</br>';};
 			if(curr.medium){medium = '<span class="searchfield">medium</span>: "' + curr.medium + '",</br>';};
 			if(curr.colors){
-					colors = 'colors:</br>' + '<div class="tabspace">';
+					colors = 'colors:</br>[</br>' + '<div class="tabspace">';
 				for (i = 0; i < curr.colors.length; i++) { 
-						colors += JSON.stringify(curr.colors[i])+'",</br>'
+						colors += JSON.stringify(curr.colors[i])+',</br>'
 				}
 					colors += '</div>' + '],';
 			};
@@ -388,11 +391,11 @@ $(document).on("click", function(e) {
 			if(curr.dateoffirstpageview){dateoffirstpageview = 'dateoffirstpageview: "' + curr.dateoffirstpageview + '",</br>';};
 			if(curr.dateoflastpageview){dateoflastpageview = 'dateoflastpageview: "' + curr.dateoflastpageview + '",</br>';};
 			if(curr.images){
-					images = 'images:</br>[</br>'+'<div class="tabspace">' + '{</br>'+'<div class="tabspace">';
+					images = 'images:</br>[</br>'+'<div class="tabspace">'+'<div class="tabspace">';
 				for (i = 0; i < curr.images.length; i++) { 
 						images += JSON.stringify(curr.images[i])+'",</br>'
 				}
-					images += '</div>' + '}</br>'+'</div>' +'],';
+					images += '</div>' + '</div>' +'],';
 			};						
 
 			///p8
@@ -407,8 +410,8 @@ $(document).on("click", function(e) {
 			if(curr.imagecount){imagecount = '<span class="searchfield">imagecount</span>: "' + curr.imagecount + '",</br>';};
 			if(curr.peoplecount){peoplecount = '<span class="searchfield">peoplecount</span>: "' + curr.peoplecount + '",</br>';};
 			if(curr.titlescount){titlescount = '<span class="searchfield">titlescount</span>: "' + curr.titlescount + '",</br>';};
-			if(curr.datebegin){datebegin = 'datebegin: "' + curr.datebegin + '",</br>';};
-			if(curr.dateend){dateend = 'dateend: "' + curr.dateend + '",</br>';};
+			if(curr.datebegin){datebegin = '<span class="searchfield">datebegin</span>: "' + curr.datebegin + '",</br>';};
+			if(curr.dateend){dateend = '<span class="searchfield">dateend</span>: "' + curr.dateend + '",</br>';};
 			if(curr.contextualtextcount){contextualtextcount = 'contextualtextcount: "' + curr.contextualtextcount + '",</br>';};
 
 
@@ -542,6 +545,9 @@ function dayofyear(d) {   // d is a Date object
 		
 $.get("http://api.harvardartmuseums.org/spectrum/"+day+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(d) {
 	color = d.color;
+	$("#highlight").css("-moz-box-shadow", "0 0 20px 10px "+color);
+	$("#highlight").css("-webkit-box-shadow", "0 0 20px 10px"+color);
+	$("#highlight").css("box-shadow", "0 0 20px 10px"+color);
 });
 		
 var w = window.innerWidth / 48;
