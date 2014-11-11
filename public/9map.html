@@ -2,7 +2,7 @@
 <html>
 	<head>
 
-		<title>SANDBOX</title>
+		<title>OBJECT MAP</title>
 		<link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
 	<style>
@@ -54,22 +54,32 @@
 		}		
 		.button {
 			position: absolute;
-			color: black;
-			background-color: white;
-			border: 1px solid white;
-			padding: 3px;
 			top: 0;
 			right: 0;
-			z-index: 200;
-			width: 140px;
-			height: 87px;
+			z-index: 9999;
+			height: 100px;
+	
+		}
+		.button div {
+			float: left;
+		}
+		.button div:nth-of-type(1) {
+			background-color: white;
+			width: 110px;
+			height: 100px;
+			color: black;
+			line-height: 105px;
 			font-size: 120px;
 			text-align: center;
-		}
-		
+		}	
+		.button div:nth-of-type(2) {
+			color: white;
+			font-size: 100px;
+			margin: -2px 0 0 10px;
+		}		
 		.button:hover {
-			cursor: pointer;			
-		}
+			cursor: pointer;	
+					}
 		.metadata_back{
 			position: absolute;
 			top: 0;
@@ -107,7 +117,7 @@
 		}
 		
 		.p5 {
-			cursor: pointer;
+			/*cursor: pointer;*/
 		}	
 
 		.metadata .phldr {
@@ -143,7 +153,7 @@
 		#toggle {
 			position: absolute;
 			width: 166px;
-			height: 87px;
+			height: 100px;
 			left: 0px;
 			top: 0px;
 			z-index: 5000;
@@ -164,8 +174,40 @@
 			margin-left: 4px;
 			background-color: white;
 		}
-
-	
+		.message_hldr{
+			pointer-events: none;
+			display: none;
+			z-index: 9999;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			opacity: .6;
+			background: black;
+		}
+		.message{
+			pointer-events: none;
+			position: absolute;
+		  	top: 50%;
+		  	margin-top: -50px;/* half of #content height*/
+		  	left: 0;
+		  	width: 100%;
+			
+		}
+		.message div{
+			pointer-events: none;
+			width: 800px;
+			margin-left: auto;
+			margin-right: auto;
+			height: 70px;
+			font-size: 60px;
+			text-align: center;
+			padding: 50px 0;
+			border: 2px solid white;
+			color: white;
+			font-family: 'Inconsolata',sans-serif;
+		}
 	</style>
 	</head>
 	
@@ -184,20 +226,25 @@
 			<div class="p3"><div class='phldr'>3</div></div>
 			<div class="p4"><div class='phldr'>4</div></div>
 			<div class="p5"><div class='phldr' id="preview">
+				
 				<div class='img-preview'>
 				</div>
 				
+					<!--- PANELS ICON -->
 					<div id="toggle">
 						<div class="sq"></div><div class="sq"></div><div class="sq"></div>
 					</div>
-					<div class='button'> + </div>
+					<!--- ADD TO TRAY ICON -->
+					<div class='button'><div>+</div><div>&#10140;</div></div>
 			</div></div>
 			<div class="p6"><div class='phldr'>6</div></div>
 			<div class="p7"><div class='phldr'>7</div></div>
 			<div class="p8"><div class='phldr'>8</div></div>
 			<div class="p9">},</div>
 		</div>
-
+<div class="message_hldr"><div class="message">
+	<div>Added to tray</div>
+</div></div>
 		<canvas id="map"></canvas>
 		<!--
 		<div id="preview">
@@ -237,6 +284,20 @@ $(document).ready(function() {
 
 });
 
+$(".button").on("click", function() {
+		//$(".swoosh div").css({'color':color});
+		$(".message_hldr").fadeIn(200).delay(500).fadeOut(200);
+});
+
+$(".button").on("mouseover", function() {
+	$(".button div:nth-of-type(1)").css("background-color", color);
+	$(".button div:nth-of-type(2)").css("color", color);
+});
+
+$(".button").on("mouseout", function() {
+	$(".button div:nth-of-type(1)").css("background-color", "white");
+	$(".button div:nth-of-type(2)").css("color", "white");
+});
 
 $("#toggle").on("mouseover", function() {
 	$("#toggletext").show();
