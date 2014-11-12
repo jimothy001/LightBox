@@ -286,6 +286,10 @@ $(document).ready(function() {
 
 $(".button").on("click", function() {
 		//$(".swoosh div").css({'color':color});
+		var id = curr.objectid;
+		socket.emit('add-item', {
+			objectid: id
+		});
 		$(".message_hldr").fadeIn(200).delay(500).fadeOut(200);
 });
 
@@ -343,13 +347,6 @@ $(document).on("click", function(e) {
 	if(e.which == 2) {
 		location.reload();
 
-	} else if($(e.target).hasClass("button")) {
-		var id = curr.objectid;
-		socket.emit('add-item', {
-			objectid: id
-		});
-		$(".metadata, .metadata_back").hide();
-		$("#highlight").show();
 	} else if($(e.target).attr("id") == "map" || $(e.target).attr("id") == "highlight") {
 			$.each(art.records, function(i, val) {
 				var eX = e.clientX;
