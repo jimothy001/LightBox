@@ -90,27 +90,45 @@
 		
 		#toggle {
 			position: fixed;
-			width: 300px;
+			width: 500px;
 			height: 177px;
-			top: 10px;
+			top: 30px;
 			left: 10px;
 			z-index: 5000;
 			cursor: pointer;
 			opacity: 1;
 		}
-		
+		.iconholder{
+			height: 177px;
+			width: 300px;
+		}
 		div.sq {
 			display:block;
 			float: left;
 			position: relative;
 			width: 30%;
 			height: 30%;
-			margin-left: 7px;
-			margin-bottom: 7px;
+			margin-left: 10px;
+			margin-bottom: 10px;
 			background-color: white;
 
 		}
-		
+		.arrow, .iconholder{
+			float: left;
+		}
+		.arrow{
+			font-size: 100px;
+			-moz-transform: scaleX(-1);    /* Gecko */
+		  	-o-transform: scaleX(-1);      /* Operah */
+		  	-webkit-transform: scaleX(-1); /* webkit */
+		  	transform: scaleX(-1);         /* standard */
+		 	filter: FlipH;                 /* IE 6/7/8 */
+		 	color: white;
+		 	margin: 30px 5px 0 0;
+		}
+		.iconholder{
+
+		}
 		#toggle:hover {
 			opacity: 1;
 		}
@@ -125,7 +143,10 @@
 	<body>
 	
 	<div id="toggle">
+		<div class="arrow">&#x279c;</div>
+		<div class="iconholder">
 		<div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div><div class="sq"></div>
+		</div>
 	</div>
 	
 	<div id="sandbox" class = "block">
@@ -181,10 +202,13 @@ $.get("http://api.harvardartmuseums.org/spectrum/"+day+"?apikey=f5473230-3f68-11
 
 $("#toggle").on("mouseover", function() {
 	$("#toggle .sq").css("background-color", color);
+	$(".arrow").css("color", color);
 });
+
 
 $("#toggle").on("mouseout", function() {
 	$("#toggle .sq").css("background-color", "white");
+	$(".arrow").css("color", "white");
 });
 
 $("#toggle").on("click", function() {
