@@ -12,6 +12,7 @@
 		html, body {
 			overflow: hidden;
 			height: 100%;
+			background: #0F0F0F;
 		}
 		
 		.block 
@@ -134,7 +135,17 @@
 		}
 		
 
+		#tray {
+			clear: both;
+			margin: 25px 10px 0 10px;
+		}
 		
+		#tray-container {
+			position: relative;
+			float:left;
+			width: 100%;
+			background-color: #0F0F0F;
+		}
 		
 		
 	</style>
@@ -163,6 +174,9 @@
 		<canvas id="p3" class="panel a"></canvas>
 	</div>
 
+	<div id="tray-container">
+		<canvas id="tray" class="tray"></canvas>
+	</div>
 
 		<div class="panel_zoom">
 			<canvas id="pzoom"></canvas>	
@@ -215,16 +229,19 @@ $("#toggle").on("click", function() {
 	window.location.href = window.location.origin+"/9map.html";
 });
 
-$.each($("canvas"), function(i, c) {
+$.each($("canvas.panel"), function(i, c) {
 	c.width = cwidth;
-	c.height = window.innerHeight;	
+	c.height = .85*(window.innerHeight);	
 });
+
+
 
 var p1 = new fabric.Canvas("p1");
 var p2 = new fabric.Canvas("p2");
 var p3 = new fabric.Canvas("p3");
-
-
+var tray = new fabric.Canvas("tray");
+tray.setWidth(window.innerWidth)
+tray.setHeight(.15*window.innerHeight);
 
 var pointer = new canvasPointer();
 var canvases = [p1, p2, p3];
@@ -238,7 +255,7 @@ var pzoom = new fabric.Canvas("pzoom");
 var zoom = false;
 
 pzoom.setWidth(window.innerWidth);
-pzoom.setHeight(window.innerHeight);
+pzoom.setHeight(.85*window.innerHeight);
 
 
 //keycodes
@@ -271,22 +288,43 @@ socket.emit('get-items', {});
 
 socket.on('send-items', function(data)
 {
-	if(gotArt) return false;
+
+	dbObjs = data;
+	addToTray(0);
+	
+	/*if(gotArt) return false;
 	dbObjs = data;
 	grabArt(dbObjs[2].objectid);
 	grabArt(dbObjs[1].objectid);
 	grabArt(dbObjs[0].objectid, true);
-	gotArt = true;
+	gotArt = true;*/
 });
 
 socket.on('updated-db', function(data)
 {
 	dbObjs.push(data);
+	//trayCount = 0;
+	addAndShift();
+	
+/*	dbObjs.push(data);
 	grabArt(data.objectid, true);
-	p1.renderAll();
+	p1.renderAll();*/
 	//trayCount = 0;
 	//addAndShift();
 });
+
+$("#tray-container").on("click", function(e) {
+	tray.renderAll();
+
+	$.each(dbObjs, function(i,val) {
+		if(e.offsetX > val.x1 && e.offsetX < val.x2) {
+			console.log(val.objectid);
+			grabArt(val.objectid);	
+		}
+	});
+});
+
+
 
 function grabArt(id, front) {
 	$.get("http://api.harvardartmuseums.org/object/"+id+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(art) {
@@ -319,6 +357,7 @@ function metaImage(objData, index) {
 
 
 $(document).mousedown(function(options) {
+	if($(options.target).hasClass("tray")) return false;
 	down = true;
 
 	occur_once = false;
@@ -516,6 +555,7 @@ window.addEventListener("keydown", function(e){
 var prev = 0;
 
 $(document).mousemove(function(e) {
+		if($(e.target).attr("id") == "tray-container") return false;
 		if(!active || zoom) return false;
 		var found = false;
 
@@ -814,6 +854,66 @@ function addImageToPanel(objData, index, front) {
 		
 }
 
+function addAndShift() {
+		var h = tray.getHeight()-50;
+		var w;
+		fabric.Image.fromURL("./art/" +dbObjs[dbObjs.length-1].objectid + ".jpg", function(oImg)
+			{
+				w = (h/oImg.getHeight())*oImg.getWidth();			
+				
+				oImg.setWidth(w);
+				oImg.setHeight(h);		
+				oImg.set("lockRotation",true);
+				oImg.setTop(0);
+				oImg.setLeft(-1*w);
+				oImg.set("selectable", false);
+				oImg.set("order", dbObjs.length-1);
+				tray.add(oImg);
+				
+				$.each(tray.getObjects(), function(i, o) {
+					o.setLeft(o.getLeft()+w+5);
+					dbObjs[o.get("order")].x1 = o.getLeft();
+					dbObjs[o.get("order")].x2 = o.getLeft() + o.getWidth();
+				
+				
+				});
+				tray.renderAll()
+								
+		});
+
+
+}
+
+function addToTray(index) {
+		var h = tray.getHeight()-50;
+		var w;
+		fabric.Image.fromURL("./art/" +dbObjs[index].objectid + ".jpg", function(oImg)
+			{
+				w = (h/oImg.getHeight())*oImg.getWidth();
+				oImg.setWidth(w);
+				oImg.setHeight(h);		
+				oImg.set("lockRotation",true);
+				oImg.setTop(0);
+				oImg.setLeft(-100);
+				dbObjs[index].x1 = trayCount;			
+				oImg.set("selectable", false);
+				oImg.set("order", index);
+				tray.add(oImg);
+				var dx = 100+trayCount;
+			
+				oImg.animate('left', '+='+dx, {
+					duration: 1000,
+					onChange: tray.renderAll.bind(tray),
+					onComplete: function() {
+						trayCount += (w+5);			
+						dbObjs[index].x2 = trayCount;
+						if((index < dbObjs.length - 1) && trayCount < tray.getWidth()) addToTray(index+1);
+					},
+					easing: fabric.util.ease["easeOutExpo"]
+				});
+				
+		});
+}
 	
 
 
