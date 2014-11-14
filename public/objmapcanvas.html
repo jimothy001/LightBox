@@ -452,7 +452,7 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		if(7 > data.info.page) getMoreArt(next);
+		if(data.info.pages > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
