@@ -254,9 +254,9 @@ $(document).on("click", function(e) {
 			$("#preview .img-preview").html("<img src='"+img_src+"'>");
 
 
-			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='';
-			var division='',signed='',century='',classification='',description='';
-			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='';
+			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
+			var division='',signed='',century='',classification='',description='', provenance='';
+			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='',gallery='';
 			var url='',primaryimageurl='',totalpageviews='',totaluniquepageviews='',lastupdate='',dateoffirstpageview='',dateoflastpageview='',images='';
 			var id='',verificationlevel='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='';
 			var colorcount='',worktype='',dimensions='',medium='',colors='';
@@ -280,14 +280,16 @@ $(document).on("click", function(e) {
 				}
 					people += '</div>' + '],</br>';
 			};						
-			if(curr.dated){dated = '<span class="searchfield">dated</span>: "' + curr.dated;};
+			if(curr.dated){dated = '<span class="searchfield">dated</span>: "' + curr.dated+',<br />';};
+			if(curr.accessionyear){accessionyear = '<span class="searchfield">accessionyear</span>: "' + curr.accessionyear;};
 
 			///p3
 			if(curr.division){division = '<span class="searchfield">division</span>: "' + curr.division + '",</br>';};
 			if(curr.signed){signed = '<span class="searchfield">signed</span>: "' + curr.signed + '",</br>';};
 			if(curr.century){century = '<span class="searchfield">century</span>: "' + curr.century + '",</br>';};
 			if(curr.classification){classification = '<span class="searchfield">classification</span>: "' + curr.classification + '",</br>';};
-			if(curr.description){description = 'description: "' + curr.description;};
+			if(curr.description){description = 'description: "' + curr.description+',<br />';};
+			if(curr.provenance){provenance = 'provenance: "' + curr.provenance;};
 
 			///p4
 			if(curr.department){department = '<span class="searchfield">department</span>: "' + curr.department + '",</br>';};
@@ -296,7 +298,12 @@ $(document).on("click", function(e) {
 			if(curr.exhibitioncount){exhibitioncount = '<span class="searchfield">exhibitioncount</span>: "' + curr.exhibitioncount + '",</br>';};
 			if(curr.creditline){creditline = 'creditline: "' + curr.creditline + '",</br>';};
 			if(curr.copyright){copyright = 'copyright: "' + curr.copyright + '",</br>';};
+			if(curr.gallery){
+				gallery='gallery:</br>{</br><div class="tabspace">'+
+				JSON.stringify(curr.gallery)+'</br></div>';		
+			};
 
+			
 			///p6
 			if(curr.colorcount){colorcount = '<span class="searchfield">colorcount</span>: "' + curr.colorcount + '",</br>';};
 			if(curr.worktypes){
@@ -351,12 +358,12 @@ $(document).on("click", function(e) {
 
 
 
-
 			//p2: title,people,dated
 			$(".metadata .p2 .phldr").html(
 					title +
 					people +
-					dated
+					dated +
+					accessionyear
 				);
 
 			//p3: division,signed,century,classification
@@ -365,7 +372,8 @@ $(document).on("click", function(e) {
 					signed +
 					century +
 					classification +
-					description
+					description+
+					provenance
 				);
 
 			//p4: department,objectnumber,contact,exhibitioncount,creditline,copyright
@@ -444,7 +452,7 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		if(data.info.pages > data.info.page) getMoreArt(next);
+		if(7 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
