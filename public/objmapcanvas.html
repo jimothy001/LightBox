@@ -87,7 +87,7 @@
 			display: none;
 			z-index: 100;
 			/*FONT SIZE JSON*/
-			font-size: 30px;
+			font-size: 40px;
 			cursor: default;
 		}
 		
@@ -258,8 +258,8 @@ $(document).on("click", function(e) {
 			var division='',signed='',century='',classification='',description='', provenance='';
 			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='',gallery='';
 			var url='',primaryimageurl='',totalpageviews='',totaluniquepageviews='',lastupdate='',dateoffirstpageview='',dateoflastpageview='',images='';
-			var id='',verificationlevel='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='';
-			var colorcount='',worktype='',dimensions='',medium='',colors='';
+			var id='',verificationlevel='',verificationleveldescription='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='';
+			var colorcount='',worktype='',dimensions='',medium='',colors='',technique='';
 
 			$(".p1").children().remove();
 			$(".p2 .phldr").children().remove();
@@ -287,13 +287,15 @@ $(document).on("click", function(e) {
 			if(curr.division){division = '<span class="searchfield">division</span>: "' + curr.division + '",</br>';};
 			if(curr.signed){signed = '<span class="searchfield">signed</span>: "' + curr.signed + '",</br>';};
 			if(curr.century){century = '<span class="searchfield">century</span>: "' + curr.century + '",</br>';};
+			if(curr.culture){culture = '<span class="searchfield">culture</span>: "' + curr.culture + '",</br>';};
+			
 			if(curr.classification){classification = '<span class="searchfield">classification</span>: "' + curr.classification + '",</br>';};
 			if(curr.description){description = 'description: "' + curr.description+',<br />';};
 			if(curr.provenance){provenance = 'provenance: "' + curr.provenance;};
 
 			///p4
 			if(curr.department){department = '<span class="searchfield">department</span>: "' + curr.department + '",</br>';};
-			if(curr.objectnumber){division = 'objectnumber: "' + curr.objectnumber + '",</br>';};
+			if(curr.objectnumber){objectnumber = '<span class="searchfield">objectnumber</span>: "' + curr.objectnumber + '",</br>';};
 			if(curr.contact){contact = 'contact: "' + curr.contact + '",</br>';};
 			if(curr.exhibitioncount){exhibitioncount = '<span class="searchfield">exhibitioncount</span>: "' + curr.exhibitioncount + '",</br>';};
 			if(curr.creditline){creditline = 'creditline: "' + curr.creditline + '",</br>';};
@@ -315,6 +317,8 @@ $(document).on("click", function(e) {
 			};
 			if(curr.dimensions){dimensions = 'dimensions: "' + curr.dimensions + '",</br>';};
 			if(curr.medium){medium = '<span class="searchfield">medium</span>: "' + curr.medium + '",</br>';};
+			if(curr.technique){technique = '<span class="searchfield">technique</span>: "' + curr.technique + '",</br>';};
+
 			if(curr.colors){
 					colors = 'colors:</br>[</br>' + '<div class="tabspace">';
 				for (i = 0; i < curr.colors.length; i++) { 
@@ -343,6 +347,8 @@ $(document).on("click", function(e) {
 			if(curr.id){id = 'id: "' + curr.id + '",</br>';};
 			if(curr.verificationlevel){verificationlevel = '<span class="searchfield">verificationlevel</span>: "' + curr.verificationlevel + '",</br>';};
 			if(curr.imagepermissionlevel){imagepermissionlevel = '<span class="searchfield">imagepermissionlevel</span>: "' + curr.imagepermissionlevel + '",</br>';};
+			if(curr.verificationleveldescription){verificationleveldescription = 'verificationleveldescription: "' + curr.verificationleveldescription + '",</br>';};
+	
 			if(curr.accesslevel){accesslevel = '<span class="searchfield">accesslevel</span>: "' + curr.accesslevel + '",</br>';};
 			if(curr.mediacount){mediacount = '<span class="searchfield">mediacount</span>: "' + curr.mediacount + '",</br>';};
 			if(curr.groupcount){groupcount = '<span class="searchfield">groupcount</span>: "' + curr.groupcount + '",</br>';};
@@ -371,6 +377,7 @@ $(document).on("click", function(e) {
 					division +
 					signed +
 					century +
+					culture +
 					classification +
 					description+
 					provenance
@@ -394,7 +401,8 @@ $(document).on("click", function(e) {
 					worktype+
 					dimensions +
 					medium +
-						colors
+					technique +
+					colors
 				);
 
 			//p7: url,primaryimageurl,totalpageviews,totaluniquepageviews,lastupdate,dateoffirstpageview,dateoflastpageview,images
@@ -413,6 +421,7 @@ $(document).on("click", function(e) {
 			$(".metadata .p8 .phldr").html(
 					id +
 					verificationlevel +
+					verificationleveldescription +
 					imagepermissionlevel +
 					accesslevel +
 					mediacount +
@@ -501,20 +510,6 @@ function populateMap() {
 		}
 	}
 }
-
-$(document).keydown(function(e) {
-	var newSort;
-	if(e.keyCode == 49) newSort = "medium";
-	else if(e.keyCode == 50) newSort = "datebegin";
-	else if(e.keyCode == 51) newSort = "division";
-	else if(e.keyCode == 52) newSort = "exhibitioncount";
-	
-	if(newSort != sort) {
-		sort = newSort;
-		art.records.sort(customSort);
-		populateMap();
-	}
-});
 
 
 
