@@ -368,7 +368,6 @@ $(document).on("click", function(e) {
 
 		
 			var img_src= "./art/" + curr.objectid + ".jpg";
-			$("#preview .img-preview").append("<img id='artimg' src='"+img_src+"'>");
 
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
@@ -386,6 +385,11 @@ $(document).on("click", function(e) {
 			$(".p7 .phldr").children().remove();
 			$(".p8 .phldr").children().remove();
 			$(".p9").children().remove();
+			$("#preview img").remove();
+			
+			
+			$("#preview .img-preview").append("<img id='artimg' src='"+img_src+"'>");
+
 									
 			///p2
 			if(curr.title){title = '<span class="searchfield">title</span>: "' + curr.title + '",</br>';};
