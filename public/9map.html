@@ -317,6 +317,7 @@ $("#toggle").on("click", function() {
 });
 	
 
+
 $(".metadata, .metadata_back").on("click", function(e) {
 	if($(e.target).hasClass("searchfield")) {
 		sort = $(e.target).html();
@@ -563,7 +564,8 @@ $(document).on("click", function(e) {
 		} 
 });
 		
-	
+
+
 
 
 function customSort(a,b) {
@@ -653,6 +655,74 @@ function addImage(order, x, y) {
 	}		);
 			
 }
+
+
+//////////////// TIMER AND USER ACTIVITY START ////////////////////////
+$(window).load(function(){
+var shuffle_time = 30000; ///TIME BETWEEN EACH RE-ORDERING
+var inactive_time = 60000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
+
+var ordering_fields = [
+	'title',
+	'department',
+	'classification',
+	'medium',
+	'technique'
+	]
+var timerorder = null;
+function startshuffle(){
+function shuffle(array) {
+    var i = array.length,
+        j = 0,
+        temp;
+    while (i--) {
+        j = Math.floor(Math.random() * (i+1));
+        // swap randomly chosen element with current element
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+i = -1;
+var events = shuffle(ordering_fields);
+(function eventpopups(){
+	i = (i + 1) % events.length;
+	var rand = events[i];
+	console.log('order by: '+rand);
+
+
+	///sort objects
+	sort = rand;
+	art.records.sort(customSort);
+	populateMap();
+
+
+
+    timerorder = setTimeout(eventpopups, shuffle_time);
+})();
+}
+timerstart = setTimeout(startshuffle, inactive_time);
+
+
+//ON MOUSE MOVE, RESTART ALL TIMERS/////
+idleTime = 0;
+$(document).mousemove(function( event ) {
+//afterfirstmove();
+idleTime = 0;
+clearInterval(timerorder);
+clearTimeout(timerstart);
+timerstart = setTimeout(startshuffle, inactive_time);
+console.log('set timers to zero!');
+});
+
+});
+
+
+
+
+
+//////////////// TIMER AND USER ACTIVITY END ////////////////////////
 
 	
 	</script>
