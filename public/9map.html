@@ -108,7 +108,7 @@
 		}
 		
 		.metadata .p1,.metadata .p2,.metadata .p3,.metadata .p4,.metadata .p5,.metadata .p6,.metadata .p7,.metadata .p8,.metadata .p9,
-		.message_hldr .q1,.message_hldr .q2,.message_hldr .q3,.message_hldr .q4,.message_hldr .q5,.message_hldr .q6,.message_hldr .q7,.message_hldr .q8,.message_hldr .q9{
+		.q1,.q2,.q3,.q4,.q5,.q6,.q7,.q8,.q9{
 			float: left;
 			width: 33.33333333333333%;
 			height: 33.33333333333333%;
@@ -121,7 +121,7 @@
 		}	
 
 		.metadata .phldr,
-		.message_hldr .q5 div{
+		.q5 div{
 			position:absolute;
 			/*PADDING WITHIN EACH SCREEN*/
 			top: 40px;
@@ -175,7 +175,7 @@
 			margin-left: 4px;
 			background-color: white;
 		}
-		.message_hldr{
+		.message_hldr, .message_hldr_2{
 			pointer-events: none;
 			display: none;
 			z-index: 9999;
@@ -185,12 +185,12 @@
 			left: 0;
 			right: 0;
 		}
-		.message_hldr .message_back{
+		.message_back{
 			opacity: .6;
 			background: black;
 			
 		}
-		.message_hldr .message_ctnr {
+		.message_ctnr {
 			margin: auto;
 	      	width: 70%;
 	      	height: 400px;
@@ -245,20 +245,29 @@
 
 
 <div class="message_hldr">
-	<div class="q1"></div>
-	<div class="q2"></div>
-	<div class="q3"></div>
-	<div class="q4"></div>
+	<div class="q1"></div><div class="q2"></div>
+	<div class="q3"></div><div class="q4"></div>
 	<div class="q5">
 		<div class="message_back"></div>
 		<div class="message_ctnr">
 		<span class="message_hldr_inner"></span>
 		</div>
 	</div>
-	<div class="q6"></div>
-	<div class="q7"></div>
-	<div class="q8"></div>
-	<div class="q9"></div>
+	<div class="q6"></div><div class="q7"></div>
+	<div class="q8"></div><div class="q9"></div>
+</div>
+
+<div class="message_hldr_2">
+	<div class="q1"></div><div class="q2"></div>
+	<div class="q3"></div><div class="q4"></div>
+	<div class="q5">
+		<div class="message_back"></div>
+		<div class="message_ctnr">
+		<span class="message_hldr_inner">Added to tray</span>
+		</div>
+	</div>
+	<div class="q6"></div><div class="q7"></div>
+	<div class="q8"></div><div class="q9"></div>
 </div>
 
 		<canvas id="map"></canvas>
@@ -308,8 +317,8 @@ $(".button").on("click", function() {
 		socket.emit('add-item', {
 			objectid: id
 		});
-		$(".message_hldr_inner").html('Added to tray');
-		$(".message_hldr").fadeIn(200).show().delay(500).fadeOut(200);
+		$(".message_hldr_2 .message_hldr_inner").html('Added to tray');
+		$(".message_hldr_2").fadeIn(200).show().delay(500).fadeOut(200);
 });
 
 $(".button").on("mouseover", function() {
@@ -379,6 +388,7 @@ $(document).on("click", function(e) {
 					}
 				}
 			});
+
 
 			$(".message_hldr").hide();
 
@@ -681,9 +691,12 @@ function addImage(order, x, y) {
 
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
+
 var shuffle_time = 180000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 120000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
-var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
+var inactive_time = 60000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
+var message_delay = 10000; ///TIME BETWEEN EACH TEXT MESSAGE
+var message_start_delay = 10000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START
+var clear_msg = false;
 
 /*
 var shuffle_time = 60000; ///TIME BETWEEN EACH RE-ORDERING
@@ -734,28 +747,33 @@ var events = shuffle(ordering_fields);
 	art.records.sort(customSort);
 	populateMap();
 
+	clear_msg = false;
+
+
 	////MESSAGES START///
 	
 	$(".message_hldr_inner").html('This is an object map of 1,589 objects on display at the Harvard Art Museum.</br> <span class="sub_msg">(seven-tenths of one percent of the collection are displayed here)</span>');
 	$(".message_hldr_inner .sub_msg").hide();
+	if(!clear_msg){
+		$(".message_hldr").delay(message_start_delay).fadeIn(300).delay(message_delay).fadeIn(100, function() {
+			if(!clear_msg){
+			$(".message_hldr_inner .sub_msg").fadeIn(300).delay(message_delay).fadeIn(100, function() {
+				if(!clear_msg){
+				$(".message_hldr").fadeOut(300, function() {
 
-	$(".message_hldr").fadeIn(300).delay(message_delay).fadeIn(100, function() {
-	$(".message_hldr_inner .sub_msg").fadeIn(300).delay(message_delay).fadeIn(100, function() {
+				$(".message_hldr_inner").html('This collection is currently ordered by information in the field <span style="color: '+color+'">'+rand+'</span>.');
+					if(!clear_msg){
+					$(".message_hldr").fadeIn(300).delay(message_delay).fadeOut(300, function() {
 
-	$(".message_hldr").fadeOut(300, function() {
-	    
-	$(".message_hldr_inner").html('This collection is currently ordered by information in the field <span style="color: '+color+'">'+rand+'</span>.');
-	$(".message_hldr").fadeIn(300).delay(message_delay).fadeOut(300, function() {
-
-	$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
-	$(".message_hldr").fadeIn(300).delay(message_delay).fadeOut(300, function() {
-
-	console.log('messages complete');
-	});
-	});
-	});
-	});
-	});
+					$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
+					});
+					}
+				});
+				}
+			});
+			}
+		});
+	}
 	///MESSAGES END///
 
     timerorder = setTimeout(eventpopups, shuffle_time);
@@ -766,16 +784,21 @@ timerstart = setTimeout(startshuffle, inactive_time);
 
 //ON MOUSE MOVE, RESTART ALL TIMERS/////
 $(document).mousemove(function( event ) {
-	clearInterval(timerorder);
-	clearTimeout(timerstart);
-	timerstart = setTimeout(startshuffle, inactive_time);
-	console.log('set timers to zero!');
+clear_msg = true;
+$(".message_hldr").stop().hide();
+clearInterval(timerorder);
+clearTimeout(timerstart);
+timerstart = setTimeout(startshuffle, inactive_time);
+console.log('set timers to zero!');
 });
 $(document).click(function( event ) {
-	clearInterval(timerorder);
-	clearTimeout(timerstart);
-	timerstart = setTimeout(startshuffle, inactive_time);
-	console.log('set timers to zero!');
+clear_msg = true;
+$(".message_hldr").stop().hide();
+clearInterval(timerorder);
+clearTimeout(timerstart);
+timerstart = setTimeout(startshuffle, inactive_time);
+console.log('set timers to zero!');
+
 });
 
 
