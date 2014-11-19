@@ -58,6 +58,7 @@
 			right: 0;
 			z-index: 9999;
 			height: 100px;
+			display:none;
 	
 		}
 		.button div {
@@ -170,6 +171,7 @@
 			z-index: 5000;
 			cursor: pointer;
 			opacity: 1;
+			display: none;
 		}
 		
 		#toggle:hover {
@@ -702,8 +704,8 @@ function addImage(order, x, y) {
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
 
-var shuffle_time = 60000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 60000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
+var shuffle_time = 180000; ///TIME BETWEEN EACH RE-ORDERING
+var inactive_time = 120000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
 var message_start_delay = 1000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START
 var clear_msg = false;
