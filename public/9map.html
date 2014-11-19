@@ -380,9 +380,7 @@ $(document).on("click", function(e) {
 				}
 			});
 
-$(".message_hldr").hide();
-clearInterval(timerorder);
-clearTimeout(timerstart);
+			$(".message_hldr").hide();
 
 			$(".metadata, .metadata_back").show();
 
@@ -395,7 +393,7 @@ clearTimeout(timerstart);
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
-			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='',gallery='';
+			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='',gallery='',publicationcount='';
 			var url='',primaryimageurl='',totalpageviews='',totaluniquepageviews='',lastupdate='',dateoffirstpageview='',dateoflastpageview='',images='';
 			var id='',verificationlevel='',verificationleveldescription='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='';
 			var colorcount='',worktype='',dimensions='',medium='',colors='',technique='';
@@ -424,8 +422,8 @@ clearTimeout(timerstart);
 				}
 					people += '</div>' + '],</br>';
 			};						
-			if(curr.dated){dated = '<span class="searchfield">dated</span>: "' + curr.dated+',<br />';};
-			if(curr.accessionyear){accessionyear = '<span class="searchfield">accessionyear</span>: "' + curr.accessionyear;};
+			if(curr.dated){dated = '<span class="searchfield">dated</span>: "' + curr.dated+'",<br />';};
+			if(curr.accessionyear){accessionyear = '<span class="searchfield">accessionyear</span>: "' + curr.accessionyear+'"';};
 
 			///p3
 			if(curr.division){division = '<span class="searchfield">division</span>: "' + curr.division + '",</br>';};
@@ -442,6 +440,7 @@ clearTimeout(timerstart);
 			if(curr.objectnumber){objectnumber = '<span class="searchfield">objectnumber</span>: "' + curr.objectnumber + '",</br>';};
 			if(curr.contact){contact = 'contact: "' + curr.contact + '",</br>';};
 			if(curr.exhibitioncount){exhibitioncount = '<span class="searchfield">exhibitioncount</span>: "' + curr.exhibitioncount + '",</br>';};
+			if(curr.publicationcount){publicationcount = '<span class="searchfield">publicationcount</span>: "' + curr.publicationcount + '",</br>';};
 			if(curr.creditline){creditline = 'creditline: "' + curr.creditline + '",</br>';};
 			if(curr.copyright){copyright = 'copyright: "' + curr.copyright + '",</br>';};
 			if(curr.gallery){
@@ -533,6 +532,7 @@ clearTimeout(timerstart);
 					objectnumber +
 					contact +
 					exhibitioncount +
+					publicationcount +
 					creditline +
 					copyright 
 				);
@@ -606,7 +606,7 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		if(7 > data.info.page) getMoreArt(next);
+		if(data.info.pages > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
@@ -682,7 +682,7 @@ function addImage(order, x, y) {
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
 var shuffle_time = 60000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 5000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
+var inactive_time = 60000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
 
 /*
@@ -696,7 +696,15 @@ var ordering_fields = [
 	'department',
 	'classification',
 	'medium',
-	'technique'
+	'technique',
+	'culture',
+	'accessionyear',
+	'exhibitioncount',
+	'publicationcount',
+	'totalpageviews',
+	'totaluniquepageviews',
+	'century',
+	'imagecount'
 	]
 
 function startshuffle(){
@@ -722,12 +730,13 @@ var events = shuffle(ordering_fields);
 
 
 	///sort objects
-	//sort = rand;
-	//art.records.sort(customSort);
-	//populateMap();
+	sort = rand;
+	art.records.sort(customSort);
+	populateMap();
 
 	////MESSAGES START///
-	$(".message_hldr_inner").html('This is an object map of 1,583 objects on display at the Harvard Art Museum.</br> <span class="sub_msg">(seven-tenths of one percent of the collection are displayed here)</span>');
+	
+	$(".message_hldr_inner").html('This is an object map of 1,589 objects on display at the Harvard Art Museum.</br> <span class="sub_msg">(seven-tenths of one percent of the collection are displayed here)</span>');
 	$(".message_hldr_inner .sub_msg").hide();
 
 	$(".message_hldr").fadeIn(300).delay(message_delay).fadeIn(100, function() {
@@ -756,20 +765,17 @@ timerstart = setTimeout(startshuffle, inactive_time);
 
 
 //ON MOUSE MOVE, RESTART ALL TIMERS/////
-idleTime = 0;
 $(document).mousemove(function( event ) {
-idleTime = 0;
-clearInterval(timerorder);
-clearTimeout(timerstart);
-timerstart = setTimeout(startshuffle, inactive_time);
-console.log('set timers to zero!');
+	clearInterval(timerorder);
+	clearTimeout(timerstart);
+	timerstart = setTimeout(startshuffle, inactive_time);
+	console.log('set timers to zero!');
 });
 $(document).click(function( event ) {
-idleTime = 0;
-clearInterval(timerorder);
-clearTimeout(timerstart);
-timerstart = setTimeout(startshuffle, inactive_time);
-console.log('set timers to zero!');
+	clearInterval(timerorder);
+	clearTimeout(timerstart);
+	timerstart = setTimeout(startshuffle, inactive_time);
+	console.log('set timers to zero!');
 });
 
 
