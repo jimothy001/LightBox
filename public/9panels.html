@@ -243,9 +243,15 @@ var tray = new fabric.Canvas("tray");
 tray.setWidth(window.innerWidth)
 tray.setHeight(.15*window.innerHeight);
 
+
+
 var pointer = new canvasPointer();
 var canvases = [p1, p2, p3];
 
+$.each(canvases, function(i, c) {
+	c.setWidth(cwidth);
+	c.setHeight(.85*(window.innerHeight));	
+});
 
 
 
