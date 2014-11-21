@@ -294,25 +294,30 @@
 	
 
 	
-	<script>
-		var i = 0;
-		var art = {};
-		art.records = [];
-		var curr = false;
-		var host = window.location.host;
-		var socket = io();
-		var images2 = [];
-		var sort = window.location.search.substr(1);
-		var grid = true;
-		
-		var map = document.getElementById('map');
-		var ctx = map.getContext('2d');
-		var itemX = 0;
+<script>
+var i = 0;
+var art = {};
+art.records = [];
+var curr = false;
+var host = window.location.host;
+var socket = io();
+var images2 = [];
+var sort = window.location.search.substr(1);
+var grid = true;
 
-		var timerorder = null;
-		var timerstart = null;
+var map = document.getElementById('map');
+var ctx = map.getContext('2d');
+var itemX = 0;
 
+var timerorder = null;
+var timerstart = null;
+var mouseX, mouseY;
+var sortField = false;
+var color;
 
+/*
+	load object map
+*/
 $(document).ready(function() {
 
 	map.height = window.innerHeight;
@@ -323,14 +328,50 @@ $(document).ready(function() {
 
 });
 
+document.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+}, false);
+
+
+/*
+	treat enter key as mouse click
+*/
+$(document).keypress(function(e) {
+	if(e.which == 13) {
+	
+		if(curr) {
+			if(sort) {
+				art.records.sort(customSort);
+				populateMap();
+			} else {
+				$(".metadata, .metadata_back").hide();
+				$("#highlight").show();		
+				curr = false;
+			}
+		} else {
+		$("#highlight").hide();
+
+			$.each(art.records, function(i, val) {
+					if(mouseX > val.x1 && mouseX < val.x1+w) {
+						if(mouseY > val.y1 && mouseY < val.y1+h) {
+							curr = val;
+						}
+					}
+				});		
+			showArtObject();	
+		}
+	}
+});
+
+
 $(".button").on("click", function() {
-		//$(".swoosh div").css({'color':color});
-		var id = curr.objectid;
-		socket.emit('add-item', {
-			objectid: id
-		});
-		$(".message_hldr_2 .message_hldr_inner").html('Added to tray');
-		$(".message_hldr_2").fadeIn(200).show().delay(500).fadeOut(200);
+	//$(".swoosh div").css({'color':color});
+	var id = curr.objectid;
+	socket.emit('add-item', {
+		objectid: id
+	});
+	$(".message_hldr_2 .message_hldr_inner").html('Added to tray');
+	$(".message_hldr_2").fadeIn(200).show().delay(500).fadeOut(200);
 });
 
 $(".button").on("mouseover", function() {
@@ -366,12 +407,18 @@ $(".metadata, .metadata_back").on("click", function(e) {
 	} else {
 		$(".metadata, .metadata_back").hide();
 		$("#highlight").show();
+		curr = false;
 	}
 });
+
+
 
 $("#map").on("mousemove", function(e) {
 	var eX = e.offsetX || e.clientX;
 	var eY = e.offsetY || e.clientY;
+		
+	mouseX = e.offsetX || e.clientX;
+	mouseY = e.offsetY || e.clientY;
 
 	eX -= w/2;
 	eY -= h/2;
@@ -385,14 +432,14 @@ $("#map").on("mousemove", function(e) {
 });
 		
 $(document).on("click", function(e) {
-	if(e.which == 2) {
-		location.reload();
-
-	} else if($(e.target).attr("id") == "map" || $(e.target).attr("id") == "highlight") {
+	
+	if($(e.target).attr("id") == "map" || $(e.target).attr("id") == "highlight") {
+			var eX = e.clientX;
+			var eY = e.clientY;
+			$("#highlight").hide();
+			
 			$.each(art.records, function(i, val) {
-				var eX = e.clientX;
-				var eY = e.clientY;
-				$("#highlight").hide();
+
 			
 				if(eX > val.x1 && eX < val.x1+w) {
 					if(eY > val.y1 && eY < val.y1+h) {
@@ -400,8 +447,14 @@ $(document).on("click", function(e) {
 					}
 				}
 			});
+			
+			showArtObject();
+			
+		}
+});
 
 
+function showArtObject() {
 			$(".message_hldr").hide();
 
 			$(".metadata, .metadata_back").show();
@@ -605,8 +658,16 @@ $(document).on("click", function(e) {
 			$(".searchfield").css("color", color);
 			$("#sort").html(sort+": "+curr[sort]); 
 			$("#preview").animate({opacity: 1}, 500);
-		} 
-});
+			
+			$(".searchfield").on("mouseover", function(e) {
+				sort = $(e.target).html();
+			});
+			
+			$(".searchfield").on("mouseout", function(e) {
+				sort = false;
+			});
+} 
+
 		
 
 
@@ -633,11 +694,11 @@ function getMoreArt(count) {
 			sort = "medium";
 			art.records.sort(customSort);
 			populateMap();
+			sort = false;
 		}
 	});	
 }
 		
-var color;
 var day = dayofyear(new Date()) +1;
 
 function dayofyear(d) {   // d is a Date object
