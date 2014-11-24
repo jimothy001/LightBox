@@ -317,6 +317,8 @@ var color;
 var clear_msg = false;
 var orderby = [];
 var rand = 'none';
+var intervalID;
+var timeout_rand_obj;
 /*
 	load object map
 */
@@ -740,7 +742,7 @@ function populateMap(rand) {
 
 
 	var rand_objs = [];	
-	var num_rand_obj = 6;
+	var num_rand_obj = 3
 	for (i = 0; i < num_rand_obj; i++) {
 		var rand_obj = art.records[Math.floor(Math.random() * art.records.length)];
 		rand_objs.push(rand_obj)
@@ -750,9 +752,11 @@ function populateMap(rand) {
 
 function messages_ranobj(rand,rand_objs){
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
-var message_start_delay = 10000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START	
-var rand_obj_rate = 15000; ///TIME BETWEEN RANDOM OBJECT POPUPS
-
+var message_start_delay = 5000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START	
+var rand_obj_rate = 45000; ///TIME BETWEEN RANDOM OBJECT POPUPS
+if(!rand){
+	rand = 'medium';
+}
 	////MESSAGES START///
 	setTimeout(start_messages, message_delay);
 	function start_messages(){
@@ -772,7 +776,7 @@ var rand_obj_rate = 15000; ///TIME BETWEEN RANDOM OBJECT POPUPS
 							if(!clear_msg){
 						$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
 							console.log('message end');
-							setTimeout(start_rand_obj, rand_obj_rate);
+							timeout_rand_obj = setTimeout(start_rand_obj, 15000);
 							//start_rand_obj();
 							clear_msg = true;
 							}
@@ -798,14 +802,15 @@ var rand_obj_rate = 15000; ///TIME BETWEEN RANDOM OBJECT POPUPS
 		function openclose_rand_obj() {
 			$(".metadata, .metadata_back").fadeOut(500);
 		}
-		var openclose = setTimeout(openclose_rand_obj, rand_obj_rate/2);
+		var openclose = setTimeout(openclose_rand_obj, 30000);
 
 	    if (curNewsIndex >= rand_objs.length-1) {
 	        //curNewsIndex = 0;
 	        clearInterval(intervalID);
 	    }
 	}
-	var intervalID = setInterval(show_rand_obj, rand_obj_rate);
+	show_rand_obj();
+	intervalID = setInterval(show_rand_obj, rand_obj_rate);
 	}
 	///RANDOM OBJ END///
 
@@ -839,8 +844,8 @@ function addImage(order, x, y) {
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
 /////////////////MESSAGE TIMER START
-var shuffle_time = 240000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 240000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
+var shuffle_time = 180000; ///TIME BETWEEN EACH RE-ORDERING
+var inactive_time = 180000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
 
 
 
@@ -915,6 +920,8 @@ clear_msg = true;
 $(".message_hldr").stop().hide();
 clearInterval(timerorder);
 clearTimeout(timerstart);
+clearInterval(intervalID);
+clearTimeout(timeout_rand_obj);
 timerstart = setTimeout(startshuffle, inactive_time);
 console.log('set timers to zero!');
 
