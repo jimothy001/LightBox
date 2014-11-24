@@ -314,7 +314,9 @@ var timerstart = null;
 var mouseX, mouseY;
 var sortField = false;
 var color;
-
+var clear_msg = false;
+var orderby = [];
+var rand = 'none';
 /*
 	load object map
 */
@@ -405,7 +407,7 @@ $(".metadata, .metadata_back").on("click", function(e) {
 		art.records.sort(customSort);
 		populateMap();
 	} else {
-		$(".metadata, .metadata_back").hide();
+		$(".metadata, .metadata_back").fadeOut(500);
 		$("#highlight").show();
 		curr = false;
 	}
@@ -448,16 +450,17 @@ $(document).on("click", function(e) {
 				}
 			});
 			
-			showArtObject();
+			showArtObject(curr);
+			console.log(curr.objectid);
 			
 		}
 });
 
 
-function showArtObject() {
+function showArtObject(curr) {
 			$(".message_hldr").hide();
 
-			$(".metadata, .metadata_back").show();
+			$(".metadata, .metadata_back").fadeIn(500);
 
 
 	
@@ -720,7 +723,7 @@ var h = window.innerHeight / 30;
 $("#highlight").width(w);
 $("#highlight").height(h);
 					
-function populateMap() {
+function populateMap(rand) {
 	ctx.clearRect(0,0,map.width,map.height);
 	itemX = 48;
 	var index=0;
@@ -734,9 +737,80 @@ function populateMap() {
 			index++;
 		}
 	}
+
+
+	var rand_objs = [];	
+	var num_rand_obj = 6;
+	for (i = 0; i < num_rand_obj; i++) {
+		var rand_obj = art.records[Math.floor(Math.random() * art.records.length)];
+		rand_objs.push(rand_obj)
+	}
+	messages_ranobj(rand,rand_objs);
 }
 
+function messages_ranobj(rand,rand_objs){
+var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
+var message_start_delay = 10000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START	
+var rand_obj_rate = 15000; ///TIME BETWEEN RANDOM OBJECT POPUPS
 
+	////MESSAGES START///
+	setTimeout(start_messages, message_delay);
+	function start_messages(){
+		clear_msg = false;
+		$(".message_hldr_inner").html('This is an object map of 1,589 objects on display at the Harvard Art Museums.</br> <span class="sub_msg">(seven-tenths of one percent of the collection are displayed here)</span>');
+		$(".message_hldr_inner .sub_msg").hide();
+		if(!clear_msg){
+			$(".message_hldr").delay(message_start_delay).fadeIn(300).delay(message_delay).fadeIn(100, function() {
+				if(!clear_msg){
+				$(".message_hldr_inner .sub_msg").fadeIn(300).delay(message_delay).fadeIn(100, function() {
+					if(!clear_msg){
+					$(".message_hldr").fadeOut(300, function() {
+
+					$(".message_hldr_inner").html('This collection is currently ordered by information in the field <span style="color: '+color+'">'+rand+'</span>.');
+						if(!clear_msg){
+						$(".message_hldr").fadeIn(300).delay(message_delay).fadeOut(300, function() {
+							if(!clear_msg){
+						$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
+							console.log('message end');
+							setTimeout(start_rand_obj, rand_obj_rate);
+							//start_rand_obj();
+							clear_msg = true;
+							}
+						});
+						}
+					});
+					}
+				});
+				}
+			});
+		}
+	}
+	///MESSAGES END///
+
+	///RANDOM OBJ START///
+	function start_rand_obj(){
+	var curNewsIndex = -1;
+	function show_rand_obj() {
+	    ++curNewsIndex;
+	    var curr_rand_obj = rand_objs[curNewsIndex];   // set new news item into the ticker
+		console.log(curr_rand_obj);
+		showArtObject(curr_rand_obj);
+		function openclose_rand_obj() {
+			$(".metadata, .metadata_back").fadeOut(500);
+		}
+		var openclose = setTimeout(openclose_rand_obj, rand_obj_rate/2);
+
+	    if (curNewsIndex >= rand_objs.length-1) {
+	        //curNewsIndex = 0;
+	        clearInterval(intervalID);
+	    }
+	}
+	var intervalID = setInterval(show_rand_obj, rand_obj_rate);
+	}
+	///RANDOM OBJ END///
+
+
+}
 
 
 
@@ -764,17 +838,18 @@ function addImage(order, x, y) {
 
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
+/////////////////MESSAGE TIMER START
+var shuffle_time = 240000; ///TIME BETWEEN EACH RE-ORDERING
+var inactive_time = 240000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
 
+
+
+/*
 var shuffle_time = 180000; ///TIME BETWEEN EACH RE-ORDERING
 var inactive_time = 120000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
 var message_start_delay = 1000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START
 var clear_msg = false;
-
-/*
-var shuffle_time = 60000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 60000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
-var message_delay = 10000; ///TIME BETWEEN EACH TEXT MESSAGE
 */
 
 var ordering_fields = [
@@ -809,51 +884,22 @@ function shuffle(array) {
 }
 i = -1;
 var events = shuffle(ordering_fields);
-(function eventpopups(){
+(function repopulate(){
 	i = (i + 1) % events.length;
-	var rand = events[i];
+	rand = events[i];
 	console.log('order by: '+rand);
 
 
 	///sort objects
 	sort = rand;
 	art.records.sort(customSort);
-	populateMap();
+	populateMap(rand);
 
-	clear_msg = false;
-
-
-	////MESSAGES START///
-	
-	$(".message_hldr_inner").html('This is an object map of 1,589 objects on display at the Harvard Art Museums.</br> <span class="sub_msg">(seven-tenths of one percent of the collection are displayed here)</span>');
-	$(".message_hldr_inner .sub_msg").hide();
-	if(!clear_msg){
-		$(".message_hldr").delay(message_start_delay).fadeIn(300).delay(message_delay).fadeIn(100, function() {
-			if(!clear_msg){
-			$(".message_hldr_inner .sub_msg").fadeIn(300).delay(message_delay).fadeIn(100, function() {
-				if(!clear_msg){
-				$(".message_hldr").fadeOut(300, function() {
-
-				$(".message_hldr_inner").html('This collection is currently ordered by information in the field <span style="color: '+color+'">'+rand+'</span>.');
-					if(!clear_msg){
-					$(".message_hldr").fadeIn(300).delay(message_delay).fadeOut(300, function() {
-
-					$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
-					});
-					}
-				});
-				}
-			});
-			}
-		});
-	}
-	///MESSAGES END///
-
-    timerorder = setTimeout(eventpopups, shuffle_time);
+    timerorder = setTimeout(repopulate, shuffle_time);
 })();
 }
 timerstart = setTimeout(startshuffle, inactive_time);
-
+////////////////MESSAGE TIMER END
 
 //ON MOUSE MOVE, RESTART ALL TIMERS/////
 /*$(document).mousemove(function( event ) {
@@ -873,9 +919,6 @@ timerstart = setTimeout(startshuffle, inactive_time);
 console.log('set timers to zero!');
 
 });
-
-
-
 });
 
 
