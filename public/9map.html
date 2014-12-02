@@ -361,10 +361,11 @@ $(document).keypress(function(e) {
 					if(mouseX > val.x1 && mouseX < val.x1+w) {
 						if(mouseY > val.y1 && mouseY < val.y1+h) {
 							curr = val;
+							console.log(curr);
 						}
 					}
 				});		
-			showArtObject();	
+			showArtObject(curr);	
 		}
 	}
 });
@@ -840,6 +841,7 @@ function addImage(order, x, y) {
 
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
+<<<<<<< HEAD
 	/////////////////MESSAGE TIMER START
 	var shuffle_time = 190000; ///TIME BETWEEN EACH RE-ORDERING
 	var inactive_time = 190000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
@@ -889,8 +891,7 @@ $(window).load(function(){
 		sort = rand;
 		art.records.sort(customSort);
 		populateMap(rand);
-
-	    timerorder = setTimeout(repopulate, shuffle_time);
+	  timerorder = setTimeout(repopulate, shuffle_time);
 	})();
 	}
 	timerstart = setTimeout(startshuffle, inactive_time);
