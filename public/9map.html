@@ -27,7 +27,7 @@
 		
 		#highlight {
 			z-index:1000;
-			display: block;
+			display: none;
 			position: absolute;
 			-moz-box-shadow: 0 0 20px 10px white;
 			-webkit-box-shadow: 0 0 20px 10px white;
@@ -319,6 +319,8 @@ var orderby = [];
 var rand = 'none';
 var intervalID;
 var timeout_rand_obj;
+var delay_mouse;
+var openclose;
 /*
 	load object map
 */
@@ -673,18 +675,12 @@ function showArtObject(curr) {
 			});
 } 
 
-		
-
-
-
-
 function customSort(a,b) {
 	if ( a[sort] < b[sort] )
 			return -1;
 	if ( a[sort] > b[sort] )
 			return 1;
 	return 0;
-
 }
 
 
@@ -776,7 +772,7 @@ if(!rand){
 							if(!clear_msg){
 						$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
 							console.log('message end');
-							timeout_rand_obj = setTimeout(start_rand_obj, 15000);
+							timeout_rand_obj = setTimeout(start_rand_obj, rand_obj_rate*0.333);
 							//start_rand_obj();
 							clear_msg = true;
 							}
@@ -792,6 +788,7 @@ if(!rand){
 	///MESSAGES END///
 
 	///RANDOM OBJ START///
+	
 	function start_rand_obj(){
 	var curNewsIndex = -1;
 	function show_rand_obj() {
@@ -802,7 +799,7 @@ if(!rand){
 		function openclose_rand_obj() {
 			$(".metadata, .metadata_back").fadeOut(500);
 		}
-		var openclose = setTimeout(openclose_rand_obj, 30000);
+		openclose = setTimeout(openclose_rand_obj, rand_obj_rate*0.667);
 
 	    if (curNewsIndex >= rand_objs.length-1) {
 	        //curNewsIndex = 0;
@@ -843,89 +840,98 @@ function addImage(order, x, y) {
 
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
-/////////////////MESSAGE TIMER START
-var shuffle_time = 180000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 180000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
+	/////////////////MESSAGE TIMER START
+	var shuffle_time = 190000; ///TIME BETWEEN EACH RE-ORDERING
+	var inactive_time = 190000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
 
 
 
-/*
-var shuffle_time = 180000; ///TIME BETWEEN EACH RE-ORDERING
-var inactive_time = 120000; ///TIME FOR STARTING/RESTARTING AFTER WINDOW-LOAD/USER-INACTIVE
-var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
-var message_start_delay = 1000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START
-var clear_msg = false;
-*/
+	var ordering_fields = [
+		'title',
+		'department',
+		'classification',
+		'medium',
+		'technique',
+		'culture',
+		'accessionyear',
+		'exhibitioncount',
+		'publicationcount',
+		'totalpageviews',
+		'totaluniquepageviews',
+		'century',
+		'imagecount'
+		]
 
-var ordering_fields = [
-	'title',
-	'department',
-	'classification',
-	'medium',
-	'technique',
-	'culture',
-	'accessionyear',
-	'exhibitioncount',
-	'publicationcount',
-	'totalpageviews',
-	'totaluniquepageviews',
-	'century',
-	'imagecount'
-	]
+	function startshuffle(){
+		console.log('start startshuffle');
+	function shuffle(array) {
+	    var i = array.length,
+	        j = 0,
+	        temp;
+	    while (i--) {
+	        j = Math.floor(Math.random() * (i+1));
+	        // swap randomly chosen element with current element
+	        temp = array[i];
+	        array[i] = array[j];
+	        array[j] = temp;
+	    }
+	    return array;
+	}
+	i = -1;
+	var events = shuffle(ordering_fields);
+	(function repopulate(){
+		i = (i + 1) % events.length;
+		rand = events[i];
+		console.log('order by: '+rand);
 
-function startshuffle(){
-function shuffle(array) {
-    var i = array.length,
-        j = 0,
-        temp;
-    while (i--) {
-        j = Math.floor(Math.random() * (i+1));
-        // swap randomly chosen element with current element
-        temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-    return array;
-}
-i = -1;
-var events = shuffle(ordering_fields);
-(function repopulate(){
-	i = (i + 1) % events.length;
-	rand = events[i];
-	console.log('order by: '+rand);
+		delay_mouse = setTimeout(delay_mouseinteractions, 10000);
+		///sort objects
+		sort = rand;
+		art.records.sort(customSort);
+		populateMap(rand);
 
+	    timerorder = setTimeout(repopulate, shuffle_time);
+	})();
+	}
+	timerstart = setTimeout(startshuffle, inactive_time);
+	////////////////MESSAGE TIMER END
 
-	///sort objects
-	sort = rand;
-	art.records.sort(customSort);
-	populateMap(rand);
+	//ON MOUSE MOVE, RESTART ALL TIMERS/////
 
-    timerorder = setTimeout(repopulate, shuffle_time);
-})();
-}
-timerstart = setTimeout(startshuffle, inactive_time);
-////////////////MESSAGE TIMER END
+	function delay_mouseinteractions(){
+		//.....mouse move
+		$("#highlight").hide(); 
+		var i = null;
+		$(document).mousemove(function( event ) {
+			///hide square after one second if mouse is not moving
+		    clearTimeout(i);
+		    if ($('.metadata_back').is(":visible")){}else{
+		    	$("#highlight").show();
+		    }i = setTimeout('$("#highlight").hide();', 1000);
+			activeuser()
+		});
 
-//ON MOUSE MOVE, RESTART ALL TIMERS/////
-/*$(document).mousemove(function( event ) {
-clear_msg = true;
-$(".message_hldr").stop().hide();
-clearInterval(timerorder);
-clearTimeout(timerstart);
-timerstart = setTimeout(startshuffle, inactive_time);
-console.log('set timers to zero!');
-});*/
-$(document).click(function( event ) {
-clear_msg = true;
-$(".message_hldr").stop().hide();
-clearInterval(timerorder);
-clearTimeout(timerstart);
-clearInterval(intervalID);
-clearTimeout(timeout_rand_obj);
-timerstart = setTimeout(startshuffle, inactive_time);
-console.log('set timers to zero!');
+		//.....mouse click
+		$(document).click(function( event ) {
+			activeuser()
+		});
 
-});
+		function activeuser(){
+			clear_msg = true;
+			$(".message_hldr").stop().hide();
+			clearInterval(timerorder);
+			clearTimeout(timerstart);
+			clearInterval(intervalID);
+			clearTimeout(timeout_rand_obj);
+			clearTimeout(openclose);
+			timerstart = setTimeout(startshuffle, inactive_time);
+			console.log('set timers to zero!');
+		}
+	}
+	//.....disable mouse interaction for n seconds starting at shuffle (to prevent that bug from occuring in IE 11)
+	//NEED TO TEST THIS AT LIGHT BOX
+	delay_mouse = setTimeout(delay_mouseinteractions, 10000);
+
 });
 
 
