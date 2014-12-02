@@ -464,6 +464,8 @@ $(document).on("click", function(e) {
 
 
 function showArtObject(curr) {
+			if(!curr.objectid) return false;
+			
 			$(".message_hldr").hide();
 
 			$(".metadata, .metadata_back").fadeIn(500);
