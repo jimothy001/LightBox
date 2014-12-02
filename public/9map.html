@@ -347,6 +347,7 @@ $(document).keypress(function(e) {
 	
 		if(curr) {
 			if(sort) {
+				console.log(sort);
 				art.records.sort(customSort);
 				populateMap();
 			} else {
@@ -669,10 +670,12 @@ function showArtObject(curr) {
 			
 			$(".searchfield").on("mouseover", function(e) {
 				sort = $(e.target).html();
+				console.log("sort on");
 			});
 			
 			$(".searchfield").on("mouseout", function(e) {
 				sort = false;
+				console.log("sort off");
 			});
 } 
 
