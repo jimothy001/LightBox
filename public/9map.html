@@ -737,7 +737,7 @@ function populateMap(rand) {
 		}
 	}
 
-
+	console.log("?");
 	var rand_objs = [];	
 	var num_rand_obj = 3
 	for (i = 0; i < num_rand_obj; i++) {
@@ -914,6 +914,12 @@ $(window).load(function(){
 		//.....mouse click
 		$(document).click(function( event ) {
 			activeuser()
+		});
+		
+		$(document).keypress(function(e) {
+			if(e.which == 13) {
+				activeuser();
+			}
 		});
 
 		function activeuser(){
