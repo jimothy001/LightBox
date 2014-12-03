@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 	<head>
@@ -121,7 +122,7 @@
 			/*cursor: pointer;*/
 		}	
 
-		.metadata .phldr
+		.metadata .phldr, .metadata .phldr_filter
 		{
 			position:absolute;
 			/*PADDING WITHIN EACH SCREEN*/
@@ -130,7 +131,10 @@
 			left: 40px;
 			right: 40px;
 		}
-		
+		.metadata .phldr_filter
+		{
+			display: none;
+		}		
 		.q5 div{
 			position:absolute;
 			/*PADDING WITHIN EACH SCREEN*/
@@ -146,7 +150,7 @@
 		.metadata .tabspace2 {
 			padding-left: 50px;
 		}
-		.metadata .p1,.metadata .p9 {
+		.metadata .p1 .phldr,.metadata .p9 .phldr {
 			/*FONT SIZE BRACKETS*/
 			font-size: 590px;
 			text-align: center;
@@ -164,20 +168,31 @@
 		
 		#toggle {
 			position: absolute;
-			width: 166px;
+			width: 100px;
 			height: 100px;
 			left: 0px;
 			top: 0px;
 			z-index: 5000;
 			cursor: pointer;
 			opacity: 1;
-			display: none;
+			/*display: none;*/
 		}
 		
 		#toggle:hover {
 			opacity: 1;
 		}	
-		
+		#toggle .circ{
+			border-radius: 50%;
+			border: 6px solid white;
+			width: 100px;
+			height: 100px;
+			text-align: center;
+			font-size: 50px;
+			line-height: 100px;
+			font-family: arial;
+			font-weight: normal;
+		}
+		/*
 		div.sq {
 			display:block;
 			float: left;
@@ -186,7 +201,7 @@
 			height: 100%;
 			margin-left: 4px;
 			background-color: white;
-		}
+		}*/
 		.message_hldr, .message_hldr_2{
 			pointer-events: none;
 			display: none;
@@ -229,58 +244,86 @@
 		
 		<div id="highlight"></div>
 		<div class="metadata_back"></div>
+
+		<!--METADATA DISPLAY-->
 		<div class='metadata'>
 		<!--<span class="p6" id='sort'></span>-->
-			<div class="p1">{</div>
-			<div class="p2"><div class='phldr'>2</div></div>	
-			<!--<span class="p2next">Dated: <span id="date"></span></span>-->
-			<div class="p3"><div class='phldr'>3</div></div>
-			<div class="p4"><div class='phldr'>4</div></div>
-			<div class="p5"><div class='phldr' id="preview">
-				
-				<div class='img-preview'>
-				</div>
-				
+			<div class="p1">
+				<div class='phldr'>{</div>
+				<div class='phldr_filter'>f1</div>
+			</div>
+			<div class="p2">
+				<div class='phldr'>2</div>
+				<div class='phldr_filter'>f2</div>
+			</div>	
+			<div class="p3">
+				<div class='phldr'>3</div>
+				<div class='phldr_filter'>f3</div>
+			</div>
+			<div class="p4">
+				<div class='phldr'>4</div>
+				<div class='phldr_filter'>f4</div>
+			</div>
+			<div class="p5">
+				<div class='phldr' id="preview">
+				<div class='img-preview'></div>
 					<!--- PANELS ICON -->
 					<div id="toggle">
-						<div class="sq"></div><div class="sq"></div><div class="sq"></div>
+						<!--<div class="sq"></div><div class="sq"></div><div class="sq"></div>-->
+						<div class="circ">F</div>
 					</div>
 					<!--- ADD TO TRAY ICON -->
 					<div class='button'><div>+</div><div>&#10140;</div></div>
-			</div></div>
-			<div class="p6"><div class='phldr'>6</div></div>
-			<div class="p7"><div class='phldr'>7</div></div>
-			<div class="p8"><div class='phldr'>8</div></div>
-			<div class="p9">},</div>
+				</div>
+			</div>
+			<div class="p6">
+				<div class='phldr'>6</div>
+				<div class='phldr_filter'>f2</div>
+			</div>
+			<div class="p7">
+				<div class='phldr'>7</div>
+				<div class='phldr_filter'>f2</div>
+			</div>
+			<div class="p8">
+				<div class='phldr'>8</div>
+				<div class='phldr_filter'>f2</div>
+			</div>
+			<div class="p9">
+				<div class='phldr'>},</div>
+				<div class='phldr_filter'>f2</div>
+			</div>
 		</div>
 
 
 
-<div class="message_hldr">
-	<div class="q1"></div><div class="q2"></div>
-	<div class="q3"></div><div class="q4"></div>
-	<div class="q5">
-		<div class="message_back"></div>
-		<div class="message_ctnr">
-		<span class="message_hldr_inner"></span>
-		</div>
-	</div>
-	<div class="q6"></div><div class="q7"></div>
-	<div class="q8"></div><div class="q9"></div>
-</div>
 
-<div class="message_hldr_2">
-	<div class="q1"></div><div class="q2"></div>
-	<div class="q3"></div><div class="q4"></div>
-	<div class="q5">
-		<div class="message_back"></div>
-		<div class="message_ctnr">
-		<span class="message_hldr_inner">Added to tray</span>
+		<!--INACTIVITY MESSAGES DISPLAY-->
+		<div class="message_hldr">
+			<div class="q1"></div><div class="q2"></div>
+			<div class="q3"></div><div class="q4"></div>
+			<div class="q5">
+				<div class="message_back"></div>
+				<div class="message_ctnr">
+				<span class="message_hldr_inner"></span>
+				</div>
+			</div>
+			<div class="q6"></div><div class="q7"></div>
+			<div class="q8"></div><div class="q9"></div>
 		</div>
-	</div>
-	<div class="q6"></div><div class="q7"></div>
-	<div class="q8"></div><div class="q9"></div>
-</div>
+
+		<!--"ADDED TO TRAY" DISPLAY-->
+		<div class="message_hldr_2">
+			<div class="q1"></div><div class="q2"></div>
+			<div class="q3"></div><div class="q4"></div>
+			<div class="q5">
+				<div class="message_back"></div>
+				<div class="message_ctnr">
+				<span class="message_hldr_inner">Added to tray</span>
+				</div>
+			</div>
+			<div class="q6"></div><div class="q7"></div>
+			<div class="q8"></div><div class="q9"></div>
+		</div>
 
 		<canvas id="map"></canvas>
 		<!--
@@ -352,7 +395,7 @@ $(document).keypress(function(e) {
 				populateMap();
 			} else {
 				$(".metadata, .metadata_back").hide();
-				$("#highlight").show();		
+				//$("#highlight").show();		
 				curr = false;
 			}
 		} else {
@@ -394,15 +437,26 @@ $(".button").on("mouseout", function() {
 
 $("#toggle").on("mouseover", function() {
 	$("#toggletext").show();
-	$("#toggle .sq").css("background-color", color);
+	$("#toggle .circ").css({"border-color":color,"color": color});
 });
 
 $("#toggle").on("mouseout", function() {
-	$("#toggle .sq").css("background-color", "white");
+	$("#toggle .circ").css({"border-color":"white","color": "white"});
 });
 
 $("#toggle").on("click", function() {
-	window.location.href = window.location.origin+"/9panels.html";
+	//window.location.href = window.location.origin+"/9panels.html";
+	if($('.metadata .p1 .phldr').is(":visible") ){
+		console.log('show filters');
+		$('.metadata .circ').html("{/}");
+		showFilters(curr);
+	}else{
+		console.log('show metadata');
+		$('.metadata .circ').html("F");
+		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
+		$(".metadata .phldr").fadeIn();	
+	}
+	
 });
 	
 
@@ -413,9 +467,12 @@ $(".metadata, .metadata_back").on("click", function(e) {
 		art.records.sort(customSort);
 		populateMap();
 	} else {
+
 		$(".metadata, .metadata_back").fadeOut(500);
 		$("#highlight").show();
-		curr = false;
+		curr = false;	
+		}
+		
 	}
 });
 
@@ -462,6 +519,20 @@ $(document).on("click", function(e) {
 		}
 });
 
+function showFilters(curr) {
+	var img_src= "./art/" + curr.objectid + ".jpg";
+	$(".metadata .p1 .phldr,.metadata .p2 .phldr,.metadata .p3 .phldr,.metadata .p4 .phldr,.metadata .p6 .phldr,.metadata .p7 .phldr,.metadata .p8 .phldr,.metadata .p9 .phldr").fadeOut();
+	$(".metadata .phldr_filter").fadeIn();
+
+	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p2 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p6 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	$(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+}
 
 function showArtObject(curr) {
 			if(!curr.objectid) return false;
@@ -471,11 +542,8 @@ function showArtObject(curr) {
 			$(".metadata, .metadata_back").fadeIn(500);
 
 
-	
 
-		
 			var img_src= "./art/" + curr.objectid + ".jpg";
-
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
@@ -484,14 +552,14 @@ function showArtObject(curr) {
 			var id='',verificationlevel='',verificationleveldescription='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='';
 			var colorcount='',worktype='',dimensions='',medium='',colors='',technique='';
 
-			$(".p1").children().remove();
+			$(".p1 .phldr").children().remove();
 			$(".p2 .phldr").children().remove();
 			$(".p3 .phldr").children().remove();
 			$(".p4 .phldr").children().remove();
 			$(".p6 .phldr").children().remove();
 			$(".p7 .phldr").children().remove();
 			$(".p8 .phldr").children().remove();
-			$(".p9").children().remove();
+			$(".p9 .phldr").children().remove();
 			$("#preview img").remove();
 			
 			
@@ -591,7 +659,9 @@ function showArtObject(curr) {
 			if(curr.contextualtextcount){contextualtextcount = 'contextualtextcount: "' + curr.contextualtextcount + '",</br>';};
 
 
-
+			//p1, p9: 
+			$(".metadata .p1 .phldr").html("{");
+			$(".metadata .p9 .phldr").html("},");
 
 			//p2: title,people,dated
 			$(".metadata .p2 .phldr").html(
@@ -748,6 +818,7 @@ function populateMap(rand) {
 		index++;
 	}
 
+
 	console.log("?");
 	var rand_objs = [];	
 	var num_rand_obj = 3
@@ -757,6 +828,64 @@ function populateMap(rand) {
 	}
 	messages_ranobj(rand,rand_objs);
 }
+
+	////MESSAGES START///
+	setTimeout(start_messages, message_delay);
+	function start_messages(){
+		clear_msg = false;
+		$(".message_hldr_inner").html('This is an object map of 1,589 objects on display at the Harvard Art Museums.</br> <span class="sub_msg">(seven-tenths of one percent of the collection are displayed here)</span>');
+		$(".message_hldr_inner .sub_msg").hide();
+		if(!clear_msg){
+			$(".message_hldr").delay(message_start_delay).fadeIn(300).delay(message_delay).fadeIn(100, function() {
+				if(!clear_msg){
+				$(".message_hldr_inner .sub_msg").fadeIn(300).delay(message_delay).fadeIn(100, function() {
+					if(!clear_msg){
+					$(".message_hldr").fadeOut(300, function() {
+
+					$(".message_hldr_inner").html('This collection is currently ordered by information in the field <span style="color: '+color+'">'+rand+'</span>.');
+						if(!clear_msg){
+						$(".message_hldr").fadeIn(300).delay(message_delay).fadeOut(300, function() {
+							if(!clear_msg){
+						$(".message_hldr_inner").html('These fields and the information they contain are <span style="color: '+color+'">metadata</span>, information the museum uses to describe, organize and care for its collection.');
+							console.log('message end');
+							timeout_rand_obj = setTimeout(start_rand_obj, rand_obj_rate*0.333);
+							//start_rand_obj();
+							clear_msg = true;
+							}
+						});
+						}
+					});
+					}
+				});
+				}
+			});
+		}
+	}
+	///MESSAGES END///
+
+	///RANDOM OBJ START///
+	
+	function start_rand_obj(){
+	var curNewsIndex = -1;
+	function show_rand_obj() {
+	    ++curNewsIndex;
+	    var curr_rand_obj = rand_objs[curNewsIndex];   // set new news item into the ticker
+		console.log(curr_rand_obj);
+		showArtObject(curr_rand_obj);
+		function openclose_rand_obj() {
+			$(".metadata, .metadata_back").fadeOut(500);
+		}
+		openclose = setTimeout(openclose_rand_obj, rand_obj_rate*0.667);
+
+	    if (curNewsIndex >= rand_objs.length-1) {
+	        //curNewsIndex = 0;
+	        clearInterval(intervalID);
+	    }
+	}
+	show_rand_obj();
+	intervalID = setInterval(show_rand_obj, rand_obj_rate);
+	}
+	///RANDOM OBJ END///
 
 function messages_ranobj(rand,rand_objs){
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
@@ -822,6 +951,7 @@ if(!rand){
 	intervalID = setInterval(show_rand_obj, rand_obj_rate);
 	}
 	///RANDOM OBJ END///
+
 
 
 }
@@ -943,6 +1073,7 @@ $(window).load(function(){
 			clearTimeout(openclose);
 			timerstart = setTimeout(startshuffle, inactive_time);
 			console.log('set timers to zero!');
+
 		}
 	}
 	//.....disable mouse interaction for n seconds starting at shuffle (to prevent that bug from occuring in IE 11)
