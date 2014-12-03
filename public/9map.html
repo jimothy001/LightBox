@@ -168,7 +168,7 @@
 		
 		#toggle {
 			position: absolute;
-			width: 166px;
+			width: 100px;
 			height: 100px;
 			left: 0px;
 			top: 0px;
@@ -181,7 +181,18 @@
 		#toggle:hover {
 			opacity: 1;
 		}	
-		
+		#toggle .circ{
+			border-radius: 50%;
+			border: 6px solid white;
+			width: 100px;
+			height: 100px;
+			text-align: center;
+			font-size: 50px;
+			line-height: 100px;
+			font-family: arial;
+			font-weight: normal;
+		}
+		/*
 		div.sq {
 			display:block;
 			float: left;
@@ -190,7 +201,7 @@
 			height: 100%;
 			margin-left: 4px;
 			background-color: white;
-		}
+		}*/
 		.message_hldr, .message_hldr_2{
 			pointer-events: none;
 			display: none;
@@ -258,7 +269,8 @@
 				<div class='img-preview'></div>
 					<!--- PANELS ICON -->
 					<div id="toggle">
-						<div class="sq"></div><div class="sq"></div><div class="sq"></div>
+						<!--<div class="sq"></div><div class="sq"></div><div class="sq"></div>-->
+						<div class="circ">F</div>
 					</div>
 					<!--- ADD TO TRAY ICON -->
 					<div class='button'><div>+</div><div>&#10140;</div></div>
@@ -425,20 +437,22 @@ $(".button").on("mouseout", function() {
 
 $("#toggle").on("mouseover", function() {
 	$("#toggletext").show();
-	$("#toggle .sq").css("background-color", color);
+	$("#toggle .circ").css({"border-color":color,"color": color});
 });
 
 $("#toggle").on("mouseout", function() {
-	$("#toggle .sq").css("background-color", "white");
+	$("#toggle .circ").css({"border-color":"white","color": "white"});
 });
 
 $("#toggle").on("click", function() {
 	//window.location.href = window.location.origin+"/9panels.html";
 	if($('.metadata .p1 .phldr').is(":visible") ){
 		console.log('show filters');
+		$('.metadata .circ').html("{/}");
 		showFilters(curr);
 	}else{
 		console.log('show metadata');
+		$('.metadata .circ').html("F");
 		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
 		$(".metadata .phldr").fadeIn();	
 	}
