@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 	<head>
@@ -121,7 +122,7 @@
 			/*cursor: pointer;*/
 		}	
 
-		.metadata .phldr
+		.metadata .phldr, .metadata .phldr_filter
 		{
 			position:absolute;
 			/*PADDING WITHIN EACH SCREEN*/
@@ -130,7 +131,31 @@
 			left: 40px;
 			right: 40px;
 		}
+		.metadata .phldr_filter
+		{
+			display: none;
+		}		
 		
+		.metadata .phldr_filter .location {
+			margin-left: auto;
+			margin-right: auto;
+			width: 80%;
+			font-size: 79px;
+		}
+		
+		.metadata .phldr_filter .color {
+			width: 100%;
+			position: relative;
+			float: left;
+		}
+
+		.metadata .phldr_filter .colors {
+			width: 80%;
+			height: 100%;
+			margin-left: auto;
+			margin-right: auto;
+		}
+				
 		.q5 div{
 			position:absolute;
 			/*PADDING WITHIN EACH SCREEN*/
@@ -146,7 +171,7 @@
 		.metadata .tabspace2 {
 			padding-left: 50px;
 		}
-		.metadata .p1,.metadata .p9 {
+		.metadata .p1 .phldr,.metadata .p9 .phldr {
 			/*FONT SIZE BRACKETS*/
 			font-size: 590px;
 			text-align: center;
@@ -164,20 +189,31 @@
 		
 		#toggle {
 			position: absolute;
-			width: 166px;
+			width: 100px;
 			height: 100px;
 			left: 0px;
 			top: 0px;
 			z-index: 5000;
 			cursor: pointer;
 			opacity: 1;
-			display: none;
+			/*display: none;*/
 		}
 		
 		#toggle:hover {
 			opacity: 1;
 		}	
-		
+		#toggle .circ{
+			border-radius: 50%;
+			border: 6px solid white;
+			width: 100px;
+			height: 100px;
+			text-align: center;
+			font-size: 50px;
+			line-height: 100px;
+			font-family: arial;
+			font-weight: normal;
+		}
+		/*
 		div.sq {
 			display:block;
 			float: left;
@@ -186,7 +222,7 @@
 			height: 100%;
 			margin-left: 4px;
 			background-color: white;
-		}
+		}*/
 		.message_hldr, .message_hldr_2{
 			pointer-events: none;
 			display: none;
@@ -229,58 +265,86 @@
 		
 		<div id="highlight"></div>
 		<div class="metadata_back"></div>
+
+		<!--METADATA DISPLAY-->
 		<div class='metadata'>
 		<!--<span class="p6" id='sort'></span>-->
-			<div class="p1">{</div>
-			<div class="p2"><div class='phldr'>2</div></div>	
-			<!--<span class="p2next">Dated: <span id="date"></span></span>-->
-			<div class="p3"><div class='phldr'>3</div></div>
-			<div class="p4"><div class='phldr'>4</div></div>
-			<div class="p5"><div class='phldr' id="preview">
-				
-				<div class='img-preview'>
-				</div>
-				
+			<div class="p1">
+				<div class='phldr'>{</div>
+				<div class='phldr_filter'>f1</div>
+			</div>
+			<div class="p2">
+				<div class='phldr'>2</div>
+				<div class='phldr_filter'>f2</div>
+			</div>	
+			<div class="p3">
+				<div class='phldr'>3</div>
+				<div class='phldr_filter'>f3</div>
+			</div>
+			<div class="p4">
+				<div class='phldr'>4</div>
+				<div class='phldr_filter'>f4</div>
+			</div>
+			<div class="p5">
+				<div class='phldr' id="preview">
+				<div class='img-preview'></div>
 					<!--- PANELS ICON -->
 					<div id="toggle">
-						<div class="sq"></div><div class="sq"></div><div class="sq"></div>
+						<!--<div class="sq"></div><div class="sq"></div><div class="sq"></div>-->
+						<div class="circ">f</div>
 					</div>
 					<!--- ADD TO TRAY ICON -->
 					<div class='button'><div>+</div><div>&#10140;</div></div>
-			</div></div>
-			<div class="p6"><div class='phldr'>6</div></div>
-			<div class="p7"><div class='phldr'>7</div></div>
-			<div class="p8"><div class='phldr'>8</div></div>
-			<div class="p9">},</div>
+				</div>
+			</div>
+			<div class="p6">
+				<div class='phldr'>6</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p7">
+				<div class='phldr'>7</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p8">
+				<div class='phldr'>8</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p9">
+				<div class='phldr'>},</div>
+				<div class='phldr_filter'></div>
+			</div>
 		</div>
 
 
 
-<div class="message_hldr">
-	<div class="q1"></div><div class="q2"></div>
-	<div class="q3"></div><div class="q4"></div>
-	<div class="q5">
-		<div class="message_back"></div>
-		<div class="message_ctnr">
-		<span class="message_hldr_inner"></span>
-		</div>
-	</div>
-	<div class="q6"></div><div class="q7"></div>
-	<div class="q8"></div><div class="q9"></div>
-</div>
 
-<div class="message_hldr_2">
-	<div class="q1"></div><div class="q2"></div>
-	<div class="q3"></div><div class="q4"></div>
-	<div class="q5">
-		<div class="message_back"></div>
-		<div class="message_ctnr">
-		<span class="message_hldr_inner">Added to tray</span>
+		<!--INACTIVITY MESSAGES DISPLAY-->
+		<div class="message_hldr">
+			<div class="q1"></div><div class="q2"></div>
+			<div class="q3"></div><div class="q4"></div>
+			<div class="q5">
+				<div class="message_back"></div>
+				<div class="message_ctnr">
+				<span class="message_hldr_inner"></span>
+				</div>
+			</div>
+			<div class="q6"></div><div class="q7"></div>
+			<div class="q8"></div><div class="q9"></div>
 		</div>
-	</div>
-	<div class="q6"></div><div class="q7"></div>
-	<div class="q8"></div><div class="q9"></div>
-</div>
+
+		<!--"ADDED TO TRAY" DISPLAY-->
+		<div class="message_hldr_2">
+			<div class="q1"></div><div class="q2"></div>
+			<div class="q3"></div><div class="q4"></div>
+			<div class="q5">
+				<div class="message_back"></div>
+				<div class="message_ctnr">
+				<span class="message_hldr_inner">Added to tray</span>
+				</div>
+			</div>
+			<div class="q6"></div><div class="q7"></div>
+			<div class="q8"></div><div class="q9"></div>
+		</div>
 
 		<canvas id="map"></canvas>
 		<!--
@@ -291,7 +355,8 @@
 		-->
 	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" ></script>  
 	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
-	
+	<script type="text/javascript" src="lib/pixelate.js" ></script>  
+
 
 	
 <script>
@@ -321,8 +386,6 @@ var intervalID;
 var timeout_rand_obj;
 var delay_mouse;
 var openclose;
-var lastsort = "medium";
-
 /*
 	load object map
 */
@@ -354,7 +417,7 @@ $(document).keypress(function(e) {
 				populateMap();
 			} else {
 				$(".metadata, .metadata_back").hide();
-				$("#highlight").show();		
+				//$("#highlight").show();		
 				curr = false;
 			}
 		} else {
@@ -396,15 +459,26 @@ $(".button").on("mouseout", function() {
 
 $("#toggle").on("mouseover", function() {
 	$("#toggletext").show();
-	$("#toggle .sq").css("background-color", color);
+	$("#toggle .circ").css({"border-color":color,"color": color});
 });
 
 $("#toggle").on("mouseout", function() {
-	$("#toggle .sq").css("background-color", "white");
+	$("#toggle .circ").css({"border-color":"white","color": "white"});
 });
 
 $("#toggle").on("click", function() {
-	window.location.href = window.location.origin+"/9panels.html";
+	//window.location.href = window.location.origin+"/9panels.html";
+	if($('.metadata .p1 .phldr').is(":visible") ){
+		console.log('show filters');
+		$('.metadata .circ').html("{/}");
+		showFilters(curr);
+	}else{
+		console.log('show metadata');
+		$('.metadata .circ').html("f");
+		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
+		$(".metadata .phldr").fadeIn();	
+	}
+	
 });
 	
 
@@ -412,13 +486,15 @@ $("#toggle").on("click", function() {
 $(".metadata, .metadata_back").on("click", function(e) {
 	if($(e.target).hasClass("searchfield")) {
 		sort = $(e.target).html();
-		lastsort = sort;
 		art.records.sort(customSort);
 		populateMap();
-	} else {
+	} 
+	else {
+		if ($(e.target).closest('#toggle').length === 0) {
 		$(".metadata, .metadata_back").fadeOut(500);
 		$("#highlight").show();
-		curr = false;
+		curr = false;	
+		}	
 	}
 });
 
@@ -465,36 +541,73 @@ $(document).on("click", function(e) {
 		}
 });
 
+function showFilters(curr) {
+	var img_src= "./art/" + curr.objectid + ".jpg";
+	var gallery='';
+	$(".metadata .p1 .phldr,.metadata .p2 .phldr,.metadata .p3 .phldr,.metadata .p4 .phldr,.metadata .p6 .phldr,.metadata .p7 .phldr,.metadata .p8 .phldr,.metadata .p9 .phldr").fadeOut();
+	$(".metadata .phldr_filter").fadeIn();
+
+	$.get("http://api.harvardartmuseums.org/object/"+curr.objectid+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(data) {
+		gallery = "gallerynumber: "+data.gallery.gallerynumber+",</br>floor: "+data.gallery.floor+ ",</br >" + data.gallery.name;
+		$(".metadata .p2 .phldr_filter").html("<div class='location'>"+gallery+"</div>");
+	});
+
+
+	if(curr.colors) {
+		var $colors = $("<div class='colors'></div>");
+		$.each(curr.colors, function(i,val) {
+			var $color = $("<div class='colorbar'></div>");
+			$color.css("height", val.percent*100+"%");
+			$color.css("background-color", val.color);
+			$colors.append($color);
+		});
+		$(".metadata .p1 .phldr_filter").html($colors);
+	}
+
+	if(curr.images) {
+	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+		$(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+		$(".metadata .p3 .phldr_filter img").pixelate({reveal:false, value: .8});
+		
+		if(curr.images.length > 1) $(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[1].baseimageurl+"'></div>");
+		if(curr.images.length > 2) $(".metadata .p6 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[2].baseimageurl+"'></div>");
+		if(curr.images.length > 3) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[3].baseimageurl+"'></div>");
+		if(curr.images.length > 4) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[4].baseimageurl+"'></div>");
+		if(curr.images.length > 5) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[5].baseimageurl+"'></div>");
+	
+	
+	}
+}
 
 function showArtObject(curr) {
 			if(!curr.objectid) return false;
 			
 			$(".message_hldr").hide();
 
+			$('.metadata .circ').html("f");
+
+			$(".metadata .phldr_filter").hide();
+			$(".metadata .phldr").show();
 			$(".metadata, .metadata_back").fadeIn(500);
 
-
-	
-
-		
 			var img_src= "./art/" + curr.objectid + ".jpg";
-
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
 			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='',gallery='',publicationcount='';
 			var url='',primaryimageurl='',totalpageviews='',totaluniquepageviews='',lastupdate='',dateoffirstpageview='',dateoflastpageview='',images='';
-			var id='',verificationlevel='',verificationleveldescription='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='';
-			var colorcount='',worktype='',dimensions='',medium='',colors='',technique='',commentary='';
+			var id='',verificationlevel='',verificationleveldescription='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='',commentary='';
+			var colorcount='',worktype='',dimensions='',medium='',colors='',technique='';
 
-			$(".p1").children().remove();
-			$(".p2 .phldr").children().remove();
-			$(".p3 .phldr").children().remove();
-			$(".p4 .phldr").children().remove();
-			$(".p6 .phldr").children().remove();
-			$(".p7 .phldr").children().remove();
-			$(".p8 .phldr").children().remove();
-			$(".p9").children().remove();
+			$(".p1 .phldr, .p1 .phldr_filter").children().remove();
+			$(".p2 .phldr, .p2 .phldr_filter").children().remove();
+			$(".p3 .phldr, .p3 .phldr_filter").children().remove();
+			$(".p4 .phldr, .p4 .phldr_filter").children().remove();
+			$(".p6 .phldr, .p6 .phldr_filter").children().remove();
+			$(".p7 .phldr, .p7 .phldr_filter").children().remove();
+			$(".p8 .phldr, .p8 .phldr_filter").children().remove();
+			$(".p9 .phldr, .p9 .phldr_filter").children().remove();
+			
 			$("#preview img").remove();
 			
 			
@@ -577,11 +690,11 @@ function showArtObject(curr) {
 
 			///p8
 			if(curr.id){id = 'id: "' + curr.id + '",</br>';};
-			if(curr.verificationlevel){verificationlevel = '<span class="searchfield">verificationlevel</span>: "' + curr.verificationlevel + '",</br>';};
 			if(curr.imagepermissionlevel){imagepermissionlevel = '<span class="searchfield">imagepermissionlevel</span>: "' + curr.imagepermissionlevel + '",</br>';};
+			if(curr.verificationlevel){verificationlevel = '<span class="searchfield">verificationlevel</span>: "' + curr.verificationlevel + '",</br>';};
 			if(curr.verificationleveldescription){verificationleveldescription = 'verificationleveldescription: "' + curr.verificationleveldescription + '",</br>';};
 			if(curr.commentary) {commentary='commentary: "'+curr.commentary+'",</br>';};
-	
+
 			if(curr.accesslevel){accesslevel = '<span class="searchfield">accesslevel</span>: "' + curr.accesslevel + '",</br>';};
 			if(curr.mediacount){mediacount = '<span class="searchfield">mediacount</span>: "' + curr.mediacount + '",</br>';};
 			if(curr.groupcount){groupcount = '<span class="searchfield">groupcount</span>: "' + curr.groupcount + '",</br>';};
@@ -594,8 +707,9 @@ function showArtObject(curr) {
 			if(curr.dateend){dateend = '<span class="searchfield">dateend</span>: "' + curr.dateend + '",</br>';};
 			if(curr.contextualtextcount){contextualtextcount = 'contextualtextcount: "' + curr.contextualtextcount + '",</br>';};
 
-
-
+			//p1, p9: 
+			$(".metadata .p1 .phldr").html("{");
+			$(".metadata .p9 .phldr").html("},");
 
 			//p2: title,people,dated
 			$(".metadata .p2 .phldr").html(
@@ -746,12 +860,6 @@ function populateMap(rand) {
 			index++;
 		}
 	}
-	
-	while(index < art.records.length) {
-		art.records[index].x1=null;
-		art.records[index].y1=null;
-		index++;
-	}
 
 	console.log("?");
 	var rand_objs = [];	
@@ -768,7 +876,7 @@ var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
 var message_start_delay = 5000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START	
 var rand_obj_rate = 45000; ///TIME BETWEEN RANDOM OBJECT POPUPS
 if(!rand){
-	rand = lastsort;
+	rand = 'medium';
 }
 	////MESSAGES START///
 	setTimeout(start_messages, message_delay);
@@ -947,7 +1055,7 @@ $(window).load(function(){
 			clearTimeout(timeout_rand_obj);
 			clearTimeout(openclose);
 			timerstart = setTimeout(startshuffle, inactive_time);
-			console.log('set timers to zero!');
+			//console.log('set timers to zero!');
 		}
 	}
 	//.....disable mouse interaction for n seconds starting at shuffle (to prevent that bug from occuring in IE 11)
@@ -964,5 +1072,7 @@ $(window).load(function(){
 
 	
 	</script>
+	
+	
 	</body>
 </html>
