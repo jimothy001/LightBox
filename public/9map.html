@@ -741,6 +741,12 @@ function populateMap(rand) {
 			index++;
 		}
 	}
+	
+	while(index < art.records.length) {
+		art.records[index].x1=null;
+		art.records[index].y1=null;
+		index++;
+	}
 
 	console.log("?");
 	var rand_objs = [];	
