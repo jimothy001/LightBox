@@ -386,6 +386,9 @@ var intervalID;
 var timeout_rand_obj;
 var delay_mouse;
 var openclose;
+var filters = false;
+var filterhover = false;
+
 /*
 	load object map
 */
@@ -415,6 +418,18 @@ $(document).keypress(function(e) {
 				console.log(sort);
 				art.records.sort(customSort);
 				populateMap();
+			} else if(filterhover) {
+				if(!filters) {
+					$('.metadata .circ').html("{/}");
+					showFilters(curr);
+					filters = true;
+				} else {
+					$('.metadata .circ').html("F");
+					$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
+					$(".metadata .phldr").fadeIn();	
+					filters = false;				
+				}
+			
 			} else {
 				$(".metadata, .metadata_back").hide();
 				//$("#highlight").show();		
@@ -460,10 +475,12 @@ $(".button").on("mouseout", function() {
 $("#toggle").on("mouseover", function() {
 	$("#toggletext").show();
 	$("#toggle .circ").css({"border-color":color,"color": color});
+	filterhover = true;
 });
 
 $("#toggle").on("mouseout", function() {
 	$("#toggle .circ").css({"border-color":"white","color": "white"});
+	filterhover = false;
 });
 
 $("#toggle").on("click", function() {
@@ -472,11 +489,13 @@ $("#toggle").on("click", function() {
 		console.log('show filters');
 		$('.metadata .circ').html("{/}");
 		showFilters(curr);
+		filters = true;
 	}else{
 		console.log('show metadata');
-		$('.metadata .circ').html("f");
+		$('.metadata .circ').html("F");
 		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
 		$(".metadata .phldr").fadeIn();	
+		filters = false;
 	}
 	
 });
@@ -567,7 +586,7 @@ function showFilters(curr) {
 	if(curr.images) {
 	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
 		$(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
-		$(".metadata .p3 .phldr_filter img").pixelate({reveal:false, value: .8});
+		$(".metadata .p3 .phldr_filter img").pixelate({reveal:false, value: .1});
 		
 		if(curr.images.length > 1) $(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[1].baseimageurl+"'></div>");
 		if(curr.images.length > 2) $(".metadata .p6 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[2].baseimageurl+"'></div>");
@@ -584,7 +603,8 @@ function showArtObject(curr) {
 			
 			$(".message_hldr").hide();
 
-			$('.metadata .circ').html("f");
+			$('.metadata .circ').html("F");
+			filters = false;
 
 			$(".metadata .phldr_filter").hide();
 			$(".metadata .phldr").show();
@@ -1055,7 +1075,7 @@ $(window).load(function(){
 			clearTimeout(timeout_rand_obj);
 			clearTimeout(openclose);
 			timerstart = setTimeout(startshuffle, inactive_time);
-			//console.log('set timers to zero!');
+			console.log('set timers to zero!');
 		}
 	}
 	//.....disable mouse interaction for n seconds starting at shuffle (to prevent that bug from occuring in IE 11)
