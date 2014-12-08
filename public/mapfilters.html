@@ -271,19 +271,19 @@
 		<!--<span class="p6" id='sort'></span>-->
 			<div class="p1">
 				<div class='phldr'>{</div>
-				<div class='phldr_filter'>f1</div>
+				<div class='phldr_filter'></div>
 			</div>
 			<div class="p2">
 				<div class='phldr'>2</div>
-				<div class='phldr_filter'>f2</div>
+				<div class='phldr_filter'></div>
 			</div>	
 			<div class="p3">
 				<div class='phldr'>3</div>
-				<div class='phldr_filter'>f3</div>
+				<div class='phldr_filter'></div>
 			</div>
 			<div class="p4">
 				<div class='phldr'>4</div>
-				<div class='phldr_filter'>f4</div>
+				<div class='phldr_filter'></div>
 			</div>
 			<div class="p5">
 				<div class='phldr' id="preview">
@@ -580,18 +580,18 @@ function showFilters(curr) {
 			$color.css("background-color", val.color);
 			$colors.append($color);
 		});
-		$(".metadata .p1 .phldr_filter").html($colors);
+		$(".metadata .p6 .phldr_filter").html($colors);
 	}
 
 	if(curr.images) {
 	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
-		$(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
-		$(".metadata .p3 .phldr_filter img").pixelate({reveal:false, value: .1});
+		$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+		$(".metadata .p4 .phldr_filter img").pixelate({reveal:false, value: .1});
 		
-		if(curr.images.length > 1) $(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[1].baseimageurl+"'></div>");
-		if(curr.images.length > 2) $(".metadata .p6 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[2].baseimageurl+"'></div>");
-		if(curr.images.length > 3) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[3].baseimageurl+"'></div>");
-		if(curr.images.length > 4) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[4].baseimageurl+"'></div>");
+		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[1].baseimageurl+"'></div>");
+		if(curr.images.length > 2) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[2].baseimageurl+"'></div>");
+		if(curr.images.length > 3) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[3].baseimageurl+"'></div>");
+		if(curr.images.length > 4) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[4].baseimageurl+"'></div>");
 		if(curr.images.length > 5) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[5].baseimageurl+"'></div>");
 	
 	
