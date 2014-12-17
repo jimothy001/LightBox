@@ -28,7 +28,6 @@
 		
 		#highlight {
 			z-index:1000;
-			display: none;
 			position: absolute;
 			-moz-box-shadow: 0 0 20px 10px white;
 			-webkit-box-shadow: 0 0 20px 10px white;
@@ -289,7 +288,7 @@
 				<div class='phldr' id="preview">
 				<div class='img-preview'></div>
 					<!--- PANELS ICON -->
-					<div id="toggle" alt="toggle filters" title="toggle filters">
+					<div id="toggle">
 						<!--<div class="sq"></div><div class="sq"></div><div class="sq"></div>-->
 						<div class="circ">f</div>
 					</div>
@@ -865,7 +864,7 @@ var w = window.innerWidth / 48;
 var h = window.innerHeight / 30;
 $("#highlight").width(w);
 $("#highlight").height(h);
-					
+					console.log(w);
 function populateMap(rand) {
 	ctx.clearRect(0,0,map.width,map.height);
 	itemX = 48;
@@ -882,15 +881,16 @@ function populateMap(rand) {
 	}
 
 	console.log("?");
-	var rand_objs = [];	
+/*	var rand_objs = [];	
 	var num_rand_obj = 3
 	for (i = 0; i < num_rand_obj; i++) {
 		var rand_obj = art.records[Math.floor(Math.random() * art.records.length)];
 		rand_objs.push(rand_obj)
 	}
-	messages_ranobj(rand,rand_objs);
+	messages_ranobj(rand,rand_objs);*/
 }
 
+/*
 function messages_ranobj(rand,rand_objs){
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
 var message_start_delay = 5000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START	
@@ -959,7 +959,7 @@ if(!rand){
 
 }
 
-
+*/
 
 function addImage(order, x, y) {
 	var base_image = new Image();
@@ -982,6 +982,8 @@ function addImage(order, x, y) {
 			
 }
 
+
+/*
 
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
@@ -1084,7 +1086,7 @@ $(window).load(function(){
 
 });
 
-
+*/
 
 
 
