@@ -355,13 +355,10 @@
 	<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" ></script>  
 	<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
 	<script type="text/javascript" src="lib/pixelate.js" ></script>  
-<script src="lib/glfx.js"></script>
 
 
 	
 <script>
-
-
 var i = 0;
 var art = {};
 art.records = [];
@@ -587,14 +584,14 @@ function showFilters(curr) {
 
 	if(curr.images) {
 	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
-		$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='imgp4' src='"+img_src+"'></div>");
+		$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
 		$(".metadata .p4 .phldr_filter img").pixelate({reveal:false, value: .1});
 		
-		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[1].baseimageurl+"'></div>");
-		if(curr.images.length > 2) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[2].baseimageurl+"'></div>");
-		if(curr.images.length > 3) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[3].baseimageurl+"'></div>");
-		if(curr.images.length > 4) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[4].baseimageurl+"'></div>");
-		if(curr.images.length > 5) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[5].baseimageurl+"'></div>");
+		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[1].baseimageurl+"'></div>");
+		if(curr.images.length > 2) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[2].baseimageurl+"'></div>");
+		if(curr.images.length > 3) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[3].baseimageurl+"'></div>");
+		if(curr.images.length > 4) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[4].baseimageurl+"'></div>");
+		if(curr.images.length > 5) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+curr.images[5].baseimageurl+"'></div>");
 	
 	
 	}
@@ -890,7 +887,7 @@ function populateMap(rand) {
 		var rand_obj = art.records[Math.floor(Math.random() * art.records.length)];
 		rand_objs.push(rand_obj)
 	}
-	//messages_ranobj(rand,rand_objs);
+	messages_ranobj(rand,rand_objs);
 }
 
 function messages_ranobj(rand,rand_objs){
@@ -985,7 +982,7 @@ function addImage(order, x, y) {
 }
 
 
-/*
+
 
 //////////////// TIMER AND USER ACTIVITY START ////////////////////////
 $(window).load(function(){
@@ -1088,7 +1085,7 @@ $(window).load(function(){
 
 });
 
-*/
+
 
 
 

@@ -42,7 +42,7 @@
 			position: relative;
 			text-align: center;
 		}	
-		.img-preview img{
+		.img-preview img, .img-preview canvas{
 			position: relative;
 			top: 50%;
 			transform: translateY(-50%);
@@ -51,7 +51,8 @@
 			webkit-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 			-moz-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
 			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-		}		
+		}	
+			
 		.button {
 			position: absolute;
 			top: 0;
@@ -361,6 +362,25 @@
 	
 <script>
 
+function filter(imageid) {
+	try {
+        var canvas = fx.canvas();
+    } catch (e) {
+        alert(e);
+        return;
+    }
+
+    // convert the image to a texture
+    var image = document.getElementById(imageid);
+    var texture = canvas.texture(image);
+
+    // apply the ink filter
+    canvas.draw(texture).colorHalftone(320, 239.5, 0.25, 13).update();
+
+    // replace the image with the canvas
+    image.parentNode.insertBefore(canvas, image);
+    image.parentNode.removeChild(image);
+}
 
 var i = 0;
 var art = {};
@@ -588,7 +608,7 @@ function showFilters(curr) {
 	if(curr.images) {
 	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
 		$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='imgp4' src='"+img_src+"'></div>");
-		$(".metadata .p4 .phldr_filter img").pixelate({reveal:false, value: .1});
+		filter("imgp4");
 		
 		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[1].baseimageurl+"'></div>");
 		if(curr.images.length > 2) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[2].baseimageurl+"'></div>");
