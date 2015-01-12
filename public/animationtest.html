@@ -442,6 +442,7 @@ $(document).keypress(function(e) {
 						if(mouseY > val.y1 && mouseY < val.y1+h) {
 							curr = val;
 							console.log(curr);
+							return false;
 						}
 					}
 				});		
@@ -550,6 +551,7 @@ $(document).on("click", function(e) {
 				if(eX > val.x1 && eX < val.x1+w) {
 					if(eY > val.y1 && eY < val.y1+h) {
 						curr = val;
+						return false;
 					}
 				}
 			});
