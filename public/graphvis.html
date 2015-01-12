@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" ></script> 
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+	<style>
+
+	body {
+	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	  font-size: 8px;
+	  position: relative;
+	  margin: 0;
+	  padding: 0;
+	  width: 100%;
+	  height: 100%;
+	  background: black;
+	  color: white;
+	  overflow: hidden;
+	}
+
+	.axis text {
+	  
+	}
+
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+	.bar {
+	  fill: #fff;
+	  z-index: -1;
+	}
+
+	.x.axis path {
+	  display: none;
+	}
+
+
+	.checkbox{
+		border: 1px solid blue;
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: none;
+	}
+	.graphtitle{
+		border-bottom: 1px solid #373737;
+		height: 3vh;
+		width: 100vw;
+		overflow: hidden;
+		line-height: 20px;
+	}
+	.graphholder{
+		height: 500px;
+		width: 100vw;
+		overflow: hidden;
+		padding: 0;
+		margin: 0;
+	}
+	svg{
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		margin: 0;
+	}
+	</style>
+</head>
+<body>
+<label class="checkbox"><input type="checkbox"> Sort values</label>
+
+<div class="graphtitle"></div>
+<div class="graphholder"></div>
+<script>
+//......................START VARIABLES
+var socket = io();
+
+//......................END VARIABLES
+
+//get color of the day
+var coloroftheday = "#ff0000";
+var selectedobject = {};
+
+var art = {};
+art.records = [];
+getMoreArt(0);
+function customSort(a,b) {
+	if ( a[xvar] < b[xvar] )
+			return -1;
+	if ( a[xvar] > b[xvar] )
+			return 1;
+	return 0;
+}
+
+function getMoreArt(count) {
+	$.get("http://api.harvardartmuseums.org/object?gallery=any&apikey=f5473230-3f68-11e4-89b4-73adcea7266b&size=100&from="+count, function(data) {
+		//......................START GET DATA FROM MUSEUM ONCE
+		$.each(data.records, function(j, record) {
+			if(record.primaryimageurl){
+				art.records.push(record);
+			} 
+		});
+		var next = count+100;
+		var transition = true;
+		var cleandata = [];
+		
+
+		//if(data.info.pages > data.info.page) getMoreArt(next);
+		
+		///Limit the number of pages pulled for testing
+		if(2 > data.info.page) getMoreArt(next);
+		
+		else {
+			xvar = "title";
+			yvar = "totalpageviews";
+			var sort = xvar;
+			$.each(art.records, function(j, record) {
+				if(record[yvar]){
+					cleandata.push({
+						objectid: record.objectid,
+						xvar: record[xvar],
+						yvar: record[yvar]
+					});
+				} 
+			});
+			//cleandata.sort(customSort);
+			drawgraph(cleandata,sort,transition);
+			xvar = false;
+		}	
+		//......................END GET DATA FROM MUSEUM ONCE
+
+
+
+		//......................START GET DATA FROM OBJECT MAP
+		socket.on('updated-graph', function(filter){
+			if(filter){
+				console.log("update graph: " + filter);
+
+				//clear array
+				cleandata = [];
+
+				//default-placeholder
+				xvar = "title";
+				yvar = filter;
+				sort = filter;
+				var transition = true;
+
+				///Filters which can't seem to fit in any of these formats (time, attribute, count)
+				/*
+					title (x? y?)
+					objectnumber (x? y?)
+					signed (x? y?)
+					dated (need a range bar graph, from-to)
+					century (format issue)
+
+				*/
+
+
+				//.....................filter type: TIME OR ATTRIBUTE (COUNT NUMBER OF REPEATED VALUES FOR EACH UNIQUE VALUE)
+				if (
+					filter == "accessionyear" || 
+					filter == "medium" || 
+					filter == "department" || 
+					filter == "culture" || 
+					filter == "classification" || 
+					filter == "division" ||
+					filter == "technique" ||
+					filter == "century" 
+
+					) {
+					var unique = {};
+					var countdate = {}; 
+					//count number of time-nums for each unique time
+					for(var num in art.records){
+						var TIME = art.records[num][filter];
+						countdate[TIME] = (countdate[TIME]||0)+1;  
+					}
+					//match and attach number to each unique time num
+					$.each(art.records, function(j, record) {
+						if(record[filter]){
+						if( typeof(unique[record[filter]]) == "undefined"){
+							var cttime_dup = countdate[record[filter]];
+							cleandata.push({
+								objectid: record.objectid,
+								xvar: record[filter],
+								yvar: cttime_dup
+							});
+						}unique[record[filter]] = 0;
+						} 
+					});	
+					//.....................filter type: TIME / cancel transition
+					if(filter == "accessionyear"){
+						transition = false;	
+					}
+					sort = filter;
+				}
+
+				//.....................filter type: COUNT (use object name for xaxis and the value for yaxis)
+				else{
+					$.each(art.records, function(j, record) {
+						if(record[filter]){
+							cleandata.push({
+								objectid: record.objectid,
+								xvar: record[xvar],
+								yvar: record[yvar]
+							});
+						} 
+					});	
+					sort = xvar;		
+				}
+
+				drawgraph(cleandata,sort,transition);
+				xvar = false;
+
+
+
+			}
+		});
+
+		//......................END GET DATA FROM OBJECT MAP
+
+	});//end harvard museum json
+}
+
+
+///DRAW SVG GRAPH
+function drawgraph(artrecord,sort,transition){
+	$(".graphholder").empty();
+	$(".graphtitle").html("metadata field: "+yvar).css({"color":coloroftheday});
+	
+	var margin = {top: 0, right: 0, bottom: 0, left: 0},
+    width = $(".graphholder").width(),
+    height = $(".graphholder").height();
+
+	var formatPercent = d3.format(".0%");
+
+	//width of bars in relation to number of bars and with of screen
+	var x = d3.scale.ordinal()
+	    .rangeRoundBands([0, width], .1, 0);
+
+	var y = d3.scale.linear()
+	    .range([height, 10]);
+
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient("bottom");
+
+	var yAxis = d3.svg.axis()
+	    .scale(y)
+	    .orient("left")
+	    .tickFormat(formatPercent);
+
+	var svg = d3.select(".graphholder").append("svg").append("g");
+
+	data = artrecord;
+
+/*NOT SURE WHAT THIS IS FOR YET
+	data.forEach(function(d) {
+		d[yvar] = +d[yvar];
+	});
+*/
+	x.domain(data.map(function(d) {
+		return d.xvar; 
+	}));
+
+
+	y.domain([0, d3.max(data, function(d) { 
+		return d.yvar; 
+	})]);
+
+
+
+//......................START ELEMENTS
+ //the bars
+svg.selectAll(".bar")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", function(d) { return x(d.xvar); })
+    .attr("width", x.rangeBand())
+    .attr("y", function(d) { return y(d.yvar); })
+    .attr("height", function(d) { return height - y(d.yvar); })
+
+	console.log("NEW GRAPH TEST123: "+selectedobject['id']);
+	highlightobject(selectedobject['id']);
+
+	///get object id of slected object in object map
+	socket.on('updated-graphobj', function(objid){
+		if(objid){
+		selectedobject['id'] = objid;
+		console.log("CLICK OBJ TEST123: "+selectedobject['id']);
+		highlightobject(objid);
+		}
+	});
+
+	function highlightobject(objid){
+		var highlight = [];
+		$.each(art.records, function(j, record) {
+			if(record.objectid == objid){
+				console.log(record[sort]);
+				highlight.push(record[sort]);
+			} 
+		});		
+		//reset to default color
+		svg.selectAll(".x.axis path").style("fill", "#ff0000");
+		svg.selectAll(".bar").style("fill", "#fff")
+		.each(function(d) {
+		       var header = d3.select(this);
+		       //highlight selected object
+		       if(d.xvar == highlight[0]){
+		          		d3.select(this).style("fill", coloroftheday);
+		       }
+		});
+	}
+
+  //x axis labels 
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+      		.selectAll("text")  
+      		.attr("dx", "3")
+	     	.attr("dy", "-7")
+      		.style("text-anchor", "start")
+      		.style("fill", "#999")
+      	    .attr("transform", function(d) {
+	        return "rotate(-90)" 
+	     	});
+
+//......................END ELEMENTS
+
+//......................START TOGGLE SORTING
+var testonce = true;
+var toggleenter = false;
+d3.select("input").property("checked", false).each(change);
+$(document).keypress(function(e) {
+    if(e.which == 13) {
+	    	if(toggleenter == true){
+	    		testonce = true;
+	    		toggleenter = false;
+	    		//console.log("checked");
+		        d3.select("input").property("checked", true).each(change);
+	    	}else{
+	    		testonce = true;
+	    		toggleenter = true;
+	    		//console.log("unchecked");
+	    		d3.select("input").property("checked", false).each(change);	
+	    	}
+    }
+});
+//......................END TOGGLE SORTING
+
+//......................START SORTING TRANSITIONS
+if(transition){
+  var sortTimeout = setTimeout(function() {
+  	testonce = true;
+    d3.select("input").property("checked", true).each(change);
+  }, 5000);
+}
+
+  function change() {
+  	if(testonce){
+    clearTimeout(sortTimeout);
+
+    // Copy-on-write since tweens are evaluated after a delay.
+    var x0 = x.domain(data.sort(this.checked
+        ? function(a, b) { return b.yvar - a.yvar; }
+        : function(a, b) { return d3.ascending(a.xvar, b.xvar); })
+        .map(function(d) { return d.xvar; }))
+        .copy();
+
+    var transition = svg.transition().duration(2000),
+        delay = function(d, i) { return i * 50; };
+
+    transition.selectAll(".bar")
+        //.delay(delay)
+        .attr("x", function(d) { return x0(d.xvar); });
+
+    transition.select(".x.axis")
+        .call(xAxis)
+      	.selectAll("text")
+      	.attr("dx", "3")
+	    .attr("dy", "-7")
+        .style("text-anchor", "start")
+      	//.selectAll("g")
+        //.delay(delay);
+  }
+  testonce = false;
+  }
+//......................END SORTING TRANSITIONS
+
+}
+</script>
+</body>
+</html>

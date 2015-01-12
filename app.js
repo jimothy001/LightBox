@@ -148,7 +148,20 @@ io.on('connection', function (socket) {
 		});
 		
 	});
-	
+
+	//UPDATE GRAPH, SEND ARRAY FROM OBJECT MAP TO GRAPH
+	socket.on('update-graph', function(data) {
+		console.dir("UPDATE GRAPH");
+		io.emit('updated-graph', data);
+	});
+
+	//HIGHLIGHT SELECTED OBJECT IN THE GRAPH
+	socket.on('selectobj-graph', function(data) {
+		console.dir("UPDATE GRAPH _ highlight selected object");
+		io.emit('updated-graphobj', data);
+	});	
+
+
 });
 
 

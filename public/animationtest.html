@@ -58,7 +58,7 @@
 			right: 0;
 			z-index: 9999;
 			height: 100px;
-			display:none;
+			/*display:none;*/
 	
 		}
 		.button div {
@@ -505,6 +505,7 @@ $(".metadata, .metadata_back").on("click", function(e) {
 	if($(e.target).hasClass("searchfield")) {
 		sort = $(e.target).html();
 		art.records.sort(customSort);
+		updategraph(sort);
 		populateMap();
 	} 
 	else {
@@ -600,6 +601,8 @@ function showFilters(curr) {
 function showArtObject(curr) {
 			if(!curr.objectid) return false;
 			
+			updategraph_highlight(curr.objectid);
+
 			$(".message_hldr").hide();
 
 			$('.metadata .circ').html("F");
@@ -835,15 +838,28 @@ function getMoreArt(count) {
 		});
 		var next = count+100;
 		if(data.info.pages > data.info.page) getMoreArt(next);
+		//if(1 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
+			updategraph(sort);
 			populateMap();
 			sort = false;
+			
 		}
 	});	
 }
 		
+function updategraph(sort){
+	var array = "the pushed array sent";
+	socket.emit('update-graph', sort);
+}
+
+function updategraph_highlight(objid){
+	var id = objid;
+	socket.emit('selectobj-graph', id);
+}
+
 var day = dayofyear(new Date()) +1;
 
 function dayofyear(d) {   // d is a Date object
@@ -1076,7 +1092,7 @@ $(window).load(function(){
 			clearTimeout(timeout_rand_obj);
 			clearTimeout(openclose);
 			timerstart = setTimeout(startshuffle, inactive_time);
-			console.log('set timers to zero!');
+			//console.log('set timers to zero!');
 		}
 	}
 	//.....disable mouse interaction for n seconds starting at shuffle (to prevent that bug from occuring in IE 11)
