@@ -161,6 +161,12 @@ io.on('connection', function (socket) {
 		io.emit('updated-graphobj', data);
 	});	
 
+	//UNHIGHLIGHT OBJECT IN THE GRAPH
+	socket.on('deselectobj-graph', function(data) {
+		console.dir("REMOVE HIGHLIGHT");
+		io.emit('updated-graphobj_del');
+	});	
+
 
 });
 
