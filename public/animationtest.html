@@ -513,6 +513,7 @@ $(".metadata, .metadata_back").on("click", function(e) {
 		if ($(e.target).closest('#toggle').length === 0) {
 		$(".metadata, .metadata_back").fadeOut(500);
 		$("#highlight").show();
+		updategraph_unhighlight();
 		curr = false;	
 		}	
 	}
@@ -839,8 +840,8 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		if(data.info.pages > data.info.page) getMoreArt(next);
-		//if(1 > data.info.page) getMoreArt(next);
+		//if(data.info.pages > data.info.page) getMoreArt(next);
+		if(2 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
@@ -861,6 +862,11 @@ function updategraph_highlight(objid){
 	var id = objid;
 	socket.emit('selectobj-graph', id);
 }
+
+function updategraph_unhighlight(){
+	socket.emit('deselectobj-graph');
+}
+
 
 var day = dayofyear(new Date()) +1;
 

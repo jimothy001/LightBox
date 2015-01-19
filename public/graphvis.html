@@ -4,6 +4,7 @@
 		<script src="http://d3js.org/d3.v3.min.js"></script>
 		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" ></script> 
 		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+		<link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
 	<style>
 
 	body {
@@ -52,7 +53,9 @@
 		height: 3vh;
 		width: 100vw;
 		overflow: hidden;
-		line-height: 20px;
+		line-height: 25px;
+		font-size: 12px;
+		font-family: 'Inconsolata',sans-serif;
 	}
 	.graphholder{
 		height: 500px;
@@ -75,13 +78,26 @@
 <div class="graphtitle"></div>
 <div class="graphholder"></div>
 <script>
-//......................START VARIABLES
+
 var socket = io();
 
-//......................END VARIABLES
-
 //get color of the day
+var day = dayofyear(new Date()) +1;
+function dayofyear(d) {   // d is a Date object
+	var yn = d.getFullYear();
+	var mn = d.getMonth();
+	var dn = d.getDate();
+	var d1 = new Date(yn,0,1,12,0,0); // noon on Jan. 1
+	var d2 = new Date(yn,mn,dn,12,0,0); // noon on input date
+	var ddiff = Math.round((d2-d1)/864e5);
+	return ddiff+1; 
+}
 var coloroftheday = "#ff0000";
+$.get("http://api.harvardartmuseums.org/spectrum/"+day+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(d) {
+	coloroftheday = d.color;
+});
+
+
 var selectedobject = {};
 
 var art = {};
@@ -229,7 +245,7 @@ function getMoreArt(count) {
 ///DRAW SVG GRAPH
 function drawgraph(artrecord,sort,transition){
 	$(".graphholder").empty();
-	$(".graphtitle").html("metadata field: "+yvar).css({"color":coloroftheday});
+	$(".graphtitle").html("metadata field: <b>"+yvar+"</b>").css({"color":coloroftheday});
 	
 	var margin = {top: 0, right: 0, bottom: 0, left: 0},
     width = $(".graphholder").width(),
@@ -296,6 +312,14 @@ svg.selectAll(".bar")
 		}
 	});
 
+	///remove highlight
+	socket.on('updated-graphobj_del', function(objid){
+		console.log("remove highlights");
+		svg.selectAll(".bar").style("fill", "#fff");
+	});
+
+
+
 	function highlightobject(objid){
 		var highlight = [];
 		$.each(art.records, function(j, record) {
@@ -305,8 +329,8 @@ svg.selectAll(".bar")
 			} 
 		});		
 		//reset to default color
-		svg.selectAll(".x.axis path").style("fill", "#ff0000");
 		svg.selectAll(".bar").style("fill", "#fff")
+		//highlight bar
 		.each(function(d) {
 		       var header = d3.select(this);
 		       //highlight selected object

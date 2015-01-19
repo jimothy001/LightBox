@@ -529,12 +529,14 @@ $(".metadata, .metadata_back").on("click", function(e) {
 	if($(e.target).hasClass("searchfield")) {
 		sort = $(e.target).html();
 		art.records.sort(customSort);
+		updategraph(sort);
 		populateMap();
 	} 
 	else {
 		if ($(e.target).closest('#toggle').length === 0) {
 		$(".metadata, .metadata_back").fadeOut(500);
 		$("#highlight").show();
+		updategraph_unhighlight();
 		curr = false;	
 		}	
 	}
@@ -625,6 +627,8 @@ function showFilters(curr) {
 function showArtObject(curr) {
 			if(!curr.objectid) return false;
 			
+			updategraph_highlight(curr.objectid);
+
 			$(".message_hldr").hide();
 
 			$('.metadata .circ').html("F");
@@ -859,16 +863,32 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		if(data.info.pages > data.info.page) getMoreArt(next);
+		//if(data.info.pages > data.info.page) getMoreArt(next);
+		if(2 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
+			updategraph(sort);
 			populateMap();
 			sort = false;
 		}
 	});	
 }
 		
+function updategraph(sort){
+	var array = "the pushed array sent";
+	socket.emit('update-graph', sort);
+}
+
+function updategraph_highlight(objid){
+	var id = objid;
+	socket.emit('selectobj-graph', id);
+}
+
+function updategraph_unhighlight(){
+	socket.emit('deselectobj-graph');
+}
+
 var day = dayofyear(new Date()) +1;
 
 function dayofyear(d) {   // d is a Date object
