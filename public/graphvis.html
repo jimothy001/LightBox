@@ -15,13 +15,12 @@
 	  padding: 0;
 	  width: 100%;
 	  height: 100%;
-	  background: black;
-	  color: white;
+	  background: #000;
+	  color: black;
 	  overflow: hidden;
 	}
 
 	.axis text {
-	  
 	}
 
 	.axis path,
@@ -34,6 +33,12 @@
 	.bar {
 	  fill: #fff;
 	  z-index: -1;
+	}
+	.labels{
+	  color: blue;
+	}
+	.lines{
+	  color: pink;
 	}
 
 	.x.axis path {
@@ -120,14 +125,13 @@ function getMoreArt(count) {
 			} 
 		});
 		var next = count+100;
-		var transition = true;
 		var cleandata = [];
-		
+		var graphtype = "count";
 
-		//if(data.info.pages > data.info.page) getMoreArt(next);
+		if(data.info.pages > data.info.page) getMoreArt(next);
 		
 		///Limit the number of pages pulled for testing
-		if(2 > data.info.page) getMoreArt(next);
+		//if(1 > data.info.page) getMoreArt(next);
 		
 		else {
 			xvar = "title";
@@ -143,12 +147,13 @@ function getMoreArt(count) {
 				} 
 			});
 			//cleandata.sort(customSort);
-			drawgraph(cleandata,sort,transition);
+			drawgraph(cleandata,sort,graphtype);
 			xvar = false;
 		}	
 		//......................END GET DATA FROM MUSEUM ONCE
 
-
+	});//end harvard museum json
+}
 
 		//......................START GET DATA FROM OBJECT MAP
 		socket.on('updated-graph', function(filter){
@@ -156,13 +161,13 @@ function getMoreArt(count) {
 				console.log("update graph: " + filter);
 
 				//clear array
-				cleandata = [];
+				var cleandata = [];
 
 				//default-placeholder
 				xvar = "title";
 				yvar = filter;
 				sort = filter;
-				var transition = true;
+				var graphtype = "attribute";
 
 				///Filters which can't seem to fit in any of these formats (time, attribute, count)
 				/*
@@ -209,7 +214,7 @@ function getMoreArt(count) {
 					});	
 					//.....................filter type: TIME / cancel transition
 					if(filter == "accessionyear"){
-						transition = false;	
+						graphtype = "time";
 					}
 					sort = filter;
 				}
@@ -225,10 +230,11 @@ function getMoreArt(count) {
 							});
 						} 
 					});	
-					sort = xvar;		
+					sort = xvar;	
+					graphtype = "count";	
 				}
 
-				drawgraph(cleandata,sort,transition);
+				drawgraph(cleandata,sort,graphtype);
 				xvar = false;
 
 
@@ -238,12 +244,12 @@ function getMoreArt(count) {
 
 		//......................END GET DATA FROM OBJECT MAP
 
-	});//end harvard museum json
-}
+
+
 
 
 ///DRAW SVG GRAPH
-function drawgraph(artrecord,sort,transition){
+function drawgraph(artrecord,sort,graphtype){
 	$(".graphholder").empty();
 	$(".graphtitle").html("metadata field: <b>"+yvar+"</b>").css({"color":coloroftheday});
 	
@@ -255,10 +261,13 @@ function drawgraph(artrecord,sort,transition){
 
 	//width of bars in relation to number of bars and with of screen
 	var x = d3.scale.ordinal()
-	    .rangeRoundBands([0, width], .1, 0);
+	    .rangeBands([0, width], 0, 0);
+
+
+
 
 	var y = d3.scale.linear()
-	    .range([height, 10]);
+	    .range([height, 0]);
 
 	var xAxis = d3.svg.axis()
 	    .scale(x)
@@ -269,28 +278,123 @@ function drawgraph(artrecord,sort,transition){
 	    .orient("left")
 	    .tickFormat(formatPercent);
 
-	var svg = d3.select(".graphholder").append("svg").append("g");
+	var svg = d3.select(".graphholder").append("svg");
+
+
 
 	data = artrecord;
 
-/*NOT SURE WHAT THIS IS FOR YET
+//NOT SURE WHAT THIS IS FOR YET
 	data.forEach(function(d) {
 		d[yvar] = +d[yvar];
 	});
-*/
+
 	x.domain(data.map(function(d) {
 		return d.xvar; 
 	}));
 
 
+
+
 	y.domain([0, d3.max(data, function(d) { 
+		//console.log(d.yvar);
 		return d.yvar; 
 	})]);
 
 
 
 //......................START ELEMENTS
- //the bars
+
+
+var datalimit = 5;
+
+//THE LINES AND YLABELS
+//get largest value in data
+var largest = 0;
+for (i = 0; i < data.length; i++) {
+    if (data[i].yvar > largest) {
+        largest = data[i].yvar;
+    } 
+}
+//get factor closest to division
+var division = 20;
+var factors = [];
+var str = "0";
+for (i=1;i<=largest;i++){
+	if (largest % i == 0){
+        str += ','+i;
+        factors.push(i);
+    }
+}
+function closest (num, arr) {
+    var curr = arr[0];
+    var diff = Math.abs (num - curr);
+    for (var val = 0; val < arr.length; val++) {
+        var newdiff = Math.abs (num - arr[val]);
+        if (newdiff < diff) {
+            diff = newdiff;
+            curr = arr[val];
+        }
+    }
+    return curr;
+}
+var division_factor = closest(division, factors)
+
+//divide greatest number by factored division
+var ylabels = [];
+for (i = 0; i < division_factor+1; i++) {
+	ylabels.push(Math.ceil((largest/division_factor)*i));
+}
+console.log("largest:"+largest);
+console.log("closest div:"+division_factor);
+console.log("ylabels: "+ylabels);
+//draw the lines
+svg.selectAll(".lines")
+    .data(ylabels)
+    .enter().append("line")
+    .attr("class", "lines")
+    .attr("x1", function(d) { return 0; })
+    .attr("x2", function(d) { return width; })
+    .attr("y1", function(d) { 
+    	//console.log("test: "+d);
+    	return y(d); 
+    })
+    .attr("y2", function(d) { 
+    	//console.log(largest);
+    	return y(d); 
+    })
+	.attr("stroke-width", 0.5)
+	.attr("stroke", "#555");
+//y axis labels 
+svg.selectAll(".ylabels_l")
+    .data(ylabels)
+    .enter().append("text")
+    .attr("class", "ylabels_l")
+    .text( function (d) { return ""+d+""; })
+    .attr("x", function(d) { return 0; })
+    .attr("y", function(d) { 
+    	return y(d);
+    })
+    .style("fill", "#ccc")
+    .attr("dy", "10");
+svg.selectAll(".ylabels_r")
+    .data(ylabels)
+    .enter().append("text")
+    .attr("class", "ylabels_r")
+    .text( function (d) { return ""+d+""; })
+    .attr("x", function(d) { return width; })
+    .attr("y", function(d) { 
+    	//console.log("test: "+d);
+    	return y(d);
+    })
+    .style("fill", "#ccc")
+    .style("text-anchor", "end")
+    .attr("dx", "-5")
+    .attr("dy", "10");
+
+
+
+//the bars
 svg.selectAll(".bar")
     .data(data)
     .enter().append("rect")
@@ -300,8 +404,13 @@ svg.selectAll(".bar")
     .attr("y", function(d) { return y(d.yvar); })
     .attr("height", function(d) { return height - y(d.yvar); })
 
+
+
+
 	console.log("NEW GRAPH TEST123: "+selectedobject['id']);
+	//if(selectedobject.length){
 	highlightobject(selectedobject['id']);
+	//}
 
 	///get object id of slected object in object map
 	socket.on('updated-graphobj', function(objid){
@@ -316,6 +425,19 @@ svg.selectAll(".bar")
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
 		svg.selectAll(".bar").style("fill", "#fff");
+		//svg.selectAll(".indicator").style("stroke-width", 0);
+				svg.selectAll(".tick") 
+		    .each(function(d, i) { 
+				if(x.rangeBand() > datalimit){
+					d3.select(this).selectAll('text')
+					.style("fill", "#999")
+					.style("opacity", "1");
+				}else{
+					d3.select(this).selectAll('text')
+					.style("fill", "#ccc")
+					.style("opacity", "0.3");				
+				}
+			});
 	});
 
 
@@ -328,17 +450,44 @@ svg.selectAll(".bar")
 				highlight.push(record[sort]);
 			} 
 		});		
-		//reset to default color
+		//reset bars to default color
 		svg.selectAll(".bar").style("fill", "#fff")
 		//highlight bar
 		.each(function(d) {
-		       var header = d3.select(this);
 		       //highlight selected object
 		       if(d.xvar == highlight[0]){
 		          		d3.select(this).style("fill", coloroftheday);
 		       }
 		});
+		/*//reset indicators to default color
+		svg.selectAll(".indicator").style("stroke-width", "0")
+		//highlight indicator
+		.each(function(d) {
+		       //highlight selected object
+		       if(d.xvar == highlight[0]){
+		          	d3.select(this).style("stroke-width", 1);
+		       }
+		});*/
+		//highlight label
+		svg.selectAll(".tick") 
+		    .each(function(d, i) { 
+			   	if(d == highlight[0]) {
+			   		if(x.rangeBand() > datalimit){
+					d3.select(this).selectAll('text')
+					  .style("fill", "white")
+					  .style("opacity", "1");
+					}else{
+					  d3.select(this).selectAll('text')
+					  .style("fill", coloroftheday)
+					  .style("opacity", "1");					
+					}
+			    }
+			});
+
 	}
+
+
+
 
   //x axis labels 
   svg.append("g")
@@ -346,13 +495,60 @@ svg.selectAll(".bar")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
       		.selectAll("text")  
-      		.attr("dx", "3")
+      		//.attr("dx", "3")
+      		.attr("dx", function(d) {     
+      			//console.log(dx);
+	 			//if (0 < x(d.xvar) && x(d.xvar) < 500) {return "10")}
+	 			//else {
+	 				return "3"
+	 			//}         
+	    	;})   
 	     	.attr("dy", "-7")
       		.style("text-anchor", "start")
-      		.style("fill", "#999")
+      		.style("fill", function(d,i) {   
+      			if(x.rangeBand() > datalimit){
+      				return "#999999" 
+      			}else{
+      				return "#ccc"
+      			}	     
+	    	;})   
+      		.style("opacity", function(d) {   
+      			if(x.rangeBand() > datalimit){
+      				return 1 
+      			}else{
+      				return 0.3 
+      			}	     
+	    	;})   
       	    .attr("transform", function(d) {
-	        return "rotate(-90)" 
-	     	});
+ 			return "rotate(-90)" 
+	     	})
+
+
+
+
+
+/*
+//the indicator
+svg.selectAll(".indicator")
+    .data(data)
+    .enter().append("rect")
+    .attr("class", "indicator")
+    .attr("x", function(d) { return x(d.xvar); })
+    //.attr("width", x.rangeBand()-1)
+    .attr("width", function(d) { 
+    	if(x.rangeBand() < 10){
+    		return x.rangeBand()+4; 
+    	}else{
+    		return 0; 
+    	}
+    })
+    .attr("y", function(d) { return 0; })
+    .attr("height", height)
+    //.attr("stroke-width", 1)
+    .attr("stroke-width", 0)  
+	.attr("stroke", coloroftheday)
+	.style("fill", "transparent");
+*/
 
 //......................END ELEMENTS
 
@@ -378,7 +574,7 @@ $(document).keypress(function(e) {
 //......................END TOGGLE SORTING
 
 //......................START SORTING TRANSITIONS
-if(transition){
+if(graphtype != "time"){
   var sortTimeout = setTimeout(function() {
   	testonce = true;
     d3.select("input").property("checked", true).each(change);
@@ -399,9 +595,12 @@ if(transition){
     var transition = svg.transition().duration(2000),
         delay = function(d, i) { return i * 50; };
 
-    transition.selectAll(".bar")
+    transition.selectAll(".bar,.indicator")
         //.delay(delay)
         .attr("x", function(d) { return x0(d.xvar); });
+
+
+   
 
     transition.select(".x.axis")
         .call(xAxis)
@@ -411,12 +610,15 @@ if(transition){
         .style("text-anchor", "start")
       	//.selectAll("g")
         //.delay(delay);
+        
   }
   testonce = false;
   }
 //......................END SORTING TRANSITIONS
 
 }
+
+
 </script>
 </body>
 </html>
