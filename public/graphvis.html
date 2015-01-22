@@ -9,42 +9,27 @@
 
 	body {
 	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-	  font-size: 8px;
+	  font-size: 11px;
 	  position: relative;
 	  margin: 0;
 	  padding: 0;
 	  width: 100%;
 	  height: 100%;
-	  background: #000;
-	  color: black;
 	  overflow: hidden;
 	}
 
-	.axis text {
-	}
 
-	.axis path,
-	.axis line {
-	  fill: none;
-	  stroke: #000;
-	  shape-rendering: crispEdges;
-	}
 
 	.bar {
-	  fill: #fff;
 	  z-index: -1;
-	}
-	.labels{
-	  color: blue;
-	}
-	.lines{
-	  color: pink;
 	}
 
 	.x.axis path {
 	  display: none;
 	}
-
+	.ylabels_l,.ylabels_r{
+		font-size: 8px;
+	}
 
 	.checkbox{
 		position: absolute;
@@ -53,7 +38,6 @@
 		display: none;
 	}
 	.graphtitle{
-		border-bottom: 1px solid #333;
 		height: 3vh;
 		width: 100vw;
 		overflow: hidden;
@@ -82,6 +66,15 @@
 <div class="graphtitle"></div>
 <div class="graphholder"></div>
 <script>
+
+var color1 = "white";
+var color2 = "black";
+var gray1 = "#999"; //lighter text
+var gray2 = "#333"; //lines
+var gray3 = "#aaa"; //darker text
+
+$("body,html").css({"background":color2});
+$(".graphtitle").css({"border-bottom":"1px solid "+ gray2});
 
 var socket = io();
 
@@ -305,7 +298,7 @@ function drawgraph(artrecord,sort,graphtype){
 //......................START ELEMENTS
 
 
-var datalimit = 5;
+var datalimit = 10;
 
 //THE LINES AND YLABELS
 //get largest value in data
@@ -363,7 +356,7 @@ svg.selectAll(".lines")
     	return y(d); 
     })
 	.attr("stroke-width", 1)
-	.attr("stroke", "#333");
+	.attr("stroke", gray2);
 //y axis labels 
 svg.selectAll(".ylabels_l")
     .data(ylabels)
@@ -374,7 +367,7 @@ svg.selectAll(".ylabels_l")
     .attr("y", function(d) { 
     	return y(d);
     })
-    .style("fill", "#ccc")
+    .style("fill", gray3)
     .attr("dy", "10");
 svg.selectAll(".ylabels_r")
     .data(ylabels)
@@ -386,7 +379,7 @@ svg.selectAll(".ylabels_r")
     	//console.log("test: "+d);
     	return y(d);
     })
-    .style("fill", "#ccc")
+    .style("fill", gray3)
     .style("text-anchor", "end")
     .attr("dx", "-5")
     .attr("dy", "10");
@@ -402,6 +395,7 @@ svg.selectAll(".bar")
     .attr("width", x.rangeBand())
     .attr("y", function(d) { return y(d.yvar); })
     .attr("height", function(d) { return height - y(d.yvar); })
+    .style("fill", color1);
 
 
 
@@ -423,17 +417,17 @@ svg.selectAll(".bar")
 	///remove highlight
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
-		svg.selectAll(".bar").style("fill", "#fff");
-		//svg.selectAll(".indicator").style("stroke-width", 0);
-				svg.selectAll(".tick") 
+		svg.selectAll(".bar").style("fill", color1);
+		svg.selectAll(".indicator").style("fill", "transparent");
+		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
 				if(x.rangeBand() > datalimit){
 					d3.select(this).selectAll('text')
-					.style("fill", "#999")
+					.style("fill", gray3)
 					.style("opacity", "1");
 				}else{
 					d3.select(this).selectAll('text')
-					.style("fill", "#ccc")
+					.style("fill", gray1)
 					.style("opacity", "0.3");				
 				}
 			});
@@ -450,7 +444,7 @@ svg.selectAll(".bar")
 			} 
 		});		
 		//reset bars to default color
-		svg.selectAll(".bar").style("fill", "#fff")
+		svg.selectAll(".bar").style("fill", color1)
 		//highlight bar
 		.each(function(d) {
 		       //highlight selected object
@@ -458,27 +452,33 @@ svg.selectAll(".bar")
 		          		d3.select(this).style("fill", coloroftheday);
 		       }
 		});
-		/*//reset indicators to default color
-		svg.selectAll(".indicator").style("stroke-width", "0")
+		//reset indicators to default color
+		svg.selectAll(".indicator").style("fill", "transparent")
 		//highlight indicator
 		.each(function(d) {
 		       //highlight selected object
 		       if(d.xvar == highlight[0]){
-		          	d3.select(this).style("stroke-width", 1);
+			   		if(x.rangeBand() > datalimit){
+					  d3.select(this).style("fill", "transparent");
+					}else{
+					  d3.select(this).style("fill", coloroftheday);		
+					}
 		       }
-		});*/
+		});
 		//highlight label
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
 			   	if(d == highlight[0]) {
-			   		if(x.rangeBand() > datalimit){
-					d3.select(this).selectAll('text')
-					  .style("fill", "white")
+			   		d3.select(this).selectAll('text')
 					  .style("opacity", "1");
+			   		if(x.rangeBand() > datalimit){
+					  d3.select(this).selectAll('text')
+					  .style("fill", color1)
 					}else{
 					  d3.select(this).selectAll('text')
-					  .style("fill", coloroftheday)
-					  .style("opacity", "1");					
+					  .style("fill", coloroftheday)	
+					  .attr("dy", "-15")
+					  .attr("font-size", "15px")			
 					}
 			    }
 			});
@@ -506,9 +506,9 @@ svg.selectAll(".bar")
       		.style("text-anchor", "start")
       		.style("fill", function(d,i) {   
       			if(x.rangeBand() > datalimit){
-      				return "#999999" 
+      				return gray3 
       			}else{
-      				return "#ccc"
+      				return gray1
       			}	     
 	    	;})   
       		.style("opacity", function(d) {   
@@ -526,7 +526,7 @@ svg.selectAll(".bar")
 
 
 
-/*
+
 //the indicator
 svg.selectAll(".indicator")
     .data(data)
@@ -534,20 +534,11 @@ svg.selectAll(".indicator")
     .attr("class", "indicator")
     .attr("x", function(d) { return x(d.xvar); })
     //.attr("width", x.rangeBand()-1)
-    .attr("width", function(d) { 
-    	if(x.rangeBand() < 10){
-    		return x.rangeBand()+4; 
-    	}else{
-    		return 0; 
-    	}
-    })
+    .attr("width", x.rangeBand())
     .attr("y", function(d) { return 0; })
     .attr("height", height)
-    //.attr("stroke-width", 1)
-    .attr("stroke-width", 0)  
-	.attr("stroke", coloroftheday)
 	.style("fill", "transparent");
-*/
+
 
 //......................END ELEMENTS
 
