@@ -152,6 +152,7 @@ io.on('connection', function (socket) {
 	//UPDATE GRAPH, SEND ARRAY FROM OBJECT MAP TO GRAPH
 	socket.on('update-graph', function(data) {
 		console.dir("UPDATE GRAPH");
+		console.dir(data);
 		io.emit('updated-graph', data);
 	});
 
