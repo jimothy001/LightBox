@@ -47,14 +47,13 @@
 
 
 	.checkbox{
-		border: 1px solid blue;
 		position: absolute;
 		top: 0;
 		right: 0;
 		display: none;
 	}
 	.graphtitle{
-		border-bottom: 1px solid #373737;
+		border-bottom: 1px solid #333;
 		height: 3vh;
 		width: 100vw;
 		overflow: hidden;
@@ -363,8 +362,8 @@ svg.selectAll(".lines")
     	//console.log(largest);
     	return y(d); 
     })
-	.attr("stroke-width", 0.5)
-	.attr("stroke", "#555");
+	.attr("stroke-width", 1)
+	.attr("stroke", "#333");
 //y axis labels 
 svg.selectAll(".ylabels_l")
     .data(ylabels)
