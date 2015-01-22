@@ -439,6 +439,7 @@ $(document).keypress(function(e) {
 			if(sort) {
 				console.log(sort);
 				art.records.sort(customSort);
+				updategraph(sort);
 				populateMap();
 			} else if(filterhover) {
 				if(!filters) {
@@ -863,8 +864,8 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		//if(data.info.pages > data.info.page) getMoreArt(next);
-		if(2 > data.info.page) getMoreArt(next);
+		if(data.info.pages > data.info.page) getMoreArt(next);
+		//if(2 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
@@ -877,6 +878,7 @@ function getMoreArt(count) {
 		
 function updategraph(sort){
 	var array = "the pushed array sent";
+	console.log("the pushed array sent");
 	socket.emit('update-graph', sort);
 }
 
