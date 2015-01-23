@@ -436,7 +436,6 @@ $(document).keypress(function(e) {
 	
 		if(curr) {
 			if(sort) {
-				console.log(sort);
 				art.records.sort(customSort);
 				updategraph(sort);
 				populateMap();
@@ -454,7 +453,8 @@ $(document).keypress(function(e) {
 			
 			} else {
 				$(".metadata, .metadata_back").hide();
-				$("#highlight").show();		
+				$("#highlight").show();	
+				updategraph_unhighlight();	
 				curr = false;
 			}
 		} else {
@@ -464,7 +464,6 @@ $(document).keypress(function(e) {
 					if(mouseX > val.x1 && mouseX < val.x1+w) {
 						if(mouseY > val.y1 && mouseY < val.y1+h) {
 							curr = val;
-							console.log(curr);
 							return false;
 						}
 					}
@@ -509,12 +508,10 @@ $("#toggle").on("mouseout", function() {
 $("#toggle").on("click", function() {
 	//window.location.href = window.location.origin+"/9panels.html";
 	if($('.metadata .p1 .phldr').is(":visible") ){
-		console.log('show filters');
 		$('.metadata .circ').html("{/}");
 		showFilters(curr);
 		filters = true;
 	}else{
-		console.log('show metadata');
 		$('.metadata .circ').html("F");
 		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
 		$(".metadata .phldr").fadeIn();	
@@ -581,7 +578,6 @@ $(document).on("click", function(e) {
 			});
 			
 			showArtObject(curr);
-			console.log(curr.objectid);
 			
 		}
 });
@@ -839,12 +835,10 @@ function showArtObject(curr) {
 			
 			$(".searchfield").on("mouseover", function(e) {
 				sort = $(e.target).html();
-				console.log("sort on");
 			});
 			
 			$(".searchfield").on("mouseout", function(e) {
 				sort = false;
-				console.log("sort off");
 			});
 } 
 
@@ -877,7 +871,6 @@ function getMoreArt(count) {
 		
 function updategraph(sort){
 	var array = "the pushed array sent";
-	console.log("the pushed array sent");
 	socket.emit('update-graph', sort);
 }
 
@@ -910,7 +903,6 @@ var w = window.innerWidth / 48;
 var h = window.innerHeight / 30;
 $("#highlight").width(w);
 $("#highlight").height(h);
-					console.log(w);
 function populateMap(rand) {
 	ctx.clearRect(0,0,map.width,map.height);
 	itemX = 48;
@@ -926,7 +918,6 @@ function populateMap(rand) {
 		}
 	}
 
-	console.log("?");
 	var rand_objs = [];	
 	var num_rand_obj = 3
 	for (i = 0; i < num_rand_obj; i++) {
@@ -936,6 +927,7 @@ function populateMap(rand) {
 	//messages_ranobj(rand,rand_objs);
 }
 
+/*
 function messages_ranobj(rand,rand_objs){
 var message_delay = 5000; ///TIME BETWEEN EACH TEXT MESSAGE
 var message_start_delay = 5000; ///TIME BETWEEN SHUFFLE AND FIRST MESSAGE START	
@@ -974,17 +966,16 @@ if(!rand){
 				}
 			});
 		}
-	}
+	}*/
 	///MESSAGES END///
 
 	///RANDOM OBJ START///
-	
+	/*
 	function start_rand_obj(){
 	var curNewsIndex = -1;
 	function show_rand_obj() {
 	    ++curNewsIndex;
 	    var curr_rand_obj = rand_objs[curNewsIndex];   // set new news item into the ticker
-		console.log(curr_rand_obj);
 		showArtObject(curr_rand_obj);
 		function openclose_rand_obj() {
 			$(".metadata, .metadata_back").fadeOut(500);
@@ -1003,7 +994,7 @@ if(!rand){
 
 
 }
-
+*/
 
 
 function addImage(order, x, y) {
