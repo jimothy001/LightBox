@@ -1,6 +1,6 @@
 {
-  "name": "intro",
-  "description": "intro app",
+  "name": "lightbox",
+  "description": "lightbox app",
   "version": "0.0.1",
   "private": true,
   "dependencies": {
@@ -14,5 +14,9 @@
     "socket.io" :"*",
     "mongodb": "*",
     "mongoose": "*"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "2.4.x"
   }
 }
