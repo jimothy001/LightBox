@@ -6,7 +6,7 @@ var serveStatic = require('serve-static');
 var finalhandler = require('finalhandler');
 var errorhandler = require('errorhandler');
 var mongoose = require('mongoose');
-var im = require('imagemagick');
+//var im = require('imagemagick');
 
 
 var app=express();
