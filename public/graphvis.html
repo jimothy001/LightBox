@@ -126,6 +126,7 @@ function getMoreArt(count) {
 		//if(1 > data.info.page) getMoreArt(next);
 		
 		else {
+			/*
 			xvar = "title";
 			yvar = "totalpageviews";
 			var sort = xvar;
@@ -141,7 +142,32 @@ function getMoreArt(count) {
 			//cleandata.sort(customSort);
 			drawgraph(cleandata,sort,graphtype);
 			xvar = false;
+			*/
+			xvar = "title";
+			yvar = "colorcount";
+			var sort = xvar;
+
+			$.each(art.records, function(j, record) {
+				if(record["colors"]){
+					var thecolor = color1
+					for(var i in record["colors"]){
+						thecolor = record["colors"][i].color;
+					}
+					cleandata.push({
+						objectid: record.objectid,
+						xvar: record[xvar],
+						yvar: record[yvar],
+						color: thecolor
+					});
+				}
+			});
+
+
+			//cleandata.sort(customSort);
+			drawgraph(cleandata,sort,graphtype);
+			xvar = false;
 		}	
+
 		//......................END GET DATA FROM MUSEUM ONCE
 
 	});//end harvard museum json
@@ -182,7 +208,6 @@ function getMoreArt(count) {
 					filter == "division" ||
 					filter == "technique" ||
 					filter == "century" 
-
 					) {
 					var unique = {};
 					var countdate = {}; 
@@ -210,7 +235,85 @@ function getMoreArt(count) {
 					}
 					sort = filter;
 				}
+				//.....................filter type: COLORS
+				else if (
+					filter == "colors"
+					) {
+					var unique = {};
+					var countdate = {}; 
+		/*			//count number of time-nums for each unique time
+					for(var num in art.records){
+						var TIME = art.records[num][filter];
+						countdate[TIME] = (countdate[TIME]||0)+1;  
+					}
+					//match and attach number to each unique time num
+					$.each(art.records, function(j, record) {
+						if(record[filter]){
+						if( typeof(unique[record[filter]]) == "undefined"){
+							var cttime_dup = countdate[record[filter]];
+							cleandata.push({
+								objectid: record.objectid,
+								xvar: record[filter],
+								yvar: cttime_dup
+							});
+						}unique[record[filter]] = 0;
+						} 
+					});	
 
+*/
+					//count number of time-nums for each unique time
+					$.each(art.records, function(j, record) {
+						if(record[filter]){
+							for(var num in record[filter]){
+								//console.log(record[filter][num].color);
+								var TIME = record[filter][num].color;
+								countdate[TIME] = (countdate[TIME]||0)+1; 
+								//console.log(countdate[TIME]);
+							}
+						}
+					});
+					
+
+					for(var name in countdate) {
+					   // console.log(name);
+						cleandata.push({
+								//objectid: record.objectid,
+								xvar: name,
+								yvar: countdate[name],
+								color: name
+						});
+					}
+
+
+					//match and attach number to each unique time num
+					/*$.each(art.records, function(j, record) {
+						if(record[filter]){
+							var thecolor = color1;
+							for(var i in record["colors"]){
+							thecolor = record["colors"][i].color;
+							}
+						if( typeof(unique[thecolor]) == "undefined"){
+
+							console.log(thecolor);
+							var cttime_dup = countdate[thecolor];
+							cleandata.push({
+								objectid: record.objectid,
+								xvar: thecolor,
+								yvar: cttime_dup,
+								color: thecolor
+							});
+						}unique[record[filter]] = 0;
+						} 
+					});*/
+
+
+
+					//.....................filter type: TIME / cancel transition
+					if(filter == "accessionyear"){
+						graphtype = "time";
+					}
+					sort = filter;
+				}
 				//.....................filter type: COUNT (use object name for xaxis and the value for yaxis)
 				else{
 					$.each(art.records, function(j, record) {
@@ -337,9 +440,9 @@ var ylabels = [];
 for (i = 0; i < division_factor+1; i++) {
 	ylabels.push(Math.ceil((largest/division_factor)*i));
 }
-console.log("largest:"+largest);
-console.log("closest div:"+division_factor);
-console.log("ylabels: "+ylabels);
+//console.log("largest:"+largest);
+//console.log("closest div:"+division_factor);
+//console.log("ylabels: "+ylabels);
 //draw the lines
 svg.selectAll(".lines")
     .data(ylabels)
@@ -395,7 +498,15 @@ svg.selectAll(".bar")
     .attr("width", x.rangeBand())
     .attr("y", function(d) { return y(d.yvar); })
     .attr("height", function(d) { return height - y(d.yvar); })
-    .style("fill", color1);
+    .style("fill", function(d) {
+    	if(d.color){
+    	//console.log(d.color); 
+    	return d.color; 
+    	}else{
+    	return color1;	
+    	}
+    })
+    //.style("fill", color1);
 
 
 
@@ -417,7 +528,7 @@ svg.selectAll(".bar")
 	///remove highlight
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
-		svg.selectAll(".bar").style("fill", color1);
+		//svg.selectAll(".bar").style("fill", color1);
 		svg.selectAll(".indicator").style("fill", "transparent");
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
@@ -444,7 +555,7 @@ svg.selectAll(".bar")
 			} 
 		});		
 		//reset bars to default color
-		svg.selectAll(".bar").style("fill", color1)
+		svg.selectAll(".bar")//.style("fill", color1)
 		//highlight bar
 		.each(function(d) {
 		       //highlight selected object
