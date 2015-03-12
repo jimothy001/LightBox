@@ -6,7 +6,7 @@ var serveStatic = require('serve-static');
 var finalhandler = require('finalhandler');
 var errorhandler = require('errorhandler');
 var mongoose = require('mongoose');
-var im = require('imagemagick');
+//var im = require('imagemagick');
 
 
 var app=express();
@@ -152,6 +152,7 @@ io.on('connection', function (socket) {
 	//UPDATE GRAPH, SEND ARRAY FROM OBJECT MAP TO GRAPH
 	socket.on('update-graph', function(data) {
 		console.dir("UPDATE GRAPH");
+		console.dir(data);
 		io.emit('updated-graph', data);
 	});
 
