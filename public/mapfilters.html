@@ -610,7 +610,7 @@ function showFilters(curr) {
 
 	$.get("http://api.harvardartmuseums.org/object/"+curr.objectid+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(data) {
 		if(data.gallery) gallery = "gallerynumber: "+data.gallery.gallerynumber+",</br>floor: "+data.gallery.floor+ ",</br >" + data.gallery.name;
-		$(".metadata .p2 .phldr_filter").html("<div class='location'>"+gallery+"</div>");
+		$(".metadata .p4 .phldr_filter").html("<div class='location'>"+gallery+"</div>");
 	});
 
 
@@ -627,14 +627,15 @@ function showFilters(curr) {
 
 	if(curr.images) {
 	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
-		$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='imgp4' src='"+img_src+"'></div>");
-		filter("imgp4");
+	//	$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='imgp4' src='"+img_src+"'></div>");
+		//filter("imgp4");
 		
 		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[1].baseimageurl+"'></div>");
-		if(curr.images.length > 2) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[2].baseimageurl+"'></div>");
-		if(curr.images.length > 3) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[3].baseimageurl+"'></div>");
-		if(curr.images.length > 4) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[4].baseimageurl+"'></div>");
-		if(curr.images.length > 5) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[5].baseimageurl+"'></div>");
+		if(curr.images.length > 2) $(".metadata .p2 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[2].baseimageurl+"'></div>");
+		if(curr.images.length > 3) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[3].baseimageurl+"'></div>");
+		if(curr.images.length > 4) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[4].baseimageurl+"'></div>");
+		if(curr.images.length > 5) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[5].baseimageurl+"'></div>");
+		if(curr.images.length > 6) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[6].baseimageurl+"'></div>");
 	
 	
 	}
@@ -654,7 +655,7 @@ function showArtObject(curr) {
 			$(".metadata .phldr").show();
 			$(".metadata, .metadata_back").fadeIn(500);
 
-			var img_src= "./art/" + curr.objectid + ".jpg";
+			var img_src= curr.primaryimageurl+"?width=1000";
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
@@ -877,8 +878,8 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		//if(data.info.pages > data.info.page) getMoreArt(next);
-		if(1 > data.info.page) getMoreArt(next);
+		if(data.info.pages > data.info.page) getMoreArt(next);
+		//if(1 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
@@ -952,7 +953,7 @@ function populateMap(rand) {
 
 function addImage(order, x, y) {
 	var base_image = new Image();
-	base_image.src = "./art/" + art.records[order].objectid + ".jpg";
+	base_image.src = art.records[order].primaryimageurl+"?width=120";
 	base_image.addEventListener("load", function(){
 		art.records[order].x1 = x;
 		art.records[order].y1 = y;
