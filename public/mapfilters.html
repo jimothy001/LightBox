@@ -879,7 +879,6 @@ function getMoreArt(count) {
 		});
 		var next = count+100;
 		if(data.info.pages > data.info.page) getMoreArt(next);
-		//if(1 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
