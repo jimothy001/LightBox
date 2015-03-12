@@ -432,21 +432,6 @@ document.addEventListener("contextmenu", function(e){
 /*
 	treat enter key as mouse click
 */
-
-
-var metaicon = '{/}';
-
-
-var filtericon = '<svg style="pointer-events:none;" height="250" width="500"> ';
-filtericon += '<polygon points="23,63 50,75 77,63 50,51"" style="fill:white;stroke:black;stroke-width:1"/>';
-filtericon += '<polygon points="23,50 50,62 77,50 50,38"" style="fill:white;stroke:black;stroke-width:1"/>';
-filtericon += '<polygon points="23,37 50,49 77,37 50,25"" style="fill:white;stroke:black;stroke-width:1"/>';
-filtericon += '</svg>';
-
-$('.metadata .circ').html(filtericon);
-
-
-
 $(document).keypress(function(e) {
 	if(e.which == 13) {
 	
@@ -457,11 +442,11 @@ $(document).keypress(function(e) {
 				populateMap();
 			} else if(filterhover) {
 				if(!filters) {
-					$('.metadata .circ').html(metaicon);
+					$('.metadata .circ').html("{/}");
 					showFilters(curr);
 					filters = true;
 				} else {
-					$('.metadata .circ').html(filtericon);
+					$('.metadata .circ').html("F");
 					$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
 					$(".metadata .phldr").fadeIn();	
 					filters = false;				
@@ -502,7 +487,7 @@ $(".button").on("click", function() {
 
 $(".button").on("mouseover", function() {
 	$(".button div:nth-of-type(1)").css("background-color", color);
-	$(".button div:nth-of-type(2)").css("color", "color");
+	$(".button div:nth-of-type(2)").css("color", color);
 });
 
 $(".button").on("mouseout", function() {
@@ -513,26 +498,22 @@ $(".button").on("mouseout", function() {
 $("#toggle").on("mouseover", function() {
 	$("#toggletext").show();
 	$("#toggle .circ").css({"border-color":color,"color": color});
-	$("#toggle .circ").find("polygon").css("fill", color);
 	filterhover = true;
 });
 
 $("#toggle").on("mouseout", function() {
 	$("#toggle .circ").css({"border-color":"white","color": "white"});
-	$("#toggle .circ").find("polygon").css("fill", "white");
 	filterhover = false;
 });
 
 $("#toggle").on("click", function() {
 	//window.location.href = window.location.origin+"/9panels.html";
 	if($('.metadata .p1 .phldr').is(":visible") ){
-		console.log('show filters');
-		$('.metadata .circ').html(metaicon);
+		$('.metadata .circ').html("{/}");
 		showFilters(curr);
 		filters = true;
 	}else{
-		console.log('show metadata');
-		$('.metadata .circ').html(filtericon);
+		$('.metadata .circ').html("F");
 		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
 		$(".metadata .phldr").fadeIn();	
 		filters = false;
@@ -647,7 +628,7 @@ function showArtObject(curr) {
 
 			$(".message_hldr").hide();
 
-			$('.metadata .circ').html(filtericon);
+			$('.metadata .circ').html("F");
 			filters = false;
 
 			$(".metadata .phldr_filter").hide();
@@ -729,7 +710,7 @@ function showArtObject(curr) {
 			if(curr.technique){technique = '<span class="searchfield">technique</span>: "' + curr.technique + '",</br>';};
 
 			if(curr.colors){
-					colors = '<span class="searchfield">colors</span>:</br>[</br>' + '<div class="tabspace">';
+					colors = 'colors:</br>[</br>' + '<div class="tabspace">';
 				for (i = 0; i < curr.colors.length; i++) { 
 						colors += JSON.stringify(curr.colors[i])+',</br>'
 				}
@@ -877,8 +858,8 @@ function getMoreArt(count) {
 			if(record.primaryimageurl) art.records.push(record);
 		});
 		var next = count+100;
-		//if(data.info.pages > data.info.page) getMoreArt(next);
-		if(1 > data.info.page) getMoreArt(next);
+		if(data.info.pages > data.info.page) getMoreArt(next);
+		//if(2 > data.info.page) getMoreArt(next);
 		else {
 			sort = "medium";
 			art.records.sort(customSort);
