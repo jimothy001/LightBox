@@ -655,7 +655,7 @@ function showArtObject(curr) {
 			$(".metadata .phldr").show();
 			$(".metadata, .metadata_back").fadeIn(500);
 
-			var img_src= curr.primaryimageurl+"?width=1000";
+			var img_src= curr.primaryimageurl;
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
@@ -885,6 +885,8 @@ function getMoreArt(count) {
 			updategraph(sort);
 			populateMap();
 			sort = false;
+			$.preLoadImages(art.records);
+
 		}
 	});	
 }
@@ -970,6 +972,21 @@ function addImage(order, x, y) {
 	}		);
 			
 }
+
+
+(function($) {
+  var cache = [];
+  $.preLoadImages = function() {
+    var args_len = arguments[0].length;
+    for (var i = args_len; i--;) {
+      var cacheImage = document.createElement('img');
+      console.log(arguments[0][i]);
+      cacheImage.src = arguments[0][i].primaryimageurl;
+      cache.push(cacheImage);
+    }
+  }
+})(jQuery)
+
 
 	
 	</script>
