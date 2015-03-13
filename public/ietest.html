@@ -630,12 +630,12 @@ function showFilters(curr) {
 	//	$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='imgp4' src='"+img_src+"'></div>");
 		//filter("imgp4");
 		
-		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[1].baseimageurl+"'></div>");
-		if(curr.images.length > 2) $(".metadata .p2 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[2].baseimageurl+"'></div>");
-		if(curr.images.length > 3) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[3].baseimageurl+"'></div>");
-		if(curr.images.length > 4) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[4].baseimageurl+"'></div>");
-		if(curr.images.length > 5) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[5].baseimageurl+"'></div>");
-		if(curr.images.length > 6) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[6].baseimageurl+"'></div>");
+		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img src='http://ids.lib.harvard.edu/ids/view/"+curr.images[1].idsid+"'></div>");
+		if(curr.images.length > 2) $(".metadata .p2 .phldr_filter").html("<div class='img-preview'><img src='http://ids.lib.harvard.edu/ids/view/"+curr.images[2].idsid+"'></div>");
+		if(curr.images.length > 3) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='http://ids.lib.harvard.edu/ids/view/"+curr.images[3].idsid+"'></div>");
+		if(curr.images.length > 4) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img src='http://ids.lib.harvard.edu/ids/view/"+curr.images[4].idsid+"'></div>");
+		if(curr.images.length > 5) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img src='http://ids.lib.harvard.edu/ids/view/"+curr.images[5].idsid+"'></div>");
+		if(curr.images.length > 6) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img src='http://ids.lib.harvard.edu/ids/view/"+curr.images[6].idsid+"'></div>");
 	
 	
 	}
@@ -655,7 +655,7 @@ function showArtObject(curr) {
 			$(".metadata .phldr").show();
 			$(".metadata, .metadata_back").fadeIn(500);
 
-			var img_src= curr.primaryimageurl;
+			var img_src= "http://ids.lib.harvard.edu/ids/view/"+curr.images[0].idsid+"?width=1000";
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
@@ -954,7 +954,7 @@ function populateMap(rand) {
 
 function addImage(order, x, y) {
 	var base_image = new Image();
-	base_image.src = art.records[order].primaryimageurl+"?width=120";
+	base_image.src = "http://ids.lib.harvard.edu/ids/view/"+art.records[order].images[0].idsid+"?width=120";
 	base_image.addEventListener("load", function(){
 		art.records[order].x1 = x;
 		art.records[order].y1 = y;
@@ -980,8 +980,7 @@ function addImage(order, x, y) {
     var args_len = arguments[0].length;
     for (var i = args_len; i--;) {
       var cacheImage = document.createElement('img');
-      console.log(arguments[0][i]);
-      cacheImage.src = arguments[0][i].primaryimageurl;
+      cacheImage.src = "http://ids.lib.harvard.edu/ids/view/"+arguments[0][i].images[0].idsid+"?width=1000";
       cache.push(cacheImage);
     }
   }
