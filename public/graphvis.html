@@ -41,12 +41,13 @@
 		height: 3vh;
 		width: 100vw;
 		overflow: hidden;
-		line-height: 25px;
-		font-size: 12px;
+		/*line-height: 25px;*/
+		font-size: 40px;
 		font-family: 'Inconsolata',sans-serif;
+		padding-left: 50px;
 	}
 	.graphholder{
-		height: 500px;
+		height: 800px;
 		width: 100vw;
 		overflow: hidden;
 		padding: 0;
@@ -66,12 +67,18 @@
 <div class="graphtitle"></div>
 <div class="graphholder"></div>
 <script>
-
+/*
 var color1 = "white";
 var color2 = "black";
 var gray1 = "#999"; //lighter text
 var gray2 = "#333"; //lines
 var gray3 = "#aaa"; //darker text
+*/
+var color1 = "#999";
+var color2 = "white";
+var gray1 = "black"; //lighter text
+var gray2 = "#333"; //lines
+var gray3 = "black"; //darker text
 
 $("body,html").css({"background":color2});
 $(".graphtitle").css({"border-bottom":"1px solid "+ gray2});
