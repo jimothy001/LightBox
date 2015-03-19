@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js" ></script> 
+		<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+		<link href='http://fonts.googleapis.com/css?family=Inconsolata:400,700' rel='stylesheet' type='text/css'>
+	<style>
+
+	html {
+		height: 100%;
+	}
+	
+	body {
+		margin: 0px;
+		min-height: 100%;
+		padding: 0;
+	}
+	
+	.colorbar {
+		min-height: 100%;
+		position: relative;
+		display: block;
+		float: left;
+	}
+	
+	#container {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		background-color: black;
+	}
+
+
+	</style>
+</head>
+<body>
+	<div id="container">
+		<div id="bar0" class="colorbar"></div>
+		<div id="bar1" class="colorbar"></div>
+		<div id="bar2" class="colorbar"></div>
+		<div id="bar3" class="colorbar"></div>
+		<div id="bar4" class="colorbar"></div>
+		<div id="bar5" class="colorbar"></div>
+		<div id="bar6" class="colorbar"></div>
+		<div id="bar7" class="colorbar"></div>
+		<div id="bar8" class="colorbar"></div>
+		<div id="bar9" class="colorbar"></div>
+	</div>
+<script>
+
+
+var socket = io();
+
+socket.on('change-colors', function(colors){
+	if(colors) {
+		var total = 0;
+		$.each(colors,function(i,val) {
+			total+=val.percent;
+		});
+		
+		for(var i =0; i< 10; i++) {
+			if(i >= colors.length) $("#bar"+i).width(0);
+			else {
+				$("#bar"+i).css("background-color",colors[i].color);
+				$("#bar"+i).width((colors[i].percent/total)*100+"%");
+			}
+		}
+	}
+});
+
+
+</script>
+</body>
+</html>

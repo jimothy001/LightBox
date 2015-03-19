@@ -954,7 +954,7 @@ function populateMap(rand) {
 
 function addImage(order, x, y) {
 	var base_image = new Image();
-	base_image.src = "http://ids.lib.harvard.edu/ids/view/"+art.records[order].images[0].idsid+"?width=120";
+	base_image.src = art.records[order].primaryimageurl+"?width=120";
 	base_image.addEventListener("load", function(){
 		art.records[order].x1 = x;
 		art.records[order].y1 = y;
