@@ -44,7 +44,9 @@
 		/*line-height: 25px;*/
 		font-size: 40px;
 		font-family: 'Inconsolata',sans-serif;
-		padding-left: 50px;
+		padding-left: 30px;
+		padding-top: 30px;
+		
 	}
 	.graphholder{
 		height: 800px;
@@ -535,7 +537,7 @@ svg.selectAll(".bar")
 	///remove highlight
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
-		//svg.selectAll(".bar").style("fill", color1);
+		svg.selectAll(".bar").style("fill", color1);
 		svg.selectAll(".indicator").style("fill", "transparent");
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
