@@ -9,7 +9,6 @@
 
 	body {
 	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-	  font-size: 11px;
 	  position: relative;
 	  margin: 0;
 	  padding: 0;
@@ -346,6 +345,13 @@ function getMoreArt(count) {
 
 				drawgraph(cleandata,sort,graphtype);
 				xvar = false;
+			
+				var size = "11px";
+				if($(".tick").length < 300) size = "24px";
+				if($(".tick").length < 50) size = "35px";
+				console.log(size);
+				
+				$(".tick").css("font-size",size);
 
 
 
@@ -606,6 +612,8 @@ svg.selectAll(".bar")
 		       }
 		});
 		//highlight label
+		
+		
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
 			   	if(d == highlight[0]) {
@@ -622,6 +630,7 @@ svg.selectAll(".bar")
 					}
 			    }
 			});
+			
 
 	}
 

@@ -410,6 +410,8 @@ var delay_mouse;
 var openclose;
 var filters = false;
 var filterhover = false;
+var randomart = [];
+
 
 /*
 	load object map
@@ -476,7 +478,7 @@ $(document).keypress(function(e) {
 		} else {
 		$("#highlight").hide();
 
-			$.each(art.records, function(i, val) {
+			$.each(randomart, function(i, val) {
 					if(mouseX > val.x1 && mouseX < val.x1+w) {
 						if(mouseY > val.y1 && mouseY < val.y1+h) {
 							curr = val;
@@ -586,7 +588,7 @@ $(document).on("click", function(e) {
 			var eY = e.clientY;
 			$("#highlight").hide();
 			
-			$.each(art.records, function(i, val) {
+			$.each(randomart, function(i, val) {
 
 			
 				if(eX > val.x1 && eX < val.x1+w) {
@@ -890,6 +892,43 @@ function getMoreArt(count) {
 		}
 	});	
 }
+
+function random_number(min,max) {
+
+    return (Math.round((max-min) * Math.random() + min));
+}
+
+function create_unique_random_array(num_elements,min,max) {
+		randomart.length = 0;
+		randomart = art.records.slice();
+		console.log(art.records.length);
+    var temp, nums = new Array;
+
+    for (var element=0; element<num_elements; element++) {
+
+        while((temp=number_found(random_number(min,max),nums))==-1);
+        nums[element] = temp;
+    }
+		console.log(nums.length);
+		console.log(art.records.length);
+    $.each(nums, function(i,val) {
+    	randomart.splice(i,1);
+    });
+    		console.log(art.records.length);
+
+}
+
+function number_found (random_number,number_array) {
+
+    for (var element=0; element<number_array.length; element++) {
+
+        if (random_number==number_array[element]) {
+            return (-1);
+	}
+   }
+
+    return (random_number);
+}
 		
 function updategraph(sort){
 	var array = "the pushed array sent";
@@ -927,12 +966,15 @@ var h = window.innerHeight / 30;
 $("#highlight").width(w);
 $("#highlight").height(h);
 function populateMap(rand) {
+
+	create_unique_random_array(art.records.length - 1440, 1, art.records.length-1);
+
 	ctx.clearRect(0,0,map.width,map.height);
 	itemX = 48;
 	var index=0;
 	for(var j=0; j < 31; j++) {
 		for(var i=0; i < 49; i++) {
-			if(index  == art.records.length) return false;
+			if(index  == randomart.length) return false;
 			var x = i*w;
 			var y = j*h;
 			var t = index;
@@ -955,10 +997,10 @@ function populateMap(rand) {
 
 function addImage(order, x, y) {
 	var base_image = new Image();
-	base_image.src = art.records[order].primaryimageurl+"?width=120";
+	base_image.src = randomart[order].primaryimageurl+"?width=120";
 	base_image.addEventListener("load", function(){
-		art.records[order].x1 = x;
-		art.records[order].y1 = y;
+		randomart[order].x1 = x;
+		randomart[order].y1 = y;
 		var sizeh = base_image.height;
 		var sizew = (base_image.height/h)*w;
 		if(sizew > base_image.width) {
