@@ -12,7 +12,7 @@
 	  position: relative;
 	  margin: 0;
 	  padding-left: 60px;
-	  width: 100%;
+	  padding-right: 60px;
 	  height: 100%;
 	  overflow: hidden;
 	}
@@ -79,6 +79,7 @@ var color2 = "white";
 var gray1 = "black"; //lighter text
 var gray2 = "#E0E0E0"; //lines
 var gray3 = "black"; //darker text
+var BCcolor = "#949494";
 
 var currfilter;
 var prevcolor;
@@ -516,22 +517,26 @@ svg.selectAll(".bar")
     .attr("x", function(d) { return x(d.xvar); })
     .attr("width", x.rangeBand())
     .attr("y", function(d) { 
-    	if((height-y(d.yvar)) < 0) {
+    	return y(Math.abs(d.yvar));
+    	/*if((height-y(d.yvar)) < 0) {
     		return height;
     	}
-    	else return y(d.yvar); 
+    	else return y(d.yvar); */
     })
     .attr("height", function(d) { 
-    	if((height-y(d.yvar)) < 0) {
+    	return height - y(Math.abs(d.yvar));
+    	/*if((height-y(d.yvar)) < 0) {
     		return height - y(Math.abs(d.yvar));
-    	} else return height - y(d.yvar); 
+    	} else return height - y(d.yvar); */
     })
     .style("fill", function(d) {
     	if(d.color){
     	//console.log(d.color); 
     	return d.color; 
     	}else{
-    	return color1;	
+    		if((height-y(d.yvar)) < 0) {
+    			return BCcolor;
+    		} else return color1;	
     	}
     })
     //.style("fill", color1);
@@ -556,10 +561,11 @@ svg.selectAll(".bar")
 	///remove highlight
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
-		if(currfilter != "colors") svg.selectAll(".bar").style("fill", color1);
-		else {
+	//	if(currfilter != "colors") svg.selectAll(".bar").style("fill", color1);
+	//	else {
+			console.log(prevcolor);
 			d3.select(".highlight").style("fill",prevcolor).classed("highlight",false);
-		}
+	//	}
 		svg.selectAll(".indicator").style("fill", "transparent");
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
@@ -579,6 +585,10 @@ svg.selectAll(".bar")
 
 	function highlightobject(objid){
 		var highlight = [];
+		console.log("highlight");
+		console.log(prevcolor);
+		d3.select(".highlight").style("fill",prevcolor).classed("highlight",false);
+
 		$.each(art.records, function(j, record) {
 			if(record.objectid == objid){
 				console.log(record);
