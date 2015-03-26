@@ -51,7 +51,7 @@
 	.graphholder{
 		height: 800px;
 		width: 100vw;
-		overflow: hidden;
+		overflow: visible;
 		padding: 0;
 		margin: 0;
 	}
@@ -60,6 +60,7 @@
 		height: 100%;
 		padding: 0;
 		margin: 0;
+		overflow: visible;
 	}
 	</style>
 </head>
@@ -81,6 +82,10 @@ var color2 = "white";
 var gray1 = "black"; //lighter text
 var gray2 = "#E0E0E0"; //lines
 var gray3 = "black"; //darker text
+
+var currfilter;
+var prevcolor;
+
 
 $("body,html").css({"background":color2});
 $(".graphtitle").css({"border-bottom":"1px solid "+ gray2});
@@ -185,6 +190,7 @@ function getMoreArt(count) {
 		//......................START GET DATA FROM OBJECT MAP
 		socket.on('updated-graph', function(filter){
 			if(filter){
+				currfilter = filter;
 				console.log("update graph: " + filter);
 
 				//clear array
@@ -505,8 +511,17 @@ svg.selectAll(".bar")
     .attr("class", "bar")
     .attr("x", function(d) { return x(d.xvar); })
     .attr("width", x.rangeBand())
-    .attr("y", function(d) { return y(d.yvar); })
-    .attr("height", function(d) { return height - y(d.yvar); })
+    .attr("y", function(d) { 
+    	if((height-y(d.yvar)) < 0) {
+    		return height;
+    	}
+    	else return y(d.yvar); 
+    })
+    .attr("height", function(d) { 
+    	if((height-y(d.yvar)) < 0) {
+    		return height - y(Math.abs(d.yvar));
+    	} else return height - y(d.yvar); 
+    })
     .style("fill", function(d) {
     	if(d.color){
     	//console.log(d.color); 
@@ -537,7 +552,10 @@ svg.selectAll(".bar")
 	///remove highlight
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
-		svg.selectAll(".bar").style("fill", color1);
+		if(currfilter != "colors") svg.selectAll(".bar").style("fill", color1);
+		else {
+			d3.select(".highlight").style("fill",prevcolor).classed("highlight",false);
+		}
 		svg.selectAll(".indicator").style("fill", "transparent");
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
@@ -559,7 +577,7 @@ svg.selectAll(".bar")
 		var highlight = [];
 		$.each(art.records, function(j, record) {
 			if(record.objectid == objid){
-				console.log(record[sort]);
+				console.log(record);
 				highlight.push(record[sort]);
 			} 
 		});		
@@ -569,6 +587,8 @@ svg.selectAll(".bar")
 		.each(function(d) {
 		       //highlight selected object
 		       if(d.xvar == highlight[0]){
+		       				d3.select(this).classed("highlight",true);
+		       				prevcolor = d3.select(this).style("fill");
 		          		d3.select(this).style("fill", coloroftheday);
 		       }
 		});
