@@ -972,8 +972,8 @@ function populateMap(rand) {
 	ctx.clearRect(0,0,map.width,map.height);
 	itemX = 48;
 	var index=0;
-	for(var j=0; j < 31; j++) {
-		for(var i=0; i < 49; i++) {
+	for(var j=0; j < 31; j++) { //31
+		for(var i=0; i < 49; i++) { //49
 			if(index  == randomart.length) return false;
 			var x = i*w;
 			var y = j*h;
@@ -994,10 +994,20 @@ function populateMap(rand) {
 
 
 
-
+var one = 0;
 function addImage(order, x, y) {
 	var base_image = new Image();
-	base_image.src = randomart[order].primaryimageurl+"?width=120";
+	var id = randomart[order].objectid;
+	$(base_image).attr("data-id",id)
+	base_image.src = "http://res.cloudinary.com/hgigemxo3/image/upload/"+id+".jpg";
+	
+	base_image.onerror = function(e) {
+		console.log(e);
+		console.log(this);
+		base_image.src = randomart[order].primaryimageurl;
+		base_image.removeEventListener("onerror");
+	};
+	
 	base_image.addEventListener("load", function(){
 		randomart[order].x1 = x;
 		randomart[order].y1 = y;
@@ -1010,7 +1020,7 @@ function addImage(order, x, y) {
 		
 		if(base_image.height > base_image.width) size = base_image.width;
 		ctx.drawImage(base_image, 0, 0, sizew, sizeh, x, y, w, h);		
-		//base_image.removeEventListener("load");
+		base_image.removeEventListener("load");
 		
 	}		);
 			
