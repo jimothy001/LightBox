@@ -410,6 +410,8 @@ var delay_mouse;
 var openclose;
 var filters = false;
 var filterhover = false;
+var randomart = [];
+
 
 /*
 	load object map
@@ -476,7 +478,7 @@ $(document).keypress(function(e) {
 		} else {
 		$("#highlight").hide();
 
-			$.each(art.records, function(i, val) {
+			$.each(randomart, function(i, val) {
 					if(mouseX > val.x1 && mouseX < val.x1+w) {
 						if(mouseY > val.y1 && mouseY < val.y1+h) {
 							curr = val;
@@ -586,7 +588,7 @@ $(document).on("click", function(e) {
 			var eY = e.clientY;
 			$("#highlight").hide();
 			
-			$.each(art.records, function(i, val) {
+			$.each(randomart, function(i, val) {
 
 			
 				if(eX > val.x1 && eX < val.x1+w) {
@@ -644,7 +646,7 @@ function showFilters(curr) {
 function showArtObject(curr) {
 			if(!curr.objectid) return false;
 			
-			updategraph_highlight(curr.objectid);
+			updategraph_highlight(curr);
 
 			$(".message_hldr").hide();
 
@@ -655,7 +657,7 @@ function showArtObject(curr) {
 			$(".metadata .phldr").show();
 			$(".metadata, .metadata_back").fadeIn(500);
 
-			var img_src= curr.primaryimageurl;
+			var img_src= curr.primaryimageurl+"?width=1000";
 
 			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
 			var division='',signed='',century='',classification='',description='', provenance='';
@@ -885,10 +887,47 @@ function getMoreArt(count) {
 			updategraph(sort);
 			populateMap();
 			sort = false;
-			$.preLoadImages(art.records);
+			//$.preLoadImages(art.records);
 
 		}
 	});	
+}
+
+function random_number(min,max) {
+
+    return (Math.round((max-min) * Math.random() + min));
+}
+
+function create_unique_random_array(num_elements,min,max) {
+		randomart.length = 0;
+		randomart = art.records.slice();
+		console.log(art.records.length);
+    var temp, nums = new Array;
+
+    for (var element=0; element<num_elements; element++) {
+
+        while((temp=number_found(random_number(min,max),nums))==-1);
+        nums[element] = temp;
+    }
+		console.log(nums.length);
+		console.log(art.records.length);
+    $.each(nums, function(i,val) {
+    	randomart.splice(i,1);
+    });
+    		console.log(art.records.length);
+
+}
+
+function number_found (random_number,number_array) {
+
+    for (var element=0; element<number_array.length; element++) {
+
+        if (random_number==number_array[element]) {
+            return (-1);
+	}
+   }
+
+    return (random_number);
 }
 		
 function updategraph(sort){
@@ -896,9 +935,10 @@ function updategraph(sort){
 	socket.emit('update-graph', sort);
 }
 
-function updategraph_highlight(objid){
-	var id = objid;
+function updategraph_highlight(curr){
+	var id = curr.objectid;
 	socket.emit('selectobj-graph', id);
+	socket.emit('newcolors', curr.colors);
 }
 
 function updategraph_unhighlight(){
@@ -926,12 +966,15 @@ var h = window.innerHeight / 30;
 $("#highlight").width(w);
 $("#highlight").height(h);
 function populateMap(rand) {
+
+	create_unique_random_array(art.records.length - 1470, 1, art.records.length-1);
+
 	ctx.clearRect(0,0,map.width,map.height);
 	itemX = 48;
 	var index=0;
-	for(var j=0; j < 31; j++) {
-		for(var i=0; i < 49; i++) {
-			if(index  == art.records.length) return false;
+	for(var j=0; j < 31; j++) { //31
+		for(var i=0; i < 49; i++) { //49
+			if(index  == randomart.length) return false;
 			var x = i*w;
 			var y = j*h;
 			var t = index;
@@ -951,13 +994,23 @@ function populateMap(rand) {
 
 
 
-
+var one = 0;
 function addImage(order, x, y) {
 	var base_image = new Image();
-	base_image.src = art.records[order].primaryimageurl+"?width=120";
+	var id = randomart[order].objectid;
+	$(base_image).attr("data-id",id)
+	base_image.src = "http://res.cloudinary.com/hgigemxo3/image/upload/"+id+".jpg";
+	
+	base_image.onerror = function(e) {
+		console.log(e);
+		console.log(this);
+		base_image.src = randomart[order].primaryimageurl;
+		base_image.removeEventListener("onerror");
+	};
+	
 	base_image.addEventListener("load", function(){
-		art.records[order].x1 = x;
-		art.records[order].y1 = y;
+		randomart[order].x1 = x;
+		randomart[order].y1 = y;
 		var sizeh = base_image.height;
 		var sizew = (base_image.height/h)*w;
 		if(sizew > base_image.width) {
@@ -967,26 +1020,25 @@ function addImage(order, x, y) {
 		
 		if(base_image.height > base_image.width) size = base_image.width;
 		ctx.drawImage(base_image, 0, 0, sizew, sizeh, x, y, w, h);		
-		//base_image.removeEventListener("load");
+		base_image.removeEventListener("load");
 		
 	}		);
 			
 }
 
-
+/*
 (function($) {
   var cache = [];
   $.preLoadImages = function() {
     var args_len = arguments[0].length;
     for (var i = args_len; i--;) {
       var cacheImage = document.createElement('img');
-      console.log(arguments[0][i]);
-      cacheImage.src = arguments[0][i].primaryimageurl;
+      cacheImage.src = "http://ids.lib.harvard.edu/ids/view/"+arguments[0][i].images[0].idsid+"?width=1000";
       cache.push(cacheImage);
     }
   }
 })(jQuery)
-
+*/
 
 	
 	</script>

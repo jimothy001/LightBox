@@ -9,11 +9,10 @@
 
 	body {
 	  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-	  font-size: 11px;
 	  position: relative;
 	  margin: 0;
-	  padding: 0;
-	  width: 100%;
+	  padding-left: 60px;
+	  padding-right: 60px;
 	  height: 100%;
 	  overflow: hidden;
 	}
@@ -41,22 +40,24 @@
 		height: 3vh;
 		width: 100vw;
 		overflow: hidden;
-		line-height: 25px;
-		font-size: 12px;
+		/*line-height: 25px;*/
+		font-size: 26px;
 		font-family: 'Inconsolata',sans-serif;
+		padding-top: 5px;
+		padding-bottom: 15px;
+		
 	}
 	.graphholder{
-		height: 500px;
-		width: 100vw;
-		overflow: hidden;
+		height: 800px;
+		overflow: visible;
 		padding: 0;
 		margin: 0;
 	}
 	svg{
-		width: 100%;
 		height: 100%;
 		padding: 0;
 		margin: 0;
+		overflow: visible;
 	}
 	</style>
 </head>
@@ -66,12 +67,23 @@
 <div class="graphtitle"></div>
 <div class="graphholder"></div>
 <script>
-
+/*
 var color1 = "white";
 var color2 = "black";
 var gray1 = "#999"; //lighter text
 var gray2 = "#333"; //lines
 var gray3 = "#aaa"; //darker text
+*/
+var color1 = "#E0E0E0";
+var color2 = "white";
+var gray1 = "black"; //lighter text
+var gray2 = "#E0E0E0"; //lines
+var gray3 = "black"; //darker text
+var BCcolor = "#949494";
+
+var currfilter;
+var prevcolor;
+
 
 $("body,html").css({"background":color2});
 $(".graphtitle").css({"border-bottom":"1px solid "+ gray2});
@@ -176,6 +188,7 @@ function getMoreArt(count) {
 		//......................START GET DATA FROM OBJECT MAP
 		socket.on('updated-graph', function(filter){
 			if(filter){
+				currfilter = filter;
 				console.log("update graph: " + filter);
 
 				//clear array
@@ -331,6 +344,13 @@ function getMoreArt(count) {
 
 				drawgraph(cleandata,sort,graphtype);
 				xvar = false;
+			
+				var size = "11px";
+				if($(".tick").length < 300) size = "24px";
+				if($(".tick").length < 50) size = "35px";
+				console.log(size);
+				
+				$(".tick").css("font-size",size);
 
 
 
@@ -496,14 +516,27 @@ svg.selectAll(".bar")
     .attr("class", "bar")
     .attr("x", function(d) { return x(d.xvar); })
     .attr("width", x.rangeBand())
-    .attr("y", function(d) { return y(d.yvar); })
-    .attr("height", function(d) { return height - y(d.yvar); })
+    .attr("y", function(d) { 
+    	return y(Math.abs(d.yvar));
+    	/*if((height-y(d.yvar)) < 0) {
+    		return height;
+    	}
+    	else return y(d.yvar); */
+    })
+    .attr("height", function(d) { 
+    	return height - y(Math.abs(d.yvar));
+    	/*if((height-y(d.yvar)) < 0) {
+    		return height - y(Math.abs(d.yvar));
+    	} else return height - y(d.yvar); */
+    })
     .style("fill", function(d) {
     	if(d.color){
     	//console.log(d.color); 
     	return d.color; 
     	}else{
-    	return color1;	
+    		if((height-y(d.yvar)) < 0) {
+    			return BCcolor;
+    		} else return color1;	
     	}
     })
     //.style("fill", color1);
@@ -528,7 +561,11 @@ svg.selectAll(".bar")
 	///remove highlight
 	socket.on('updated-graphobj_del', function(objid){
 		console.log("remove highlights");
-		//svg.selectAll(".bar").style("fill", color1);
+	//	if(currfilter != "colors") svg.selectAll(".bar").style("fill", color1);
+	//	else {
+			console.log(prevcolor);
+			d3.select(".highlight").style("fill",prevcolor).classed("highlight",false);
+	//	}
 		svg.selectAll(".indicator").style("fill", "transparent");
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
@@ -548,9 +585,13 @@ svg.selectAll(".bar")
 
 	function highlightobject(objid){
 		var highlight = [];
+		console.log("highlight");
+		console.log(prevcolor);
+		d3.select(".highlight").style("fill",prevcolor).classed("highlight",false);
+
 		$.each(art.records, function(j, record) {
 			if(record.objectid == objid){
-				console.log(record[sort]);
+				console.log(record);
 				highlight.push(record[sort]);
 			} 
 		});		
@@ -560,6 +601,8 @@ svg.selectAll(".bar")
 		.each(function(d) {
 		       //highlight selected object
 		       if(d.xvar == highlight[0]){
+		       				d3.select(this).classed("highlight",true);
+		       				prevcolor = d3.select(this).style("fill");
 		          		d3.select(this).style("fill", coloroftheday);
 		       }
 		});
@@ -577,6 +620,8 @@ svg.selectAll(".bar")
 		       }
 		});
 		//highlight label
+		
+		
 		svg.selectAll(".tick") 
 		    .each(function(d, i) { 
 			   	if(d == highlight[0]) {
@@ -593,6 +638,7 @@ svg.selectAll(".bar")
 					}
 			    }
 			});
+			
 
 	}
 
