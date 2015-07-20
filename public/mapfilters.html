@@ -1003,6 +1003,7 @@ function addImage(order, x, y) {
 	
 	base_image.onerror = function(e) {
 		console.log(randomart[order].primaryimageurl+" "+randomart[order].objectid+".jpg");
+		needimgs.push(randomart[order].primaryimageurl+"?width=120 "+randomart[order].objectid+".jpg")
 		base_image.src = randomart[order].primaryimageurl;
 		base_image.removeEventListener("onerror");
 	};
