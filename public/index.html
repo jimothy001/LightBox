@@ -1001,14 +1001,14 @@ function addImage(order, x, y) {
 	$(base_image).attr("data-id",id)
 	base_image.src = "./art/"+id+".jpg";
 	
-	base_image.onerror = function(e) {
+	var errorlisten = base_image.onerror = function(e) {
 		console.log(randomart[order].primaryimageurl+" "+randomart[order].objectid+".jpg");
 		needimgs.push(randomart[order].primaryimageurl+"?width=120 "+randomart[order].objectid+".jpg")
 		base_image.src = randomart[order].primaryimageurl;
-		base_image.removeEventListener("onerror");
+		base_image.removeEventListener("onerror", errorlisten);
 	};
 	
-	base_image.addEventListener("load", function(){
+	var loadlisten = base_image.addEventListener("load", function(){
 		randomart[order].x1 = x;
 		randomart[order].y1 = y;
 		var sizeh = base_image.height;
@@ -1020,7 +1020,7 @@ function addImage(order, x, y) {
 		
 		if(base_image.height > base_image.width) size = base_image.width;
 		ctx.drawImage(base_image, 0, 0, sizew, sizeh, x, y, w, h);		
-		base_image.removeEventListener("load");
+		base_image.removeEventListener("load", loadlisten);
 		
 	}		);
 			
