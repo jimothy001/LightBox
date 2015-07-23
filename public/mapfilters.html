@@ -993,17 +993,17 @@ function populateMap(rand) {
 }
 
 
-
+var needimgs = [];
 var one = 0;
 function addImage(order, x, y) {
 	var base_image = new Image();
 	var id = randomart[order].objectid;
 	$(base_image).attr("data-id",id)
-	base_image.src = "http://res.cloudinary.com/hgigemxo3/image/upload/"+id+".jpg";
+	base_image.src = "./art/"+id+".jpg";
 	
 	base_image.onerror = function(e) {
-		console.log(e);
-		console.log(this);
+		console.log(randomart[order].primaryimageurl+" "+randomart[order].objectid+".jpg");
+		needimgs.push(randomart[order].primaryimageurl+"?width=120 "+randomart[order].objectid+".jpg")
 		base_image.src = randomart[order].primaryimageurl;
 		base_image.removeEventListener("onerror");
 	};

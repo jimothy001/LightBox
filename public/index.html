@@ -1,25 +1,1033 @@
+
 <!DOCTYPE html>
 <html>
 	<head>
 
-		<title>SANDBOX</title>
+		<title>OBJECT MAP</title>
+		<link src='css/inconsolata.css' rel='stylesheet' type='text/css'>
+
+	<style>
+	
+		body {
+			background-color: #222;
+			cursor: none;
+		}
+		
+		
+		#map {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				float: left;
+				display: block;
+
+		}
+		
+		
+		#highlight {
+			z-index:1000;
+			position: absolute;
+			-moz-box-shadow: 0 0 20px 10px white;
+			-webkit-box-shadow: 0 0 20px 10px white;
+			box-shadow: 0 0 20px 10px white;
+		
+		}
 			
-		<script type="text/javascript" src="lib/jquery-1.8.2.js" ></script>  
-		<script src="/socket.io/socket.io.js"></script>
-		<script type="text/javascript" src="sandbox.js" ></script>  
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/fabric.js/1.4.8/fabric.min.js" ></script>    
-  
+		.img-preview{
+			z-index: 200;
+			width: 100%;
+			height: 100%;
+			position: relative;
+			text-align: center;
+		}	
+		.img-preview img, .img-preview canvas{
+			position: relative;
+			top: 50%;
+			transform: translateY(-50%);
+			max-height: 100%;
+			max-width: 100%;
+			webkit-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			-moz-box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+			box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+		}	
+			
+		.button {
+			position: absolute;
+			top: 0;
+			right: 0;
+			z-index: 9999;
+			height: 100px;
+			display:none;
+	
+		}
+		.button div {
+			float: left;
+		}
+		.button div:nth-of-type(1) {
+			background-color: white;
+			width: 110px;
+			height: 100px;
+			color: black;
+			line-height: 105px;
+			font-size: 120px;
+			text-align: center;
+		}	
+		.button div:nth-of-type(2) {
+			color: white;
+			font-size: 100px;
+			margin: -2px 0 0 10px;
+		}		
+		.button:hover {
+			cursor: pointer;	
+					}
+		.metadata_back{
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: 50;
+			opacity: .6;
+			background: black;
+			display: none;
+			pointer-events: none;
+		}
+		.metadata {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			color: white;
+			font-family: 'Inconsolata',sans-serif;
+			display: none;
+			z-index: 100;
+			/*FONT SIZE JSON*/
+			font-size: 34px;
+			cursor: default;
+		}
+		
+		.metadata .p1,.metadata .p2,.metadata .p3,.metadata .p4,.metadata .p5,.metadata .p6,.metadata .p7,.metadata .p8,.metadata .p9,
+		.q1,.q2,.q3,.q4,.q5,.q6,.q7,.q8,.q9{
+			float: left;
+			width: 33.33333333333333%;
+			height: 33.33333333333333%;
+			overflow: hidden;
+			position: relative;
+		}
+		
+		.p5 {
+			/*cursor: pointer;*/
+		}	
 
-		<link href="style.css" rel="stylesheet" type="text/css">
+		.metadata .phldr, .metadata .phldr_filter
+		{
+			position:absolute;
+			/*PADDING WITHIN EACH SCREEN*/
+			top: 40px;
+			bottom: 40px;
+			left: 40px;
+			right: 40px;
+		}
+		.metadata .phldr_filter
+		{
+			display: none;
+		}		
+		
+		.metadata .phldr_filter .location {
+			margin-left: auto;
+			margin-right: auto;
+			width: 80%;
+			font-size: 79px;
+		}
+		
+		.metadata .phldr_filter .color {
+			width: 100%;
+			position: relative;
+			float: left;
+		}
 
+		.metadata .phldr_filter .colors {
+			width: 80%;
+			height: 100%;
+			margin-left: auto;
+			margin-right: auto;
+		}
+				
+		.q5 div{
+			position:absolute;
+			/*PADDING WITHIN EACH SCREEN*/
+			top: 0px;
+			bottom: 0px;
+			left: 0px;
+			right: 0px;
+		}
+		
+		.metadata .tabspace {
+			padding-left: 25px;
+		}
+		.metadata .tabspace2 {
+			padding-left: 50px;
+		}
+		.metadata .p1 .phldr,.metadata .p9 .phldr {
+			/*FONT SIZE BRACKETS*/
+			font-size: 590px;
+			text-align: center;
+			font-family: 'Inconsolata',sans-serif;
+		}
+		
+		.searchfield {
+			cursor: pointer;
+		}
+		
+		.searchfield:hover {
+			background-color: white;
+		}
+
+		
+		#toggle {
+			position: absolute;
+			width: 100px;
+			height: 100px;
+			left: 0px;
+			top: 0px;
+			z-index: 5000;
+			cursor: pointer;
+			opacity: 1;
+			/*display: none;*/
+		}
+		
+		#toggle:hover {
+			opacity: 1;
+		}	
+		#toggle .circ{
+			border-radius: 50%;
+			border: 6px solid white;
+			width: 100px;
+			height: 100px;
+			text-align: center;
+			font-size: 50px;
+			line-height: 100px;
+			font-family: arial;
+			font-weight: normal;
+		}
+		/*
+		div.sq {
+			display:block;
+			float: left;
+			position: relative;
+			width: 28%;
+			height: 100%;
+			margin-left: 4px;
+			background-color: white;
+		}*/
+		.message_hldr, .message_hldr_2{
+			pointer-events: none;
+			display: none;
+			z-index: 9999;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+		.message_back{
+			opacity: .6;
+			background: black;
+			
+		}
+		.message_ctnr {
+			margin: auto;
+	      	width: 70%;
+	      	height: 400px;
+	      	line-height: 400px;
+	      	text-align: center;
+		}
+		.message_hldr_inner{
+		    display: inline-block;
+		    vertical-align: middle;
+		    line-height: normal;
+		    color: white;
+			pointer-events: none;
+			font-size: 40px;
+			text-align: center;
+			font-family: 'Inconsolata',sans-serif;
+		}
+	</style>
 	</head>
 	
 	<body>
-	<body onload="Main()">
-	<div id="central">
-		<canvas id="bgcanvas" width="1024" height="600"></canvas>
-	</div>
-		<script type="text/javascript" src="fabrictest.js" ></script>    
+	
 
+		
+		
+		<div id="highlight"></div>
+		<div class="metadata_back"></div>
+
+		<!--METADATA DISPLAY-->
+		<div class='metadata'>
+		<!--<span class="p6" id='sort'></span>-->
+			<div class="p1">
+				<div class='phldr'>{</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p2">
+				<div class='phldr'>2</div>
+				<div class='phldr_filter'></div>
+			</div>	
+			<div class="p3">
+				<div class='phldr'>3</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p4">
+				<div class='phldr'>4</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p5">
+				<div class='phldr' id="preview">
+				<div class='img-preview'></div>
+					<!--- PANELS ICON -->
+					<div id="toggle">
+						<!--<div class="sq"></div><div class="sq"></div><div class="sq"></div>-->
+						<div class="circ">f</div>
+					</div>
+					<!--- ADD TO TRAY ICON -->
+					<div class='button'><div>+</div><div>&#10140;</div></div>
+				</div>
+			</div>
+			<div class="p6">
+				<div class='phldr'>6</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p7">
+				<div class='phldr'>7</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p8">
+				<div class='phldr'>8</div>
+				<div class='phldr_filter'></div>
+			</div>
+			<div class="p9">
+				<div class='phldr'>},</div>
+				<div class='phldr_filter'></div>
+			</div>
+		</div>
+
+
+
+
+		<!--INACTIVITY MESSAGES DISPLAY-->
+		<div class="message_hldr">
+			<div class="q1"></div><div class="q2"></div>
+			<div class="q3"></div><div class="q4"></div>
+			<div class="q5">
+				<div class="message_back"></div>
+				<div class="message_ctnr">
+				<span class="message_hldr_inner"></span>
+				</div>
+			</div>
+			<div class="q6"></div><div class="q7"></div>
+			<div class="q8"></div><div class="q9"></div>
+		</div>
+
+		<!--"ADDED TO TRAY" DISPLAY-->
+		<div class="message_hldr_2">
+			<div class="q1"></div><div class="q2"></div>
+			<div class="q3"></div><div class="q4"></div>
+			<div class="q5">
+				<div class="message_back"></div>
+				<div class="message_ctnr">
+				<span class="message_hldr_inner">Added to tray</span>
+				</div>
+			</div>
+			<div class="q6"></div><div class="q7"></div>
+			<div class="q8"></div><div class="q9"></div>
+		</div>
+
+		<canvas id="map"></canvas>
+		<!--
+		<div id="preview">
+			<img class ='img-preview'>
+			<div class='button'>Add to tray</div>
+		</div>
+		-->
+	<script src="lib/jquery-1.11.2.min.js" ></script>  
+	<script src="lib/socket.io-1.0.6.js"></script>
+	<script src="lib/glfx.js"></script>
+
+
+	
+<script>
+try {
+       var canvas = fx.canvas();
+    } catch (e) {
+        alert(e);
+    }
+    
+function filter(imageid) {
+	
+
+    // convert the image to a texture
+    var image = document.getElementById(imageid);
+    var texture = canvas.texture(image);
+
+    // apply the ink filter
+    canvas.draw(texture).colorHalftone(320, 239.5, 0.25, 13).update();
+
+    // replace the image with the canvas
+    image.parentNode.insertBefore(canvas, image);
+    image.parentNode.removeChild(image);
+    texture.destroy();
+}
+
+var i = 0;
+var art = {};
+art.records = [];
+var curr = false;
+var host = window.location.host;
+var socket = io();
+var images2 = [];
+var sort = window.location.search.substr(1);
+var grid = true;
+
+var map = document.getElementById('map');
+var ctx = map.getContext('2d');
+var itemX = 0;
+
+var timerorder = null;
+var timerstart = null;
+var mouseX, mouseY;
+var sortField = false;
+var color;
+var clear_msg = false;
+var orderby = [];
+var rand = 'none';
+var intervalID;
+var timeout_rand_obj;
+var delay_mouse;
+var openclose;
+var filters = false;
+var filterhover = false;
+var randomart = [];
+
+
+/*
+	load object map
+*/
+$(document).ready(function() {
+
+	map.height = window.innerHeight;
+	map.width = window.innerWidth;
+
+	getMoreArt(0);
+	$("#preview").css("opacity", 0);
+
+});
+
+document.addEventListener("contextmenu", function(e){
+    e.preventDefault();
+}, false);
+
+
+/*
+	treat enter key as mouse click
+*/
+
+
+var metaicon = '{/}';
+
+
+var filtericon = '<svg style="pointer-events:none;" height="250" width="500"> ';
+filtericon += '<polygon points="23,63 50,75 77,63 50,51"" style="fill:white;stroke:black;stroke-width:1"/>';
+filtericon += '<polygon points="23,50 50,62 77,50 50,38"" style="fill:white;stroke:black;stroke-width:1"/>';
+filtericon += '<polygon points="23,37 50,49 77,37 50,25"" style="fill:white;stroke:black;stroke-width:1"/>';
+filtericon += '</svg>';
+
+$('.metadata .circ').html(filtericon);
+
+
+
+$(document).keypress(function(e) {
+	if(e.which == 13) {
+	
+		if(curr) {
+			if(sort) {
+				art.records.sort(customSort);
+				updategraph(sort);
+				populateMap();
+			} else if(filterhover) {
+				if(!filters) {
+					$('.metadata .circ').html(metaicon);
+					showFilters(curr);
+					filters = true;
+				} else {
+					$('.metadata .circ').html(filtericon);
+					$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
+					$(".metadata .phldr").fadeIn();	
+					filters = false;				
+				}
+			
+			} else {
+				$(".metadata, .metadata_back").hide();
+				$("#highlight").show();	
+				updategraph_unhighlight();	
+				curr = false;
+			}
+		} else {
+		$("#highlight").hide();
+
+			$.each(randomart, function(i, val) {
+					if(mouseX > val.x1 && mouseX < val.x1+w) {
+						if(mouseY > val.y1 && mouseY < val.y1+h) {
+							curr = val;
+							return false;
+						}
+					}
+				});		
+			showArtObject(curr);	
+		}
+	}
+});
+
+
+$(".button").on("click", function() {
+	//$(".swoosh div").css({'color':color});
+	var id = curr.objectid;
+	socket.emit('add-item', {
+		objectid: id
+	});
+	$(".message_hldr_2 .message_hldr_inner").html('Added to tray');
+	$(".message_hldr_2").fadeIn(200).show().delay(500).fadeOut(200);
+});
+
+$(".button").on("mouseover", function() {
+	$(".button div:nth-of-type(1)").css("background-color", color);
+	$(".button div:nth-of-type(2)").css("color", "color");
+});
+
+$(".button").on("mouseout", function() {
+	$(".button div:nth-of-type(1)").css("background-color", "white");
+	$(".button div:nth-of-type(2)").css("color", "white");
+});
+
+$("#toggle").on("mouseover", function() {
+	$("#toggletext").show();
+	$("#toggle .circ").css({"border-color":color,"color": color});
+	$("#toggle .circ").find("polygon").css("fill", color);
+	filterhover = true;
+});
+
+$("#toggle").on("mouseout", function() {
+	$("#toggle .circ").css({"border-color":"white","color": "white"});
+	$("#toggle .circ").find("polygon").css("fill", "white");
+	filterhover = false;
+});
+
+$("#toggle").on("click", function() {
+	//window.location.href = window.location.origin+"/9panels.html";
+	if($('.metadata .p1 .phldr').is(":visible") ){
+		console.log('show filters');
+		$('.metadata .circ').html(metaicon);
+		showFilters(curr);
+		filters = true;
+	}else{
+		console.log('show metadata');
+		$('.metadata .circ').html(filtericon);
+		$(".metadata .p1 .phldr_filter,.metadata .p2 .phldr_filter,.metadata .p3 .phldr_filter,.metadata .p4 .phldr_filter,.metadata .p6 .phldr_filter,.metadata .p7 .phldr_filter,.metadata .p8 .phldr_filter,.metadata .p9 .phldr_filter").fadeOut();
+		$(".metadata .phldr").fadeIn();	
+		filters = false;
+	}
+	
+});
+	
+
+
+$(".metadata, .metadata_back").on("click", function(e) {
+	if($(e.target).hasClass("searchfield")) {
+		sort = $(e.target).html();
+		art.records.sort(customSort);
+		updategraph(sort);
+		populateMap();
+	} 
+	else {
+		if ($(e.target).closest('#toggle').length === 0) {
+		$(".metadata, .metadata_back").fadeOut(500);
+		$("#highlight").show();
+		updategraph_unhighlight();
+		curr = false;	
+		}	
+	}
+});
+
+
+
+$("#map").on("mousemove", function(e) {
+	var eX = e.offsetX || e.clientX;
+	var eY = e.offsetY || e.clientY;
+		
+	mouseX = e.offsetX || e.clientX;
+	mouseY = e.offsetY || e.clientY;
+
+	eX -= w/2;
+	eY -= h/2;
+	
+	var eX2 = Math.round(eX / w)*w;
+	var eY2 = Math.round(eY / h)*h;
+	
+	$("#highlight").css("top", eY2);
+	$("#highlight").css("left", eX2);
+
+});
+		
+$(document).on("click", function(e) {
+	
+	if($(e.target).attr("id") == "map" || $(e.target).attr("id") == "highlight") {
+			var eX = e.clientX;
+			var eY = e.clientY;
+			$("#highlight").hide();
+			
+			$.each(randomart, function(i, val) {
+
+			
+				if(eX > val.x1 && eX < val.x1+w) {
+					if(eY > val.y1 && eY < val.y1+h) {
+						curr = val;
+						return false;
+					}
+				}
+			});
+			
+			showArtObject(curr);
+			
+		}
+});
+
+function showFilters(curr) {
+	var img_src= "./art/" + curr.objectid + ".jpg";
+	var gallery='';
+	$(".metadata .p1 .phldr,.metadata .p2 .phldr,.metadata .p3 .phldr,.metadata .p4 .phldr,.metadata .p6 .phldr,.metadata .p7 .phldr,.metadata .p8 .phldr,.metadata .p9 .phldr").fadeOut();
+	$(".metadata .phldr_filter").fadeIn();
+
+	$.get("http://api.harvardartmuseums.org/object/"+curr.objectid+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(data) {
+		if(data.gallery) gallery = "gallerynumber: "+data.gallery.gallerynumber+",</br>floor: "+data.gallery.floor+ ",</br >" + data.gallery.name;
+		$(".metadata .p4 .phldr_filter").html("<div class='location'>"+gallery+"</div>");
+	});
+
+
+	if(curr.colors) {
+		var $colors = $("<div class='colors'></div>");
+		$.each(curr.colors, function(i,val) {
+			var $color = $("<div class='colorbar'></div>");
+			$color.css("height", val.percent*100+"%");
+			$color.css("background-color", val.color);
+			$colors.append($color);
+		});
+		$(".metadata .p6 .phldr_filter").html($colors);
+	}
+
+	if(curr.images) {
+	//	$(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img id='artimg' src='"+img_src+"'></div>");
+	//	$(".metadata .p4 .phldr_filter").html("<div class='img-preview'><img id='imgp4' src='"+img_src+"'></div>");
+		//filter("imgp4");
+		
+		if(curr.images.length > 1) $(".metadata .p8 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[1].baseimageurl+"'></div>");
+		if(curr.images.length > 2) $(".metadata .p2 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[2].baseimageurl+"'></div>");
+		if(curr.images.length > 3) $(".metadata .p1 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[3].baseimageurl+"'></div>");
+		if(curr.images.length > 4) $(".metadata .p3 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[4].baseimageurl+"'></div>");
+		if(curr.images.length > 5) $(".metadata .p7 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[5].baseimageurl+"'></div>");
+		if(curr.images.length > 6) $(".metadata .p9 .phldr_filter").html("<div class='img-preview'><img src='"+curr.images[6].baseimageurl+"'></div>");
+	
+	
+	}
+}
+
+function showArtObject(curr) {
+			if(!curr.objectid) return false;
+			
+			updategraph_highlight(curr);
+
+			$(".message_hldr").hide();
+
+			$('.metadata .circ').html(filtericon);
+			filters = false;
+
+			$(".metadata .phldr_filter").hide();
+			$(".metadata .phldr").show();
+			$(".metadata, .metadata_back").fadeIn(500);
+
+			var img_src= curr.primaryimageurl+"?width=1000";
+
+			var title='',people='',birthplace='',name='',personid='',role='',displayorder='',culture='',displaydate='',deathplace='',displayname='',dated='', accessionyear='';
+			var division='',signed='',century='',classification='',description='', provenance='';
+			var department='',objectnumber='',contact='',exhibitioncount='',creditline='',copyright='',gallery='',publicationcount='';
+			var url='',primaryimageurl='',totalpageviews='',totaluniquepageviews='',lastupdate='',dateoffirstpageview='',dateoflastpageview='',images='';
+			var id='',verificationlevel='',verificationleveldescription='',imagepermissionlevel='',accesslevel='',mediacount='',groupcount='',markscount='',relatedcount='',imagecount='',peoplecount='',titlescount='',datebegin='',dateend='',contextualtextcount='',commentary='';
+			var colorcount='',worktype='',dimensions='',medium='',colors='',technique='';
+
+			$(".p1 .phldr, .p1 .phldr_filter").children().remove();
+			$(".p2 .phldr, .p2 .phldr_filter").children().remove();
+			$(".p3 .phldr, .p3 .phldr_filter").children().remove();
+			$(".p4 .phldr, .p4 .phldr_filter").children().remove();
+			$(".p6 .phldr, .p6 .phldr_filter").children().remove();
+			$(".p7 .phldr, .p7 .phldr_filter").children().remove();
+			$(".p8 .phldr, .p8 .phldr_filter").children().remove();
+			$(".p9 .phldr, .p9 .phldr_filter").children().remove();
+			
+			$("#preview img").remove();
+			
+			
+			$("#preview .img-preview").append("<img id='artimg' src='"+img_src+"'>");
+
+									
+			///p2
+			if(curr.title){title = '<span class="searchfield">title</span>: "' + curr.title + '",</br>';};
+		
+			if(curr.people){
+					people = 'people:</br>[</br>'+'<div class="tabspace">';
+				for (i = 0; i < curr.people.length; i++) { 
+						people += JSON.stringify(curr.people[i])+'",</br>'
+				}
+					people += '</div>' + '],</br>';
+			};						
+			if(curr.dated){dated = '<span class="searchfield">dated</span>: "' + curr.dated+'",<br />';};
+			if(curr.accessionyear){accessionyear = '<span class="searchfield">accessionyear</span>: "' + curr.accessionyear+'"';};
+
+			///p3
+			if(curr.division){division = '<span class="searchfield">division</span>: "' + curr.division + '",</br>';};
+			if(curr.signed){signed = '<span class="searchfield">signed</span>: "' + curr.signed + '",</br>';};
+			if(curr.century){century = '<span class="searchfield">century</span>: "' + curr.century + '",</br>';};
+			if(curr.culture){culture = '<span class="searchfield">culture</span>: "' + curr.culture + '",</br>';};
+			
+			if(curr.classification){classification = '<span class="searchfield">classification</span>: "' + curr.classification + '",</br>';};
+			if(curr.description){description = 'description: "' + curr.description+'",<br />';};
+			if(curr.provenance){provenance = 'provenance: "' + curr.provenance+'"';};
+
+			///p4
+			if(curr.department){department = '<span class="searchfield">department</span>: "' + curr.department + '",</br>';};
+			if(curr.objectnumber){objectnumber = '<span class="searchfield">objectnumber</span>: "' + curr.objectnumber + '",</br>';};
+			if(curr.contact){contact = 'contact: "' + curr.contact + '",</br>';};
+			if(curr.exhibitioncount){exhibitioncount = '<span class="searchfield">exhibitioncount</span>: "' + curr.exhibitioncount + '",</br>';};
+			if(curr.publicationcount){publicationcount = '<span class="searchfield">publicationcount</span>: "' + curr.publicationcount + '",</br>';};
+			if(curr.creditline){creditline = 'creditline: "' + curr.creditline + '",</br>';};
+			if(curr.copyright){copyright = 'copyright: "' + curr.copyright + '",</br>';};
+			if(curr.gallery){
+				gallery='gallery:</br>{</br><div class="tabspace">'+
+				JSON.stringify(curr.gallery)+'</br></div>';		
+			};
+
+			
+			///p6
+			if(curr.colorcount){colorcount = '<span class="searchfield">colorcount</span>: "' + curr.colorcount + '",</br>';};
+			if(curr.worktypes){
+				worktype = 'worktype:</br>[</br>' + '<div class="tabspace">';
+				for(i=0; i<curr.worktypes.length; i++) {
+					worktype+=JSON.stringify(curr.worktypes[i])+',</br>';
+				}
+				worktype += '</div>' + '],<br />';
+			};
+			if(curr.dimensions){dimensions = 'dimensions: "' + curr.dimensions + '",</br>';};
+			if(curr.medium){medium = '<span class="searchfield">medium</span>: "' + curr.medium + '",</br>';};
+			if(curr.technique){technique = '<span class="searchfield">technique</span>: "' + curr.technique + '",</br>';};
+
+			if(curr.colors){
+					colors = '<span class="searchfield">colors</span>:</br>[</br>' + '<div class="tabspace">';
+				for (i = 0; i < curr.colors.length; i++) { 
+						colors += JSON.stringify(curr.colors[i])+',</br>'
+				}
+					colors += '</div>' + '],';
+			};
+
+			///p7
+			if(curr.url){url = 'url: "' + curr.url + '",</br>';};
+			if(curr.primaryimageurl){primaryimageurl = 'primaryimageurl: "' + curr.primaryimageurl + '",</br>';};
+			if(curr.totalpageviews){totalpageviews = '<span class="searchfield">totalpageviews</span>: "' + curr.totalpageviews + '",</br>';};
+			if(curr.totaluniquepageviews){totaluniquepageviews = '<span class="searchfield">totaluniquepageviews</span>: "' + curr.totaluniquepageviews + '",</br>';};
+			if(curr.lastupdate){lastupdate = 'lastupdate: "' + curr.lastupdate + '",</br>';};
+			if(curr.dateoffirstpageview){dateoffirstpageview = 'dateoffirstpageview: "' + curr.dateoffirstpageview + '",</br>';};
+			if(curr.dateoflastpageview){dateoflastpageview = 'dateoflastpageview: "' + curr.dateoflastpageview + '",</br>';};
+			if(curr.images){
+					images = 'images:</br>[</br>'+'<div class="tabspace">'+'<div class="tabspace">';
+				for (i = 0; i < curr.images.length; i++) { 
+						images += JSON.stringify(curr.images[i])+'",</br>'
+				}
+					images += '</div>' + '</div>' +'],';
+			};						
+
+			///p8
+			if(curr.id){id = 'id: "' + curr.id + '",</br>';};
+			if(curr.imagepermissionlevel){imagepermissionlevel = '<span class="searchfield">imagepermissionlevel</span>: "' + curr.imagepermissionlevel + '",</br>';};
+			if(curr.verificationlevel){verificationlevel = '<span class="searchfield">verificationlevel</span>: "' + curr.verificationlevel + '",</br>';};
+			if(curr.verificationleveldescription){verificationleveldescription = 'verificationleveldescription: "' + curr.verificationleveldescription + '",</br>';};
+			if(curr.commentary) {commentary='commentary: "'+curr.commentary+'",</br>';};
+
+			if(curr.accesslevel){accesslevel = '<span class="searchfield">accesslevel</span>: "' + curr.accesslevel + '",</br>';};
+			if(curr.mediacount){mediacount = '<span class="searchfield">mediacount</span>: "' + curr.mediacount + '",</br>';};
+			if(curr.groupcount){groupcount = '<span class="searchfield">groupcount</span>: "' + curr.groupcount + '",</br>';};
+			if(curr.markscount){markscount = '<span class="searchfield">markscount</span>: "' + curr.markscount + '",</br>';};
+			if(curr.relatedcount){relatedcount = '<span class="searchfield">relatedcount</span>: "' + curr.relatedcount + '",</br>';};
+			if(curr.imagecount){imagecount = '<span class="searchfield">imagecount</span>: "' + curr.imagecount + '",</br>';};
+			if(curr.peoplecount){peoplecount = '<span class="searchfield">peoplecount</span>: "' + curr.peoplecount + '",</br>';};
+			if(curr.titlescount){titlescount = '<span class="searchfield">titlescount</span>: "' + curr.titlescount + '",</br>';};
+			if(curr.datebegin){datebegin = '<span class="searchfield">datebegin</span>: "' + curr.datebegin + '",</br>';};
+			if(curr.dateend){dateend = '<span class="searchfield">dateend</span>: "' + curr.dateend + '",</br>';};
+			if(curr.contextualtextcount){contextualtextcount = 'contextualtextcount: "' + curr.contextualtextcount + '",</br>';};
+
+			//p1, p9: 
+			$(".metadata .p1 .phldr").html("{");
+			$(".metadata .p9 .phldr").html("},");
+
+			//p2: title,people,dated
+			$(".metadata .p2 .phldr").html(
+					title +
+					people +
+					dated +
+					accessionyear
+				);
+
+			//p3: division,signed,century,classification
+			$(".metadata .p3 .phldr").html(
+					division +
+					signed +
+					century +
+					culture +
+					classification +
+					description+
+					provenance
+				);
+
+			//p4: department,objectnumber,contact,exhibitioncount,creditline,copyright
+			$(".metadata .p4 .phldr").html(
+					department +
+					objectnumber +
+					contact +
+					exhibitioncount +
+					publicationcount +
+					creditline +
+					copyright 
+				);
+
+
+
+			//p6: colorcount,worktypes,dimensions,medium,colors
+			$(".metadata .p6 .phldr").html(
+					colorcount +
+					worktype+
+					dimensions +
+					medium +
+					technique +
+					colors
+				);
+
+			//p7: url,primaryimageurl,totalpageviews,totaluniquepageviews,lastupdate,dateoffirstpageview,dateoflastpageview,images
+			$(".metadata .p7 .phldr").html(
+					url +
+					primaryimageurl +
+					totalpageviews +
+					totaluniquepageviews +
+					lastupdate +
+					dateoffirstpageview +
+					dateoflastpageview +
+					images
+				);
+
+			//p8: id,verificationlevel,imagepermissionlevel,accesslevel,mediacount,groupcount,markscount,relatedcount,imagecount,peoplecount,titlescount,datebegin,dateend,contextualtextcount
+			$(".metadata .p8 .phldr").html(
+					id +
+					verificationlevel +
+					verificationleveldescription +
+					commentary +
+					imagepermissionlevel +
+					accesslevel +
+					mediacount +
+					groupcount +
+					markscount +
+					relatedcount +
+					imagecount +
+					peoplecount +
+					titlescount +
+					datebegin +
+					dateend +
+					contextualtextcount
+				);
+
+			$(".searchfield").css("color", color);
+			$("#sort").html(sort+": "+curr[sort]); 
+			$("#preview").animate({opacity: 1}, 500);
+			
+			$(".searchfield").on("mouseover", function(e) {
+				sort = $(e.target).html();
+			});
+			
+			$(".searchfield").on("mouseout", function(e) {
+				sort = false;
+			});
+} 
+
+function customSort(a,b) {
+	if ( a[sort] < b[sort] )
+			return -1;
+	if ( a[sort] > b[sort] )
+			return 1;
+	return 0;
+}
+
+
+function getMoreArt(count) {
+	$.get("http://api.harvardartmuseums.org/object?gallery=any&apikey=f5473230-3f68-11e4-89b4-73adcea7266b&size=100&from="+count, function(data) {
+		$.each(data.records, function(j, record) {
+			if(record.primaryimageurl) art.records.push(record);
+		});
+		var next = count+100;
+		if(data.info.pages > data.info.page) getMoreArt(next);
+		else {
+			sort = "medium";
+			art.records.sort(customSort);
+			updategraph(sort);
+			populateMap();
+			sort = false;
+			//$.preLoadImages(art.records);
+
+		}
+	});	
+}
+
+function random_number(min,max) {
+
+    return (Math.round((max-min) * Math.random() + min));
+}
+
+function create_unique_random_array(num_elements,min,max) {
+		randomart.length = 0;
+		randomart = art.records.slice();
+		console.log(art.records.length);
+    var temp, nums = new Array;
+
+    for (var element=0; element<num_elements; element++) {
+
+        while((temp=number_found(random_number(min,max),nums))==-1);
+        nums[element] = temp;
+    }
+		console.log(nums.length);
+		console.log(art.records.length);
+    $.each(nums, function(i,val) {
+    	randomart.splice(i,1);
+    });
+    		console.log(art.records.length);
+
+}
+
+function number_found (random_number,number_array) {
+
+    for (var element=0; element<number_array.length; element++) {
+
+        if (random_number==number_array[element]) {
+            return (-1);
+	}
+   }
+
+    return (random_number);
+}
+		
+function updategraph(sort){
+	var array = "the pushed array sent";
+	socket.emit('update-graph', sort);
+}
+
+function updategraph_highlight(curr){
+	var id = curr.objectid;
+	socket.emit('selectobj-graph', id);
+	socket.emit('newcolors', curr.colors);
+}
+
+function updategraph_unhighlight(){
+	socket.emit('deselectobj-graph');
+}
+
+var day = dayofyear(new Date()) +1;
+
+function dayofyear(d) {   // d is a Date object
+	var yn = d.getFullYear();
+	var mn = d.getMonth();
+	var dn = d.getDate();
+	var d1 = new Date(yn,0,1,12,0,0); // noon on Jan. 1
+	var d2 = new Date(yn,mn,dn,12,0,0); // noon on input date
+	var ddiff = Math.round((d2-d1)/864e5);
+	return ddiff+1; 
+}
+		
+$.get("http://api.harvardartmuseums.org/spectrum/"+day+"?apikey=f5473230-3f68-11e4-89b4-73adcea7266b", function(d) {
+	color = d.color;
+});
+		
+var w = window.innerWidth / 48;
+var h = window.innerHeight / 30;
+$("#highlight").width(w);
+$("#highlight").height(h);
+function populateMap(rand) {
+
+	create_unique_random_array(art.records.length - 1470, 1, art.records.length-1);
+
+	ctx.clearRect(0,0,map.width,map.height);
+	itemX = 48;
+	var index=0;
+	for(var j=0; j < 31; j++) { //31
+		for(var i=0; i < 49; i++) { //49
+			if(index  == randomart.length) return false;
+			var x = i*w;
+			var y = j*h;
+			var t = index;
+			addImage(t, x, y);	
+			index++;
+		}
+	}
+
+	var rand_objs = [];	
+	var num_rand_obj = 3
+	for (i = 0; i < num_rand_obj; i++) {
+		var rand_obj = art.records[Math.floor(Math.random() * art.records.length)];
+		rand_objs.push(rand_obj)
+	}
+	//messages_ranobj(rand,rand_objs);
+}
+
+
+var needimgs = [];
+var one = 0;
+function addImage(order, x, y) {
+	var base_image = new Image();
+	var id = randomart[order].objectid;
+	$(base_image).attr("data-id",id)
+	base_image.src = "./art/"+id+".jpg";
+	
+	var errorlisten = base_image.onerror = function(e) {
+		console.log(randomart[order].primaryimageurl+" "+randomart[order].objectid+".jpg");
+		needimgs.push(randomart[order].primaryimageurl+"?width=120 "+randomart[order].objectid+".jpg")
+		base_image.src = randomart[order].primaryimageurl;
+		base_image.removeEventListener("onerror", errorlisten);
+	};
+	
+	var loadlisten = base_image.addEventListener("load", function(){
+		randomart[order].x1 = x;
+		randomart[order].y1 = y;
+		var sizeh = base_image.height;
+		var sizew = (base_image.height/h)*w;
+		if(sizew > base_image.width) {
+			sizew = base_image.width;
+			sizeh = (base_image.width/w)*h;
+		} 
+		
+		if(base_image.height > base_image.width) size = base_image.width;
+		ctx.drawImage(base_image, 0, 0, sizew, sizeh, x, y, w, h);		
+		base_image.removeEventListener("load", loadlisten);
+		
+	}		);
+			
+}
+	
+	</script>
+	
+	
 	</body>
 </html>
